@@ -3,9 +3,9 @@ package main
 import (
 	"log"
 
-	"github.com/alexvelfr/go-template/pkg/config"
-	"github.com/alexvelfr/go-template/pkg/logger"
-	"github.com/alexvelfr/go-template/server"
+	"github.com/DarkSoul94/helpdesk2/pkg/config"
+	"github.com/DarkSoul94/helpdesk2/pkg/logger"
+	"github.com/DarkSoul94/helpdesk2/server"
 	"github.com/spf13/viper"
 )
 

@@ -3,16 +3,16 @@ package usecase
 import (
 	"context"
 
-	"github.com/alexvelfr/go-template/app"
+	"github.com/DarkSoul94/helpdesk2/helpdesk"
 )
 
 // Usecase ...
 type Usecase struct {
-	repo app.Repository
+	repo helpdesk.Repository
 }
 
 // NewUsecase ...
-func NewUsecase(repo app.Repository) *Usecase {
+func NewUsecase(repo helpdesk.Repository) *Usecase {
 	return &Usecase{
 		repo: repo,
 	}

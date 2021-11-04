@@ -1,4 +1,4 @@
-package app
+package helpdesk
 
 // Repository ...
 type Repository interface {

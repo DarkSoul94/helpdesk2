@@ -3,17 +3,17 @@ package http
 import (
 	"net/http"
 
-	"github.com/alexvelfr/go-template/app"
+	"github.com/DarkSoul94/helpdesk2/helpdesk"
 	"github.com/gin-gonic/gin"
 )
 
 // Handler ...
 type Handler struct {
-	uc app.Usecase
+	uc helpdesk.Usecase
 }
 
 // NewHandler ...
-func NewHandler(uc app.Usecase) *Handler {
+func NewHandler(uc helpdesk.Usecase) *Handler {
 	return &Handler{
 		uc: uc,
 	}

@@ -11,11 +11,11 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/alexvelfr/go-template/app"
-	apphttp "github.com/alexvelfr/go-template/app/delivery/http"
-	apprepo "github.com/alexvelfr/go-template/app/repo/mock"
-	appusecase "github.com/alexvelfr/go-template/app/usecase"
-	"github.com/alexvelfr/go-template/pkg/logger"
+	"github.com/DarkSoul94/helpdesk2/helpdesk"
+	helpdeskhttp "github.com/DarkSoul94/helpdesk2/helpdesk/delivery/http"
+	helpdeskrepo "github.com/DarkSoul94/helpdesk2/helpdesk/repo/mock"
+	helpdeskusecase "github.com/DarkSoul94/helpdesk2/helpdesk/usecase"
+	"github.com/DarkSoul94/helpdesk2/pkg/logger"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/mysql"
@@ -27,31 +27,31 @@ import (
 
 // App ...
 type App struct {
-	appUC      app.Usecase
-	appRepo    app.Repository
+	helpdeskUC      helpdesk.Usecase
+	helpdeskRepo    helpdesk.Repository
 	httpServer *http.Server
 }
 
 // NewApp ...
 func NewApp() *App {
-	repo := apprepo.NewRepo()
-	uc := appusecase.NewUsecase(repo)
+	repo := helpdeskrepo.NewRepo()
+	uc := helpdeskusecase.NewUsecase(repo)
 	return &App{
-		appUC:   uc,
-		appRepo: repo,
+		helpdeskUC:   uc,
+		helpdeskRepo: repo,
 	}
 }
 
-// Run run application
+// Run run helpdesklication
 func (a *App) Run(port string) error {
-	defer a.appRepo.Close()
+	defer a.helpdeskRepo.Close()
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
 	router.Use(
 		gin.RecoveryWithWriter(logger.GetOutFile()),
 	)
 
-	apphttp.RegisterHTTPEndpoints(router, a.appUC)
+	helpdeskhttp.RegisterHTTPEndpoints(router, a.helpdeskUC)
 
 	a.httpServer = &http.Server{
 		Addr:           ":" + port,
@@ -63,8 +63,8 @@ func (a *App) Run(port string) error {
 
 	var l net.Listener
 	var err error
-	if viper.GetBool("app.sock_mode") {
-		sockName := viper.GetString("app.sock_name")
+	if viper.GetBool("helpdesk.sock_mode") {
+		sockName := viper.GetString("helpdesk.sock_name")
 		os.Remove(sockName)
 		l, err = net.Listen("unix", sockName)
 		if err != nil {
@@ -97,12 +97,12 @@ func (a *App) Run(port string) error {
 
 func initDB() *sql.DB {
 	dbString := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?%s",
-		viper.GetString("app.db.login"),
-		viper.GetString("app.db.pass"),
-		viper.GetString("app.db.host"),
-		viper.GetString("app.db.port"),
-		viper.GetString("app.db.name"),
-		viper.GetString("app.db.args"),
+		viper.GetString("helpdesk.db.login"),
+		viper.GetString("helpdesk.db.pass"),
+		viper.GetString("helpdesk.db.host"),
+		viper.GetString("helpdesk.db.port"),
+		viper.GetString("helpdesk.db.name"),
+		viper.GetString("helpdesk.db.args"),
 	)
 	db, err := sql.Open(
 		"mysql",
@@ -122,7 +122,7 @@ func runMigrations(db *sql.DB) {
 	}
 	m, err := migrate.NewWithDatabaseInstance(
 		"file://migrations",
-		viper.GetString("app.db.name"),
+		viper.GetString("helpdesk.db.name"),
 		driver)
 	if err != nil {
 		panic(err)
@@ -135,12 +135,12 @@ func runMigrations(db *sql.DB) {
 
 func initGormDB() *gorm.DB {
 	dbString := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?%s",
-		viper.GetString("app.db.login"),
-		viper.GetString("app.db.pass"),
-		viper.GetString("app.db.host"),
-		viper.GetString("app.db.port"),
-		viper.GetString("app.db.name"),
-		viper.GetString("app.db.args"),
+		viper.GetString("helpdesk.db.login"),
+		viper.GetString("helpdesk.db.pass"),
+		viper.GetString("helpdesk.db.host"),
+		viper.GetString("helpdesk.db.port"),
+		viper.GetString("helpdesk.db.name"),
+		viper.GetString("helpdesk.db.args"),
 	)
 	db, err := gorm.Open(gomrmysql.Open(dbString), &gorm.Config{})
 	if err != nil {

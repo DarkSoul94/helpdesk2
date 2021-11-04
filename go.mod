@@ -1,4 +1,4 @@
-module github.com/alexvelfr/go-template
+module github.com/DarkSoul94/helpdesk2
 
 go 1.16
 
