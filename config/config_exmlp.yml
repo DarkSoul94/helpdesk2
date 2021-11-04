@@ -2,13 +2,33 @@ app:
   socket_mode: false
   socket_file: "app.sock"
   http_port: 8888
+  release: false
   log:
     dir: "logs"
     file: "app.log"
+  auth:
+    secret_key: ""
+    signing_key: ""
+    ttl: 7200
+    ldap:
+      server: "localhost:389"
+      filterDN: "(&(objectClass=person)(|(sAMAccountName={username})(mail={username})))"
+      baseDN: "OU={},DC={},DC={}"
+  distribute:
+    delay: 10
   db:
-    login: ""
-    pass: ""
-    host: ""
-    port: 3306
-    name: ""
-    args: "parseTime=true&multiStatements=true"
+    name: "helpdesk"
+    login: "root"
+    pass: "pass"
+    host: "localhost"
+    port: "3106"
+    args: "loc=Local&parseTime=true&multiStatements=true"
+  limitation:
+    implementation: 2
+    postponed: 1000
+  ttl_cache:
+    clear_period: 5 #second
+    life_time: 300 #second
+    late_cause_life: 3600 #second
+  store:
+    path: "./store"

@@ -15,7 +15,17 @@ import (
 	helpdeskhttp "github.com/DarkSoul94/helpdesk2/helpdesk/delivery/http"
 	helpdeskrepo "github.com/DarkSoul94/helpdesk2/helpdesk/repo/mock"
 	helpdeskusecase "github.com/DarkSoul94/helpdesk2/helpdesk/usecase"
+
 	"github.com/DarkSoul94/helpdesk2/pkg/logger"
+	"github.com/DarkSoul94/helpdesk2/user_manager"
+	userhttp "github.com/DarkSoul94/helpdesk2/user_manager/delivery/http"
+	userrepo "github.com/DarkSoul94/helpdesk2/user_manager/repo/mysql"
+	userusecase "github.com/DarkSoul94/helpdesk2/user_manager/usecase"
+
+	"github.com/DarkSoul94/helpdesk2/auth"
+	authhttp "github.com/DarkSoul94/helpdesk2/auth/delivery/http"
+	authusecase "github.com/DarkSoul94/helpdesk2/auth/usecase"
+
 	"github.com/gin-gonic/gin"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/mysql"
@@ -27,16 +37,34 @@ import (
 
 // App ...
 type App struct {
-	helpdeskUC      helpdesk.Usecase
-	helpdeskRepo    helpdesk.Repository
+	userUC   user_manager.UserManagerUC
+	userRepo user_manager.UserManagerRepo
+
+	authUC auth.AuthUC
+
+	helpdeskUC   helpdesk.Usecase
+	helpdeskRepo helpdesk.Repository
+
 	httpServer *http.Server
 }
 
 // NewApp ...
 func NewApp() *App {
+	db := initDB()
+
+	userRepo := userrepo.NewRepo(db)
+	userUC := userusecase.NewUsecase(userRepo)
+
+	authUC := authusecase.NewUsecase(userUC, viper.GetString("app.auth.secret_key"), []byte(viper.GetString("app.auth.signing_key")), viper.GetDuration("app.auth.ttl"))
+
 	repo := helpdeskrepo.NewRepo()
 	uc := helpdeskusecase.NewUsecase(repo)
 	return &App{
+		userRepo: userRepo,
+		userUC:   userUC,
+
+		authUC: authUC,
+
 		helpdeskUC:   uc,
 		helpdeskRepo: repo,
 	}
@@ -45,11 +73,21 @@ func NewApp() *App {
 // Run run helpdesklication
 func (a *App) Run(port string) error {
 	defer a.helpdeskRepo.Close()
-	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
+	if viper.GetBool("app.release") {
+		gin.SetMode(gin.ReleaseMode)
+	} else {
+		router.Use(gin.Logger())
+	}
 	router.Use(
 		gin.RecoveryWithWriter(logger.GetOutFile()),
 	)
+
+	apiRouter := router.Group("/helpdesk")
+	authhttp.RegisterHTTPEndpoints(apiRouter, a.authUC)
+	authMiddlware := authhttp.NewAuthMiddleware(a.authUC)
+
+	userhttp.RegisterHTTPEndpoints(apiRouter, a.userUC, authMiddlware)
 
 	helpdeskhttp.RegisterHTTPEndpoints(router, a.helpdeskUC)
 
@@ -97,12 +135,12 @@ func (a *App) Run(port string) error {
 
 func initDB() *sql.DB {
 	dbString := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?%s",
-		viper.GetString("helpdesk.db.login"),
-		viper.GetString("helpdesk.db.pass"),
-		viper.GetString("helpdesk.db.host"),
-		viper.GetString("helpdesk.db.port"),
-		viper.GetString("helpdesk.db.name"),
-		viper.GetString("helpdesk.db.args"),
+		viper.GetString("app.db.login"),
+		viper.GetString("app.db.pass"),
+		viper.GetString("app.db.host"),
+		viper.GetString("app.db.port"),
+		viper.GetString("app.db.name"),
+		viper.GetString("app.db.args"),
 	)
 	db, err := sql.Open(
 		"mysql",
@@ -135,12 +173,12 @@ func runMigrations(db *sql.DB) {
 
 func initGormDB() *gorm.DB {
 	dbString := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?%s",
-		viper.GetString("helpdesk.db.login"),
-		viper.GetString("helpdesk.db.pass"),
-		viper.GetString("helpdesk.db.host"),
-		viper.GetString("helpdesk.db.port"),
-		viper.GetString("helpdesk.db.name"),
-		viper.GetString("helpdesk.db.args"),
+		viper.GetString("app.db.login"),
+		viper.GetString("app.db.pass"),
+		viper.GetString("app.db.host"),
+		viper.GetString("app.db.port"),
+		viper.GetString("app.db.name"),
+		viper.GetString("app.db.args"),
 	)
 	db, err := gorm.Open(gomrmysql.Open(dbString), &gorm.Config{})
 	if err != nil {
