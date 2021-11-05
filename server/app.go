@@ -17,10 +17,10 @@ import (
 	helpdeskusecase "github.com/DarkSoul94/helpdesk2/helpdesk/usecase"
 
 	"github.com/DarkSoul94/helpdesk2/pkg/logger"
-	"github.com/DarkSoul94/helpdesk2/user_manager"
-	userhttp "github.com/DarkSoul94/helpdesk2/user_manager/delivery/http"
-	userrepo "github.com/DarkSoul94/helpdesk2/user_manager/repo/mysql"
-	userusecase "github.com/DarkSoul94/helpdesk2/user_manager/usecase"
+	"github.com/DarkSoul94/helpdesk2/pkg_user"
+	userhttp "github.com/DarkSoul94/helpdesk2/pkg_user/delivery/http"
+	userrepo "github.com/DarkSoul94/helpdesk2/pkg_user/repo/mysql"
+	userusecase "github.com/DarkSoul94/helpdesk2/pkg_user/usecase"
 
 	"github.com/DarkSoul94/helpdesk2/auth"
 	authhttp "github.com/DarkSoul94/helpdesk2/auth/delivery/http"
@@ -37,8 +37,8 @@ import (
 
 // App ...
 type App struct {
-	userUC   user_manager.UserManagerUC
-	userRepo user_manager.UserManagerRepo
+	userUC   pkg_user.UserManagerUC
+	userRepo pkg_user.UserManagerRepo
 
 	authUC auth.AuthUC
 

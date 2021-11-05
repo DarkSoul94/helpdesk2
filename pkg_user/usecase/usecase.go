@@ -3,12 +3,12 @@ package usecase
 import (
 	"github.com/DarkSoul94/helpdesk2/global_const"
 	"github.com/DarkSoul94/helpdesk2/models"
-	"github.com/DarkSoul94/helpdesk2/user_manager"
-	"github.com/DarkSoul94/helpdesk2/user_manager/perm_manager"
+	"github.com/DarkSoul94/helpdesk2/pkg_user"
+	"github.com/DarkSoul94/helpdesk2/pkg_user/perm_manager"
 )
 
 // NewUsecase ...
-func NewUsecase(repo user_manager.UserManagerRepo) *Usecase {
+func NewUsecase(repo pkg_user.UserManagerRepo) *Usecase {
 	uc := Usecase{
 		repo:        repo,
 		permManager: perm_manager.Manager{},

@@ -1,10 +1,10 @@
 package http
 
-import "github.com/DarkSoul94/helpdesk2/user_manager"
+import "github.com/DarkSoul94/helpdesk2/pkg_user"
 
 // Handler ...
 type Handler struct {
-	ucUserManager user_manager.UserManagerUC
+	ucUserManager pkg_user.UserManagerUC
 }
 
 type Response struct {

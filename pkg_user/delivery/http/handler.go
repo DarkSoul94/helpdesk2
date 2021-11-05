@@ -6,12 +6,12 @@ import (
 
 	"github.com/DarkSoul94/helpdesk2/global_const"
 	"github.com/DarkSoul94/helpdesk2/models"
-	"github.com/DarkSoul94/helpdesk2/user_manager"
+	"github.com/DarkSoul94/helpdesk2/pkg_user"
 	"github.com/gin-gonic/gin"
 )
 
 // NewHandler ...
-func NewHandler(uc user_manager.UserManagerUC) *Handler {
+func NewHandler(uc pkg_user.UserManagerUC) *Handler {
 	return &Handler{
 		ucUserManager: uc,
 	}

@@ -1,12 +1,12 @@
 package http
 
 import (
-	"github.com/DarkSoul94/helpdesk2/user_manager"
+	"github.com/DarkSoul94/helpdesk2/pkg_user"
 	"github.com/gin-gonic/gin"
 )
 
 // RegisterHTTPEndpoints ...
-func RegisterHTTPEndpoints(router *gin.RouterGroup, uc user_manager.UserManagerUC, middlewares ...gin.HandlerFunc) {
+func RegisterHTTPEndpoints(router *gin.RouterGroup, uc pkg_user.UserManagerUC, middlewares ...gin.HandlerFunc) {
 	h := NewHandler(uc)
 
 	usersEndpoints := router.Group("/user")

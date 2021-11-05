@@ -1,8 +1,8 @@
-package user_manager
+package pkg_user
 
 import (
 	"github.com/DarkSoul94/helpdesk2/models"
-	"github.com/DarkSoul94/helpdesk2/user_manager/perm_manager"
+	"github.com/DarkSoul94/helpdesk2/pkg_user/perm_manager"
 )
 
 type UserManagerUC interface {

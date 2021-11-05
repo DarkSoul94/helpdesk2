@@ -1,4 +1,4 @@
-package user_manager
+package pkg_user
 
 import "github.com/DarkSoul94/helpdesk2/models"
 

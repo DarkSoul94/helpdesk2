@@ -1,4 +1,4 @@
-package user_manager
+package pkg_user
 
 const (
 	KeyGet    string = "user.get"
