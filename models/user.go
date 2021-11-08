@@ -4,6 +4,6 @@ type User struct {
 	ID         uint64
 	Email      string
 	Name       string
-	Group      *Group
+	Group      uint64
 	Department string
 }

@@ -71,3 +71,7 @@ func (u *Usecase) GroupUpdate(id uint64, permission []byte) error {
 func (u *Usecase) CreateGroup(name string, permissions []byte) (uint64, error) {
 	return 0, nil
 }
+
+func (u *Usecase) CheckPermissionForAction(user *models.User, actions ...string) bool {
+	return true
+}
