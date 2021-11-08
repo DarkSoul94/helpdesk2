@@ -2,7 +2,7 @@ package http
 
 import (
 	"github.com/DarkSoul94/helpdesk2/models"
-	"github.com/DarkSoul94/helpdesk2/user_manager/perm_manager"
+	"github.com/DarkSoul94/helpdesk2/pkg_user/perm_manager"
 )
 
 func (h *Handler) toInpGroup(group *models.Group) *inpGroup {

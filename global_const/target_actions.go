@@ -20,13 +20,13 @@ const (
 	SettingsGroupCreate = "settings.group.create" //создание группы пользователей
 )
 
-var ActionsForPerm []string = []string{
-	ActionTaskGet_author,
-	ActionTaskGet_dev,
-	ActionTaskGet_customer,
-	ActionTaskCreate,
-	ActionTaskUpdate,
-	SettingsUserUpdate,
-	SettingsGroupUpdate,
-	SettingsGroupCreate,
+var Actions map[string]string = map[string]string{
+	"Задачи.Получить список.по автору":                      ActionTaskGet_author,
+	"Задачи.Получить список.по разработчику":                ActionTaskGet_dev,
+	"Задачи.Получить список.по заказчику":                   ActionTaskGet_customer,
+	"Задачи.Создать задачу":                                 ActionTaskCreate,
+	"Задачи.Изменить задачу":                                ActionTaskUpdate,
+	"Администрирование.Пользователи.Изменение пользователя": SettingsUserUpdate,
+	"Администрирование.Группы.Изменение группы":             SettingsGroupUpdate,
+	"Администрирование.Группы.Создание группы":              SettingsGroupCreate,
 }

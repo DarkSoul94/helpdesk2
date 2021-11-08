@@ -2,135 +2,60 @@ package perm_manager
 
 import (
 	"encoding/json"
-	"fmt"
+	"reflect"
 	"strings"
 )
 
 type Manager struct {
-	permissions PermLayer
+	permissions map[string]layer
 }
 
-func (m *Manager) CreateManagerFromActions(actions ...string) {
-	m.permissions = PermLayer{
-		FinalPerm:     make([]string, 0),
-		SubPermGroups: make(map[string]PermLayer),
+func NewManager(actions interface{}) (*Manager, error) {
+	manager := &Manager{
+		permissions: make(map[string]layer),
 	}
-	for _, action := range actions {
-		permParts := strings.Split(action, ".")
-		if len(permParts) == 1 {
-			m.permissions.FinalPerm = append(m.permissions.FinalPerm, permParts[0])
+	switch reflect.TypeOf(actions) {
+	case reflect.TypeOf([]string{}):
+		for _, action := range actions.([]string) {
+			actionParts := strings.Split(action, ".")
+			manager.init(actionParts, actionParts)
+		}
+	case reflect.TypeOf(map[string]string{}):
+		for name, action := range actions.(map[string]string) {
+			actionParts := strings.Split(action, ".")
+			nameParts := strings.Split(name, ".")
+			manager.init(actionParts, nameParts)
+		}
+	default:
+		return nil, ErrWrongType
+	}
+	return manager, nil
+}
+
+func (m *Manager) init(actionParts, nameParts []string) {
+	var temp layer
+
+	if len(actionParts) != 1 {
+		if _, ok := m.permissions[actionParts[0]]; !ok {
+			temp.formLayer(actionParts[1:], nameParts)
+			m.permissions[actionParts[0]] = temp
 		} else {
-			m.putToLayer(&m.permissions, permParts)
-		}
-	}
-}
-
-func (m *Manager) formPermLayer(actions []string) PermLayer {
-	var layer PermLayer = PermLayer{
-		FinalPerm:     make([]string, 0),
-		SubPermGroups: make(map[string]PermLayer),
-	}
-
-	if len(actions) != 1 {
-		layer.SubPermGroups[actions[0]] = m.formPermLayer(actions[1:])
-	} else {
-		layer.FinalPerm = append(layer.FinalPerm, actions[0])
-	}
-
-	return layer
-}
-
-func (m *Manager) putToLayer(targetLayer *PermLayer, actions []string) {
-	if len(actions) != 1 {
-		if _, ok := targetLayer.SubPermGroups[actions[0]]; !ok {
-			targetLayer.SubPermGroups[actions[0]] = m.formPermLayer(actions[1:])
-		} else {
-			pointer := targetLayer.SubPermGroups[actions[0]]
-			m.putToLayer(&pointer, actions[1:])
-			targetLayer.SubPermGroups[actions[0]] = pointer
+			temp = m.permissions[actionParts[0]]
+			temp.putToLayer(actionParts[1:], nameParts)
+			m.permissions[actionParts[0]] = temp
 		}
 	} else {
-		targetLayer.FinalPerm = append(targetLayer.FinalPerm, actions[0])
+		temp = m.permissions[KeyFinalActoins]
+		temp.Actions = append(temp.Actions, targetAction{Name: actionParts[0], Action: nameParts[0]})
+		m.permissions[KeyFinalActoins] = temp
 	}
 }
 
-func (m *Manager) ExportPermissionsList() (PermLayer, error) {
-	return m.permissions, nil
-}
-
-func (m *Manager) CheckPermissionForActions(permissions []byte, actions ...string) error {
-	var user_perm PermLayer
-	err := json.Unmarshal(permissions, &user_perm)
-	if err != nil {
-		return err
+func (m *Manager) ExportToTreeView() []byte {
+	tree := make([]treeLayer, 0)
+	for key, val := range m.permissions {
+		tree = append(tree, val.toTreeView(val.Name, key))
 	}
-	if len(actions) != 0 {
-		for _, action := range actions {
-			keys := strings.Split(action, ".")
-			err = m.checkInSlice(user_perm, keys)
-			if err != nil {
-				return fmt.Errorf(ErrNotAlowed.Error(), action)
-			}
-		}
-	} else {
-		return ErrNoneTargetActions
-	}
-	return nil
-}
-
-func (m *Manager) checkInSlice(layer PermLayer, keys []string) error {
-	var err error
-	if len(keys) != 1 {
-		if _, ok := layer.SubPermGroups[keys[0]]; !ok {
-			return ErrNotAlowed
-		}
-
-		err = m.checkInSlice(layer.SubPermGroups[keys[0]], keys[1:])
-		if err != nil {
-			return err
-		}
-	} else {
-		for _, val := range layer.FinalPerm {
-			if val == keys[0] {
-				return nil
-			}
-		}
-		return ErrNotAlowed
-	}
-	return nil
-}
-
-func (m *Manager) CheckPermissionsGroup(permissions []byte, actions ...string) ([]string, error) {
-	var user_perm PermLayer
-	out_actions := make([]string, 0)
-	err := json.Unmarshal(permissions, &user_perm)
-	if err != nil {
-		return out_actions, err
-	}
-	for _, action := range actions {
-		keys := strings.Split(action, ".")
-		out_actions, err = m.checkInMap(m.permissions, keys)
-		if err != nil {
-			return out_actions, fmt.Errorf(ErrNotAlowed.Error(), err)
-		}
-	}
-	return out_actions, nil
-}
-
-func (m *Manager) checkInMap(layer PermLayer, keys []string) ([]string, error) {
-	var err error
-	out := make([]string, 0)
-	if _, ok := layer.SubPermGroups[keys[0]]; !ok {
-		return out, ErrNotAlowed
-	}
-	if len(keys) != 1 {
-		out, err = m.checkInMap(layer.SubPermGroups[keys[0]], keys[1:])
-		if err != nil {
-			return out, err
-		}
-	} else {
-		temp := layer.SubPermGroups[keys[0]]
-		out = append(out, temp.FinalPerm...)
-	}
-	return out, nil
+	out, _ := json.Marshal(tree)
+	return out
 }

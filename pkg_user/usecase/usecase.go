@@ -3,17 +3,21 @@ package usecase
 import (
 	"github.com/DarkSoul94/helpdesk2/global_const"
 	"github.com/DarkSoul94/helpdesk2/models"
+	"github.com/DarkSoul94/helpdesk2/pkg/logger"
 	"github.com/DarkSoul94/helpdesk2/pkg_user"
 	"github.com/DarkSoul94/helpdesk2/pkg_user/perm_manager"
 )
 
 // NewUsecase ...
 func NewUsecase(repo pkg_user.UserManagerRepo) *Usecase {
+	perm, err := perm_manager.NewManager(global_const.Actions)
+	if err != nil {
+		logger.LogError("Init permissions manager", "user_manager/usecase", "", err)
+	}
 	uc := Usecase{
 		repo:        repo,
-		permManager: perm_manager.Manager{},
+		permManager: perm,
 	}
-	uc.permManager.CreateManagerFromActions(global_const.ActionsForPerm...)
 	return &uc
 }
 
@@ -66,8 +70,4 @@ func (u *Usecase) GroupUpdate(id uint64, permission []byte) error {
 
 func (u *Usecase) CreateGroup(name string, permissions []byte) (uint64, error) {
 	return 0, nil
-}
-
-func (u *Usecase) GetFullPermListInBytes() (perm_manager.PermLayer, error) {
-	return u.permManager.ExportPermissionsList()
 }

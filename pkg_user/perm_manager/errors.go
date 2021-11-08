@@ -3,6 +3,5 @@ package perm_manager
 import "errors"
 
 var (
-	ErrNotAlowed         = errors.New("The action %s are not alowed")
-	ErrNoneTargetActions = errors.New("List of targets actions is empty")
+	ErrWrongType = errors.New("Input data isn't map[string]string or []string")
 )

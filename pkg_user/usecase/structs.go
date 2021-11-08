@@ -7,5 +7,5 @@ import (
 
 type Usecase struct {
 	repo        pkg_user.UserManagerRepo
-	permManager perm_manager.Manager
+	permManager perm_manager.PermManager
 }

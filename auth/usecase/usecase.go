@@ -7,14 +7,14 @@ import (
 
 	"github.com/DarkSoul94/helpdesk2/models"
 	"github.com/DarkSoul94/helpdesk2/pkg/logger"
-	"github.com/DarkSoul94/helpdesk2/user_manager"
+	"github.com/DarkSoul94/helpdesk2/pkg_user"
 	"github.com/dgrijalva/jwt-go/v4"
 	"github.com/spf13/viper"
 )
 
 // Usecase ...
 type Usecase struct {
-	userManager    user_manager.UserManagerUC
+	userManager    pkg_user.UserManagerUC
 	secret         string
 	signingKey     []byte
 	expireDuration time.Duration
@@ -27,15 +27,15 @@ type AuthClaims struct {
 
 // NewUsecase ...
 func NewUsecase(
-	userManager user_manager.UserManagerUC,
+	userManager pkg_user.UserManagerUC,
 	secret string,
 	signingKey []byte,
-	tokenTTLSeconds time.Duration) *Usecase {
+	tokenTTL time.Duration) *Usecase {
 	return &Usecase{
 		userManager:    userManager,
 		secret:         secret,
 		signingKey:     signingKey,
-		expireDuration: time.Second * tokenTTLSeconds,
+		expireDuration: time.Second * tokenTTL,
 	}
 }
 
