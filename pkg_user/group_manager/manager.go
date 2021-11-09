@@ -1,4 +1,4 @@
-package perm_manager
+package group_manager
 
 import (
 	"encoding/json"
@@ -7,11 +7,13 @@ import (
 )
 
 type Manager struct {
+	repo        Repo
 	permissions map[string]layer
 }
 
-func NewManager(actions interface{}) (*Manager, error) {
+func NewManager(actions interface{}, repo Repo) (*Manager, error) {
 	manager := &Manager{
+		repo:        repo,
 		permissions: make(map[string]layer),
 	}
 	switch reflect.TypeOf(actions) {
@@ -58,4 +60,12 @@ func (m *Manager) ExportToTreeView() []byte {
 	}
 	out, _ := json.Marshal(tree)
 	return out
+}
+
+func (m *Manager) GetGroupByID(groupID uint64) (*Group, error) {
+	return m.repo.GetGroupByID(groupID)
+}
+
+func (m *Manager) GetGroupList() ([]*Group, error) {
+	return m.repo.GetGroupList()
 }

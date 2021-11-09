@@ -11,16 +11,15 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/DarkSoul94/helpdesk2/helpdesk"
-	helpdeskhttp "github.com/DarkSoul94/helpdesk2/helpdesk/delivery/http"
-	helpdeskrepo "github.com/DarkSoul94/helpdesk2/helpdesk/repo/mock"
-	helpdeskusecase "github.com/DarkSoul94/helpdesk2/helpdesk/usecase"
-
+	"github.com/DarkSoul94/helpdesk2/global_const"
 	"github.com/DarkSoul94/helpdesk2/pkg/logger"
 	"github.com/DarkSoul94/helpdesk2/pkg_user"
 	userhttp "github.com/DarkSoul94/helpdesk2/pkg_user/delivery/http"
 	userrepo "github.com/DarkSoul94/helpdesk2/pkg_user/repo/mysql"
 	userusecase "github.com/DarkSoul94/helpdesk2/pkg_user/usecase"
+
+	"github.com/DarkSoul94/helpdesk2/pkg_user/group_manager"
+	grouprepo "github.com/DarkSoul94/helpdesk2/pkg_user/group_manager/repo/mysql"
 
 	"github.com/DarkSoul94/helpdesk2/auth"
 	authhttp "github.com/DarkSoul94/helpdesk2/auth/delivery/http"
@@ -37,13 +36,13 @@ import (
 
 // App ...
 type App struct {
+	groupRepo group_manager.Repo
+	groupUC   group_manager.PermManager
+
 	userUC   pkg_user.UserManagerUC
 	userRepo pkg_user.UserManagerRepo
 
 	authUC auth.AuthUC
-
-	helpdeskUC   helpdesk.Usecase
-	helpdeskRepo helpdesk.Repository
 
 	httpServer *http.Server
 }
@@ -52,27 +51,29 @@ type App struct {
 func NewApp() *App {
 	db := initDB()
 
+	groupRepo := grouprepo.NewRepo(db)
+	groupUC, err := group_manager.NewManager(global_const.Actions, groupRepo)
+	if err != nil {
+		logger.LogError("Init permissions manager", "user_manager/usecase", "", err)
+	}
+
 	userRepo := userrepo.NewRepo(db)
-	userUC := userusecase.NewUsecase(userRepo)
+	userUC := userusecase.NewUsecase(userRepo, groupUC)
 
 	authUC := authusecase.NewUsecase(userUC, viper.GetString("app.auth.secret_key"), []byte(viper.GetString("app.auth.signing_key")), viper.GetDuration("app.auth.ttl"))
 
-	repo := helpdeskrepo.NewRepo()
-	uc := helpdeskusecase.NewUsecase(repo)
 	return &App{
 		userRepo: userRepo,
 		userUC:   userUC,
 
 		authUC: authUC,
-
-		helpdeskUC:   uc,
-		helpdeskRepo: repo,
 	}
 }
 
 // Run run helpdesklication
 func (a *App) Run(port string) error {
-	defer a.helpdeskRepo.Close()
+	defer a.userRepo.Close()
+
 	router := gin.New()
 	if viper.GetBool("app.release") {
 		gin.SetMode(gin.ReleaseMode)
@@ -88,8 +89,6 @@ func (a *App) Run(port string) error {
 	authMiddlware := authhttp.NewAuthMiddleware(a.authUC)
 
 	userhttp.RegisterHTTPEndpoints(apiRouter, a.userUC, authMiddlware)
-
-	helpdeskhttp.RegisterHTTPEndpoints(router, a.helpdeskUC)
 
 	a.httpServer = &http.Server{
 		Addr:           ":" + port,

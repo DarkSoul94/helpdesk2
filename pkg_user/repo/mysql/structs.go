@@ -1,21 +1,19 @@
 package mysql
 
-import "github.com/jmoiron/sqlx"
+import (
+	"database/sql"
+
+	"github.com/jmoiron/sqlx"
+)
 
 type Repo struct {
 	db *sqlx.DB
 }
 
-type dbGroup struct {
-	ID          uint64 `db:"id"`
-	Name        string `db:"name"`
-	Permissions []byte `db:"permissions"`
-}
-
 type dbUser struct {
-	ID         uint64 `db:"id"`
-	Email      string `db:"email"`
-	Name       string `db:"name"`
-	GroupID    uint64 `db:"group_id"`
-	Department string `db:"department"`
+	UserID     uint64         `db:"user_id"`
+	UserName   string         `db:"user_name"`
+	Email      string         `db:"email"`
+	GroupID    uint64         `db:"group_id"`
+	Department sql.NullString `db:"department"`
 }
