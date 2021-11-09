@@ -14,9 +14,11 @@ import (
 	"github.com/DarkSoul94/helpdesk2/pkg/logger"
 	"github.com/DarkSoul94/helpdesk2/pkg_user"
 	userhttp "github.com/DarkSoul94/helpdesk2/pkg_user/delivery/http"
-	grouprepo "github.com/DarkSoul94/helpdesk2/pkg_user/group_manager/standart/repo/mysql"
 	userrepo "github.com/DarkSoul94/helpdesk2/pkg_user/repo/mysql"
 	userusecase "github.com/DarkSoul94/helpdesk2/pkg_user/usecase"
+
+	"github.com/DarkSoul94/helpdesk2/pkg_user/group_manager"
+	grouprepo "github.com/DarkSoul94/helpdesk2/pkg_user/group_manager/standart/repo/mysql"
 
 	"github.com/DarkSoul94/helpdesk2/auth"
 	authhttp "github.com/DarkSoul94/helpdesk2/auth/delivery/http"
@@ -33,8 +35,9 @@ import (
 
 // App ...
 type App struct {
-	userUC   pkg_user.UserManagerUC
-	userRepo pkg_user.UserManagerRepo
+	userUC    pkg_user.UserManagerUC
+	userRepo  pkg_user.UserManagerRepo
+	groupRepo group_manager.GroupRepo
 
 	authUC auth.AuthUC
 
@@ -52,8 +55,9 @@ func NewApp() *App {
 	authUC := authusecase.NewUsecase(userUC, viper.GetString("app.auth.secret_key"), []byte(viper.GetString("app.auth.signing_key")), viper.GetDuration("app.auth.ttl"))
 
 	return &App{
-		userRepo: userRepo,
-		userUC:   userUC,
+		userRepo:  userRepo,
+		groupRepo: grpRepo,
+		userUC:    userUC,
 
 		authUC: authUC,
 	}
@@ -61,7 +65,7 @@ func NewApp() *App {
 
 // Run run helpdesklication
 func (a *App) Run(port string) error {
-	defer a.userRepo.Close()
+	defer a.close()
 
 	router := gin.New()
 	if viper.GetBool("app.release") {
@@ -179,4 +183,9 @@ func runGormMigrations(db *gorm.DB) {
 	// Migrate the schema
 	// Add links to needed models
 	db.AutoMigrate()
+}
+
+func (a *App) close() {
+	a.userRepo.Close()
+	a.groupRepo.Close()
 }

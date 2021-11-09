@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/DarkSoul94/helpdesk2/models"
 	"github.com/DarkSoul94/helpdesk2/pkg/logger"
 	"github.com/DarkSoul94/helpdesk2/pkg_user"
 	"github.com/dgrijalva/jwt-go/v4"
@@ -38,7 +39,7 @@ func NewUsecase(
 	}
 }
 
-func (u *Usecase) LDAPSignIn(email, password string) (*pkg_user.User, string, error) {
+func (u *Usecase) LDAPSignIn(email, password string) (*pkg_user.User, string, models.Err) {
 	var (
 		user  *pkg_user.User
 		token string
@@ -46,7 +47,7 @@ func (u *Usecase) LDAPSignIn(email, password string) (*pkg_user.User, string, er
 
 	lUser, ok := u.ldapAuthenticate(email, password)
 	if !ok {
-		return &pkg_user.User{}, "", ErrLoginFailed
+		return nil, "", AuthErr_Login
 	}
 
 	user, err := u.userManager.GetUserByEmail(email)
@@ -56,26 +57,30 @@ func (u *Usecase) LDAPSignIn(email, password string) (*pkg_user.User, string, er
 			Name:       lUser.Name,
 			Department: lUser.Department,
 		}
-		_, err := u.userManager.CreateUser(user)
-		user, err = u.userManager.GetUserByEmail(email)
-		if err != nil {
-			return &pkg_user.User{}, "", err
+
+		if _, err := u.userManager.CreateUser(user); err != nil {
+			return nil, "", err
+		}
+		if user, err = u.userManager.GetUserByEmail(email); err != nil {
+			return nil, "", err
 		}
 	} else {
 		if user.Name != lUser.Name || user.Department != lUser.Department {
 			user.Name = lUser.Name
 			user.Department = lUser.Department
-			u.userManager.CreateUser(user)
+			if _, err := u.userManager.CreateUser(user); err != nil {
+				return nil, "", err
+			}
 		}
 	}
 	token, err = u.GenerateToken(user)
 	if err != nil {
-		return &pkg_user.User{}, "", err
+		return nil, "", err
 	}
 	return user, token, nil
 }
 
-func (u *Usecase) GenerateToken(user *pkg_user.User) (string, error) {
+func (u *Usecase) GenerateToken(user *pkg_user.User) (string, models.Err) {
 	var (
 		token    *jwt.Token
 		strToken string
@@ -91,23 +96,22 @@ func (u *Usecase) GenerateToken(user *pkg_user.User) (string, error) {
 	token = jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	strToken, err = token.SignedString(u.signingKey)
 	if err != nil {
-		logger.LogError(ErrCreateToken.Error(), "auth/usecase", user.Name, err)
-		return "", ErrCreateToken
+		logger.LogError(AuthErr_CreateToken.Error(), "auth/usecase", user.Name, err)
+		return "", AuthErr_CreateToken
 	}
 
 	return strToken, nil
 }
 
-func (u *Usecase) ParseToken(ctx context.Context, accessToken string) (*pkg_user.User, error) {
+func (u *Usecase) ParseToken(ctx context.Context, accessToken string) (*pkg_user.User, models.Err) {
 	token, err := jwt.ParseWithClaims(accessToken, &AuthClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
 		return u.signingKey, nil
 	})
-
 	if err != nil {
-		return nil, err
+		return nil, models.BadRequest(err.Error())
 	}
 
 	if claims, ok := token.Claims.(*AuthClaims); ok && token.Valid {

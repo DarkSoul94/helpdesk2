@@ -3,16 +3,16 @@ package dto
 import "github.com/DarkSoul94/helpdesk2/pkg_user/group_manager"
 
 type OutGroup struct {
-	ID                uint64 `json:"id"`
-	Name              string `json:"name"`
-	CreateTicket      bool   `json:"create_ticket"`
-	GetAllTickets     bool   `json:"get_all_tickets"`
-	SeeAdditionalInfo bool   `json:"see_additional_info"`
-	CanResolveTicket  bool   `json:"can_resolve_ticket"`
-	WorkOnTickets     bool   `json:"work_on_tickets"`
-	ChangeSettings    bool   `json:"change_settings"`
-	CanReports        bool   `json:"can_reports"`
-	FullSearch        bool   `json:"full_search"`
+	ID                uint64 `json:"group_id,omitempty"`
+	Name              string `json:"group_name"`
+	CreateTicket      bool   `json:"create_ticket,omitempty"`
+	GetAllTickets     bool   `json:"get_all_tickets,omitempty"`
+	SeeAdditionalInfo bool   `json:"see_additional_info,omitempty"`
+	CanResolveTicket  bool   `json:"can_resolve_ticket,omitempty"`
+	WorkOnTickets     bool   `json:"work_on_tickets,omitempty"`
+	ChangeSettings    bool   `json:"change_settings,omitempty"`
+	CanReports        bool   `json:"can_reports,omitempty"`
+	FullSearch        bool   `json:"full_search,omitempty"`
 }
 
 func ToModelGroup(g OutGroup) *group_manager.Group {

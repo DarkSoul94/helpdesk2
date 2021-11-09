@@ -11,8 +11,8 @@ type Repo struct {
 }
 
 type dbUser struct {
-	UserID     uint64         `db:"user_id"`
-	UserName   string         `db:"user_name"`
+	ID         uint64         `db:"user_id"`
+	Name       string         `db:"user_name"`
 	Email      string         `db:"email"`
 	GroupID    uint64         `db:"group_id"`
 	Department sql.NullString `db:"department"`

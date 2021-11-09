@@ -18,3 +18,10 @@ func checkGroupChange(group *group_manager.Group) models.Err {
 	}
 	return nil
 }
+
+func checkGroupGet(group *group_manager.Group) models.Err {
+	if !group.ChangeSettings {
+		return models.BadRequest("Insufficient rights for get group")
+	}
+	return nil
+}

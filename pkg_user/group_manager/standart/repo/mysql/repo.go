@@ -3,6 +3,7 @@ package mysql
 import (
 	"database/sql"
 	"strconv"
+	"strings"
 
 	"github.com/DarkSoul94/helpdesk2/models"
 	"github.com/DarkSoul94/helpdesk2/pkg/logger"
@@ -16,25 +17,66 @@ func NewGroupRepo(db *sql.DB) *GroupRepo {
 	}
 }
 
+/*CreateGroup - принимает данные новой группы, если такая есть в базе выдает ошибку.
+Если нет записывает в базу.*/
+func (r *GroupRepo) CreateGroup(group *group_manager.Group) (uint64, models.Err) {
+	var err error
+
+	dbGroup := r.toDbGroup(group)
+
+	query := `INSERT INTO user_groups SET
+							group_name = :group_name,
+							create_ticket = :create_ticket,
+							get_all_tickets = :get_all_tickets,
+							see_additional_info = :see_additional_info,
+							can_resolve_ticket = :can_resolve_ticket,
+							work_on_tickets = :work_on_tickets,
+							change_settings = :change_settings,
+							can_reports = :can_reports,
+							full_search = :full_search`
+
+	res, err := r.db.NamedExec(query, dbGroup)
+	if err != nil {
+		logger.LogError("Failed create group", "pkg_user/group_manager/standart/repo/mysql", "", err)
+		if strings.Contains(err.Error(), "Duplicate") {
+			return 0, GroupErr_Exist
+		}
+		return 0, GroupErr_Create
+	}
+
+	lastID, _ := res.LastInsertId()
+	return uint64(lastID), nil
+}
+
 func (r *GroupRepo) GetGroupByID(groupID uint64) (*group_manager.Group, models.Err) {
 	var (
 		dbGroup dbGroup
 		err     error
 	)
+	query := `SELECT * FROM user_groups
+						WHERE group_id = ?`
 
-	err = r.db.Get(&dbGroup, `
-		SELECT * FROM user_groups
-		WHERE group_id = ?`,
-		groupID)
-	if err != nil {
-		logger.LogError("Group not found", "helpdesk/repo/mysql", strconv.FormatUint(groupID, 10), err)
-		return nil, models.BadRequest("Group not found")
+	if err = r.db.Get(&dbGroup, query, groupID); err != nil {
+		logger.LogError("Group not found", "pkg_user/group_manager/standart/repo/mysql", strconv.FormatUint(groupID, 10), err)
+		return nil, GroupErr_NotFound
 	}
 	return r.toModelsGroup(&dbGroup), nil
 }
 
 func (r *GroupRepo) GetGroupList() ([]*group_manager.Group, models.Err) {
-	return nil, nil
+	var dbGroups []dbGroup
+
+	if err := r.db.Select(&dbGroups, `SELECT * FROM user_groups`); err != nil {
+		logger.LogError("Failed read groups from DB", "pkg_user/group_manager/standart/repo/mysql", "", err)
+		return nil, GroupErr_NotFound
+	}
+
+	modelGroups := make([]*group_manager.Group, 0)
+	for _, group := range dbGroups {
+		modelGroups = append(modelGroups, r.toModelsGroup(&group))
+	}
+
+	return modelGroups, nil
 }
 
 func (r *GroupRepo) Close() {

@@ -1,8 +1,10 @@
 package usecase
 
-import "errors"
+import (
+	"github.com/DarkSoul94/helpdesk2/models"
+)
 
 var (
-	ErrLoginFailed = errors.New("Invalid user name or password")
-	ErrCreateToken = errors.New("Fail to create tocken for user") 
+	AuthErr_CreateToken = models.BadRequest("Failed create token for user")
+	AuthErr_Login       = models.BadRequest("Wrong e-mail or password")
 )

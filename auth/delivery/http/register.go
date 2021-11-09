@@ -11,8 +11,8 @@ func RegisterHTTPEndpoints(router *gin.RouterGroup, ucAuth auth.AuthUC) {
 
 	authEndpoints := router.Group("/auth")
 	{
-		//http://localhost:5555/helpdesk/auth/signin
-		authEndpoints.POST("/signin", h.SignIn)
+		//http://localhost:5555/helpdesk/auth/login
+		authEndpoints.POST("/login", h.SignIn)
 
 	}
 }

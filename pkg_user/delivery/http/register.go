@@ -12,8 +12,8 @@ func RegisterHTTPEndpoints(router *gin.RouterGroup, uc pkg_user.UserManagerUC, m
 	usersEndpoints := router.Group("/user")
 	usersEndpoints.Use(middlewares...)
 	{
-		//http://localhost:5555/helpdesk/user/list
-		usersEndpoints.GET("/list", h.GetUsersList)
+		//http://localhost:5555/helpdesk/user/
+		usersEndpoints.GET("/", h.GetUsersList)
 		//http://localhost:5555/helpdesk/user/update
 		usersEndpoints.POST("/update", h.UpdateUser)
 	}
@@ -25,10 +25,8 @@ func RegisterHTTPEndpoints(router *gin.RouterGroup, uc pkg_user.UserManagerUC, m
 		groupsEndpoints.POST("/create", h.CreateGroup)
 		//http://localhost:5555/helpdesk/group/update
 		groupsEndpoints.POST("/update", h.UpdateGroup)
-		//http://localhost:5555/helpdesk/group/list
-		groupsEndpoints.GET("/list", h.GetGroupsList)
-		//http://localhost:5555/helpdesk/group/1
-		groupsEndpoints.GET("/:id", h.GetGroup)
+		//http://localhost:5555/helpdesk/group/
+		groupsEndpoints.GET("/", h.GetGroupsList)
 	}
 	/*
 		permissionsEndpoints := router.Group("/permissions")

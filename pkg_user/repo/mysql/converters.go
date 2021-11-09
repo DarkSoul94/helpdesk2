@@ -7,9 +7,9 @@ import (
 
 func (r *Repo) toModelUser(user dbUser) *pkg_user.User {
 	mUser := &pkg_user.User{
-		ID:    user.UserID,
+		ID:    user.ID,
 		Email: user.Email,
-		Name:  user.Email,
+		Name:  user.Name,
 		Group: &group_manager.Group{ID: user.GroupID},
 	}
 
@@ -22,9 +22,9 @@ func (r *Repo) toModelUser(user dbUser) *pkg_user.User {
 
 func (r *Repo) toDbUser(user *pkg_user.User) dbUser {
 	dbUser := dbUser{
-		UserID:   user.ID,
-		UserName: user.Name,
-		Email:    user.Email,
+		ID:    user.ID,
+		Name:  user.Name,
+		Email: user.Email,
 	}
 	if user.Group != nil {
 		dbUser.GroupID = user.Group.ID

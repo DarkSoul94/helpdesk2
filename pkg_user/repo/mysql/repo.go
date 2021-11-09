@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/DarkSoul94/helpdesk2/models"
 	"github.com/DarkSoul94/helpdesk2/pkg/logger"
 	"github.com/DarkSoul94/helpdesk2/pkg_user"
 	"github.com/jmoiron/sqlx"
@@ -15,7 +16,7 @@ func NewRepo(db *sql.DB) *Repo {
 	}
 }
 
-func (r *Repo) CreateUser(user *pkg_user.User) (uint64, error) {
+func (r *Repo) CreateUser(user *pkg_user.User) (uint64, models.Err) {
 	var (
 		query string
 		err   error
@@ -38,8 +39,8 @@ func (r *Repo) CreateUser(user *pkg_user.User) (uint64, error) {
 	}
 	res, err := r.db.NamedExec(query, r.toDbUser(user))
 	if err != nil {
-		logger.LogError(ErrCreateUser.Error(), "user_manager/repo/mysql", user.Email, err)
-		return 0, err
+		logger.LogError(UserErr_Create.Error(), "user_manager/repo/mysql", user.Email, err)
+		return 0, UserErr_Create
 	}
 	lastID, _ := res.LastInsertId()
 	if user.ID == 0 {
@@ -49,21 +50,18 @@ func (r *Repo) CreateUser(user *pkg_user.User) (uint64, error) {
 	return uint64(lastID), nil
 }
 
-func (r *Repo) UpdateUser(userID, groupID uint64) error {
+func (r *Repo) UpdateUser(userID, groupID uint64) models.Err {
 	query := `
 		UPDATE users SET
-		group_id = ? 
+			group_id = ? 
 		WHERE user_id = ?`
-
-	_, err := r.db.Exec(query, groupID, userID)
-	if err != nil {
-		return err
+	if _, err := r.db.Exec(query, groupID, userID); err != nil {
+		return UserErr_Update
 	}
-
 	return nil
 }
 
-func (r *Repo) GetUserByEmail(email string) (*pkg_user.User, error) {
+func (r *Repo) GetUserByEmail(email string) (*pkg_user.User, models.Err) {
 	var (
 		dbUser dbUser
 		query  string
@@ -71,16 +69,14 @@ func (r *Repo) GetUserByEmail(email string) (*pkg_user.User, error) {
 	)
 
 	query = `SELECT * FROM users WHERE email = ?`
-	err = r.db.Get(&dbUser, query, email)
-	if err != nil {
-		logger.LogError(ErrReadUser.Error(), "user_manager/repo/mysql", email, err)
-		return &pkg_user.User{}, ErrReadUser
+	if err = r.db.Get(&dbUser, query, email); err != nil {
+		logger.LogError(UserErr_Get.Error(), "user_manager/repo/mysql", email, err)
+		return nil, UserErr_Get
 	}
-
 	return r.toModelUser(dbUser), nil
 }
 
-func (r *Repo) GetUserByID(id uint64) (*pkg_user.User, error) {
+func (r *Repo) GetUserByID(id uint64) (*pkg_user.User, models.Err) {
 	var (
 		dbUser dbUser
 		query  string
@@ -89,16 +85,15 @@ func (r *Repo) GetUserByID(id uint64) (*pkg_user.User, error) {
 
 	query = `SELECT * FROM users WHERE id = ?`
 
-	err = r.db.Get(&dbUser, query, id)
-	if err != nil {
-		logger.LogError(ErrReadUser.Error(), "user_manager/repo/mysql", fmt.Sprintf("user id: %d", id), err)
-		return &pkg_user.User{}, ErrReadUser
+	if err = r.db.Get(&dbUser, query, id); err != nil {
+		logger.LogError(UserErr_Get.Error(), "user_manager/repo/mysql", fmt.Sprintf("user id: %d", id), err)
+		return nil, UserErr_Get
 	}
 
 	return r.toModelUser(dbUser), nil
 }
 
-func (r *Repo) GetUsersList() ([]*pkg_user.User, error) {
+func (r *Repo) GetUsersList() ([]*pkg_user.User, models.Err) {
 	var (
 		dbUsersList []dbUser
 		err         error
@@ -107,8 +102,8 @@ func (r *Repo) GetUsersList() ([]*pkg_user.User, error) {
 	query := `SELECT * FROM users`
 
 	if err = r.db.Select(&dbUsersList, query); err != nil {
-		logger.LogError(ErrReadUsersList.Error(), "user_manager/repo/mysql", "", err)
-		return []*pkg_user.User{}, ErrReadUsersList
+		logger.LogError(UserErr_GetList.Error(), "user_manager/repo/mysql", "", err)
+		return nil, UserErr_GetList
 	}
 
 	mUsersList := make([]*pkg_user.User, 0)
