@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/DarkSoul94/helpdesk2/models"
 	"github.com/DarkSoul94/helpdesk2/pkg/logger"
 	"github.com/DarkSoul94/helpdesk2/pkg_user"
 	"github.com/dgrijalva/jwt-go/v4"
@@ -22,7 +21,7 @@ type Usecase struct {
 
 type AuthClaims struct {
 	jwt.StandardClaims
-	User *models.User `json:"user"`
+	User *pkg_user.User `json:"user"`
 }
 
 // NewUsecase ...
@@ -39,44 +38,44 @@ func NewUsecase(
 	}
 }
 
-func (u *Usecase) LDAPSignIn(email, password string) (models.User, string, error) {
+func (u *Usecase) LDAPSignIn(email, password string) (*pkg_user.User, string, error) {
 	var (
-		user  models.User
+		user  *pkg_user.User
 		token string
 	)
+
 	lUser, ok := u.ldapAuthenticate(email, password)
 	if !ok {
-		return models.User{}, "", ErrLoginFailed
+		return &pkg_user.User{}, "", ErrLoginFailed
 	}
 
 	user, err := u.userManager.GetUserByEmail(email)
 	if err != nil {
-
-		user = models.User{
+		user = &pkg_user.User{
 			Email:      email,
 			Name:       lUser.Name,
 			Department: lUser.Department,
 		}
-		fmt.Println(u.userManager.CreateUser(&user))
+		_, err := u.userManager.CreateUser(user)
 		user, err = u.userManager.GetUserByEmail(email)
 		if err != nil {
-			return models.User{}, "", err
+			return &pkg_user.User{}, "", err
 		}
 	} else {
 		if user.Name != lUser.Name || user.Department != lUser.Department {
 			user.Name = lUser.Name
 			user.Department = lUser.Department
-			u.userManager.CreateUser(&user)
+			u.userManager.CreateUser(user)
 		}
 	}
-	token, err = u.GenerateToken(&user)
+	token, err = u.GenerateToken(user)
 	if err != nil {
-		return models.User{}, "", err
+		return &pkg_user.User{}, "", err
 	}
 	return user, token, nil
 }
 
-func (u *Usecase) GenerateToken(user *models.User) (string, error) {
+func (u *Usecase) GenerateToken(user *pkg_user.User) (string, error) {
 	var (
 		token    *jwt.Token
 		strToken string
@@ -99,7 +98,7 @@ func (u *Usecase) GenerateToken(user *models.User) (string, error) {
 	return strToken, nil
 }
 
-func (u *Usecase) ParseToken(ctx context.Context, accessToken string) (*models.User, error) {
+func (u *Usecase) ParseToken(ctx context.Context, accessToken string) (*pkg_user.User, error) {
 	token, err := jwt.ParseWithClaims(accessToken, &AuthClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])

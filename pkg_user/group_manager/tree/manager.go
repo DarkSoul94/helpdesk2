@@ -4,14 +4,18 @@ import (
 	"encoding/json"
 	"reflect"
 	"strings"
+
+	"github.com/DarkSoul94/helpdesk2/pkg_user/group_manager"
 )
 
 type Manager struct {
+	repo        group_manager.GroupRepo
 	permissions map[string]layer
 }
 
-func NewManager(actions interface{}) (*Manager, error) {
+func NewManager(actions interface{}, repo group_manager.GroupRepo) (*Manager, error) {
 	manager := &Manager{
+		repo:        repo,
 		permissions: make(map[string]layer),
 	}
 	switch reflect.TypeOf(actions) {
@@ -58,4 +62,12 @@ func (m *Manager) GetPermissionList() []byte {
 	}
 	out, _ := json.Marshal(tree)
 	return out
+}
+
+func (m *Manager) GetGroupByID(groupID uint64) (*group_manager.Group, error) {
+	return m.repo.GetGroupByID(groupID)
+}
+
+func (m *Manager) GetGroupList() ([]*group_manager.Group, error) {
+	return m.repo.GetGroupList()
 }

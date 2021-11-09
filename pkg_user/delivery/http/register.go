@@ -30,12 +30,12 @@ func RegisterHTTPEndpoints(router *gin.RouterGroup, uc pkg_user.UserManagerUC, m
 		//http://localhost:5555/helpdesk/group/1
 		groupsEndpoints.GET("/:id", h.GetGroup)
 	}
-
-	permissionsEndpoints := router.Group("/permissions")
-	permissionsEndpoints.Use(middlewares...)
-	{
-		//http://localhost:5555/helpdesk/permissions/list
-		permissionsEndpoints.GET("/list", h.GetPermList)
-	}
-
+	/*
+		permissionsEndpoints := router.Group("/permissions")
+		permissionsEndpoints.Use(middlewares...)
+		{
+			//http://localhost:5555/helpdesk/permissions/list
+			permissionsEndpoints.GET("/list", h.GetPermList)
+		}
+	*/
 }

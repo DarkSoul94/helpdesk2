@@ -33,6 +33,10 @@ func (r *GroupRepo) GetGroupByID(groupID uint64) (*group_manager.Group, models.E
 	return r.toModelsGroup(&dbGroup), nil
 }
 
+func (r *GroupRepo) GetGroupList() ([]*group_manager.Group, models.Err) {
+	return nil, nil
+}
+
 func (r *GroupRepo) Close() {
 	r.db.Close()
 }

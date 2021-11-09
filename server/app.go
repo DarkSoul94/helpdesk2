@@ -11,11 +11,6 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/DarkSoul94/helpdesk2/helpdesk"
-	helpdeskhttp "github.com/DarkSoul94/helpdesk2/helpdesk/delivery/http"
-	helpdeskrepo "github.com/DarkSoul94/helpdesk2/helpdesk/repo/mock"
-	helpdeskusecase "github.com/DarkSoul94/helpdesk2/helpdesk/usecase"
-
 	"github.com/DarkSoul94/helpdesk2/pkg/logger"
 	"github.com/DarkSoul94/helpdesk2/pkg_user"
 	userhttp "github.com/DarkSoul94/helpdesk2/pkg_user/delivery/http"
@@ -43,9 +38,6 @@ type App struct {
 
 	authUC auth.AuthUC
 
-	helpdeskUC   helpdesk.Usecase
-	helpdeskRepo helpdesk.Repository
-
 	httpServer *http.Server
 }
 
@@ -59,22 +51,18 @@ func NewApp() *App {
 
 	authUC := authusecase.NewUsecase(userUC, viper.GetString("app.auth.secret_key"), []byte(viper.GetString("app.auth.signing_key")), viper.GetDuration("app.auth.ttl"))
 
-	repo := helpdeskrepo.NewRepo()
-	uc := helpdeskusecase.NewUsecase(repo)
 	return &App{
 		userRepo: userRepo,
 		userUC:   userUC,
 
 		authUC: authUC,
-
-		helpdeskUC:   uc,
-		helpdeskRepo: repo,
 	}
 }
 
 // Run run helpdesklication
 func (a *App) Run(port string) error {
-	defer a.helpdeskRepo.Close()
+	defer a.userRepo.Close()
+
 	router := gin.New()
 	if viper.GetBool("app.release") {
 		gin.SetMode(gin.ReleaseMode)
@@ -90,8 +78,6 @@ func (a *App) Run(port string) error {
 	authMiddlware := authhttp.NewAuthMiddleware(a.authUC)
 
 	userhttp.RegisterHTTPEndpoints(apiRouter, a.userUC, authMiddlware)
-
-	helpdeskhttp.RegisterHTTPEndpoints(router, a.helpdeskUC)
 
 	a.httpServer = &http.Server{
 		Addr:           ":" + port,
