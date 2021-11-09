@@ -19,6 +19,7 @@ import (
 	"github.com/DarkSoul94/helpdesk2/pkg/logger"
 	"github.com/DarkSoul94/helpdesk2/pkg_user"
 	userhttp "github.com/DarkSoul94/helpdesk2/pkg_user/delivery/http"
+	grouprepo "github.com/DarkSoul94/helpdesk2/pkg_user/group_manager/standart/repo/mysql"
 	userrepo "github.com/DarkSoul94/helpdesk2/pkg_user/repo/mysql"
 	userusecase "github.com/DarkSoul94/helpdesk2/pkg_user/usecase"
 
@@ -53,7 +54,8 @@ func NewApp() *App {
 	db := initDB()
 
 	userRepo := userrepo.NewRepo(db)
-	userUC := userusecase.NewUsecase(userRepo)
+	grpRepo := grouprepo.NewGroupRepo(db)
+	userUC := userusecase.NewUsecase(userRepo, grpRepo)
 
 	authUC := authusecase.NewUsecase(userUC, viper.GetString("app.auth.secret_key"), []byte(viper.GetString("app.auth.signing_key")), viper.GetDuration("app.auth.ttl"))
 

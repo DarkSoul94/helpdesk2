@@ -1,4 +1,4 @@
-package perm_manager
+package group_manager
 
 import (
 	"encoding/json"
@@ -51,7 +51,7 @@ func (m *Manager) init(actionParts, nameParts []string) {
 	}
 }
 
-func (m *Manager) ExportToTreeView() []byte {
+func (m *Manager) GetPermissionList() []byte {
 	tree := make([]treeLayer, 0)
 	for key, val := range m.permissions {
 		tree = append(tree, val.toTreeView(val.Name, key))

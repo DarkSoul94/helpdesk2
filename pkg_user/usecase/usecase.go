@@ -1,22 +1,22 @@
 package usecase
 
 import (
-	"github.com/DarkSoul94/helpdesk2/global_const"
 	"github.com/DarkSoul94/helpdesk2/models"
 	"github.com/DarkSoul94/helpdesk2/pkg/logger"
 	"github.com/DarkSoul94/helpdesk2/pkg_user"
-	"github.com/DarkSoul94/helpdesk2/pkg_user/perm_manager"
+	"github.com/DarkSoul94/helpdesk2/pkg_user/group_manager"
+	groupUC "github.com/DarkSoul94/helpdesk2/pkg_user/group_manager/standart/usecase"
 )
 
 // NewUsecase ...
-func NewUsecase(repo pkg_user.UserManagerRepo) *Usecase {
-	perm, err := perm_manager.NewManager(global_const.Actions)
+func NewUsecase(repo pkg_user.UserManagerRepo, grpRepo group_manager.GroupRepo) *Usecase {
+	group, err := groupUC.NewManager(grpRepo)
 	if err != nil {
 		logger.LogError("Init permissions manager", "user_manager/usecase", "", err)
 	}
 	uc := Usecase{
-		repo:        repo,
-		permManager: perm,
+		repo:  repo,
+		group: group,
 	}
 	return &uc
 }

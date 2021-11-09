@@ -1,4 +1,4 @@
-package perm_manager
+package group_manager
 
 type Group struct {
 	ID                uint64
@@ -11,5 +11,5 @@ type Group struct {
 	ChangeSettings    bool
 	CanReports        bool
 	FullSearch        bool
-	tree              treeLayer
+	//tree              treeLayer
 }

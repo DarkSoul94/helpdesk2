@@ -6,11 +6,11 @@ import (
 
 	"github.com/DarkSoul94/helpdesk2/models"
 	"github.com/DarkSoul94/helpdesk2/pkg/logger"
-	"github.com/DarkSoul94/helpdesk2/pkg_user/perm_manager"
+	"github.com/DarkSoul94/helpdesk2/pkg_user/group_manager"
 )
 
 func (r *Repo) toModelGroup(dbGroup dbGroup) models.Group {
-	var temp perm_manager.PermLayer
+	var temp group_manager.PermLayer
 	err := json.Unmarshal(dbGroup.Permissions, &temp)
 	if err != nil {
 		logger.LogError(ErrReadGroup.Error(), "user_manager/repo/mysql", strconv.FormatUint(dbGroup.ID, 10), err)

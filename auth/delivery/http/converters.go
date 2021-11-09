@@ -2,7 +2,7 @@ package http
 
 import (
 	"github.com/DarkSoul94/helpdesk2/models"
-	"github.com/DarkSoul94/helpdesk2/pkg_user/perm_manager"
+	"github.com/DarkSoul94/helpdesk2/pkg_user/group_manager"
 )
 
 func (h *Handler) toInpGroup(group *models.Group) *inpGroup {
@@ -22,7 +22,7 @@ func (h *Handler) toInpUser(user models.User, token string) inpUser {
 	}
 }
 
-func (h *Handler) toOutPermissions(perm perm_manager.PermLayer) map[string]interface{} {
+func (h *Handler) toOutPermissions(perm group_manager.PermLayer) map[string]interface{} {
 	out := make(map[string]interface{})
 	if len(perm.SubPermGroups) != 0 {
 		for key := range perm.SubPermGroups {

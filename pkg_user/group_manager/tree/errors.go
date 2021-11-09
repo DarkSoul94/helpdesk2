@@ -1,4 +1,4 @@
-package perm_manager
+package group_manager
 
 import "errors"
 
