@@ -5,8 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/DarkSoul94/helpdesk2/pkg_user"
-	"github.com/DarkSoul94/helpdesk2/pkg_user/group_manager"
+	"github.com/DarkSoul94/helpdesk2/models"
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 )
@@ -16,7 +15,7 @@ func TestRepo_toModelUser(t *testing.T) {
 	tests := []struct {
 		name  string
 		input dbUser
-		want  *pkg_user.User
+		want  *models.User
 	}{
 		{
 			name: "correct convert",
@@ -30,11 +29,11 @@ func TestRepo_toModelUser(t *testing.T) {
 					Valid:  true,
 				},
 			},
-			want: &pkg_user.User{
+			want: &models.User{
 				ID:    1,
 				Name:  "test",
 				Email: "test@gmail.com",
-				Group: &group_manager.Group{
+				Group: &models.Group{
 					ID: 1,
 				},
 				Department: "test",
@@ -52,7 +51,7 @@ func TestRepo_toDbUser(t *testing.T) {
 		db *sqlx.DB
 	}
 	type args struct {
-		user *pkg_user.User
+		user *models.User
 	}
 	tests := []struct {
 		name   string
@@ -64,11 +63,11 @@ func TestRepo_toDbUser(t *testing.T) {
 			name:   "correct convert",
 			fields: fields{db: &sqlx.DB{}},
 			args: args{
-				&pkg_user.User{
+				&models.User{
 					ID:    1,
 					Name:  "test",
 					Email: "test@gmail.com",
-					Group: &group_manager.Group{
+					Group: &models.Group{
 						ID: 1,
 					},
 					Department: "test",
