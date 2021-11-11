@@ -1,6 +1,5 @@
 package global_const
 
-//группа целевых действий по администрировании системы
 const (
 	AdminTA             string = "administration"              //для проверки доступа на урл
 	AdminTA_UserUpdate  string = "administration.user.update"  //изменение пользователя
@@ -10,4 +9,12 @@ const (
 
 	TicketTA_FullSearch string = "ticket.full_search" //расширенный поиск
 	TicketTa_Create     string = "ticket.create"      // создание
+)
+
+const (
+	TicketTA_Create   string = "ticket.create"       //создание запроса
+	TicketTA_Update   string = "ticket.update"       //обновление запроса
+	TicketTA_Get      string = "ticket.get"          //получить запрос
+	TicketTA_Filtered string = "ticket.get.filtered" //получить отфильтрованный список запросов
+	TicketTA_Work     string = "ticket.work"         //обрабатывать запрос
 )
