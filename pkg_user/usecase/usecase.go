@@ -111,5 +111,5 @@ func (u *Usecase) CreateGroup(user *pkg_user.User, group *group_manager.Group) (
 }
 
 func (u *Usecase) CheckPermissionForAction(user *pkg_user.User, actions ...string) models.Err {
-	return nil
+	return u.group.CheckPermission(user.Group.ID, actions...)
 }

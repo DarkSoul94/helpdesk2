@@ -37,6 +37,16 @@ func (u *Usecase) CheckPermission(groupID uint64, actions ...string) models.Err 
 			}
 		case global_const.AdminTA_GroupGet:
 
+		case global_const.AdminTA:
+			if err := checkIsAdmin(group); err != nil {
+				errArray = append(errArray, err)
+			}
+
+		case global_const.TicketTA_FullSearch:
+			if err := checkFullSearch(group); err != nil {
+				errArray = append(errArray, err)
+			}
+
 		}
 	}
 
