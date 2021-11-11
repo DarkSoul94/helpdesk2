@@ -1,6 +1,8 @@
 package dto
 
-import "github.com/DarkSoul94/helpdesk2/pkg_user"
+import (
+	"github.com/DarkSoul94/helpdesk2/models"
+)
 
 type OutUser struct {
 	ID         uint64   `json:"user_id"`
@@ -10,7 +12,7 @@ type OutUser struct {
 	Group      OutGroup `json:"group"`
 }
 
-func ToOutUser(user *pkg_user.User) OutUser {
+func ToOutUser(user *models.User) OutUser {
 	return OutUser{
 		ID:         user.ID,
 		Name:       user.Name,
@@ -20,7 +22,7 @@ func ToOutUser(user *pkg_user.User) OutUser {
 	}
 }
 
-func ToOutLoginUser(user *pkg_user.User, token string) OutUser {
+func ToOutLoginUser(user *models.User) OutUser {
 	return OutUser{
 		ID:    user.ID,
 		Name:  user.Name,
@@ -29,7 +31,7 @@ func ToOutLoginUser(user *pkg_user.User, token string) OutUser {
 	}
 }
 
-func ToOutUserList(users []*pkg_user.User) []OutUser {
+func ToOutUserList(users []*models.User) []OutUser {
 	var outUsers []OutUser = make([]OutUser, 0)
 
 	for _, user := range users {

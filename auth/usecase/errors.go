@@ -5,6 +5,6 @@ import (
 )
 
 var (
-	AuthErr_CreateToken = models.BadRequest("Failed create token for user")
-	AuthErr_Login       = models.BadRequest("Wrong e-mail or password")
+	AuthErr_CreateToken = models.InternalError("Failed create token for user")
+	AuthErr_Login       = models.Unauthorized("Wrong e-mail or password")
 )

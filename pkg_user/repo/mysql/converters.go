@@ -1,16 +1,15 @@
 package mysql
 
 import (
-	"github.com/DarkSoul94/helpdesk2/pkg_user"
-	"github.com/DarkSoul94/helpdesk2/pkg_user/group_manager"
+	"github.com/DarkSoul94/helpdesk2/models"
 )
 
-func (r *Repo) toModelUser(user dbUser) *pkg_user.User {
-	mUser := &pkg_user.User{
+func (r *Repo) toModelUser(user dbUser) *models.User {
+	mUser := &models.User{
 		ID:    user.ID,
 		Email: user.Email,
 		Name:  user.Name,
-		Group: &group_manager.Group{ID: user.GroupID},
+		Group: &models.Group{ID: user.GroupID},
 	}
 
 	if user.Department.Valid {
@@ -20,7 +19,7 @@ func (r *Repo) toModelUser(user dbUser) *pkg_user.User {
 	return mUser
 }
 
-func (r *Repo) toDbUser(user *pkg_user.User) dbUser {
+func (r *Repo) toDbUser(user *models.User) dbUser {
 	dbUser := dbUser{
 		ID:    user.ID,
 		Name:  user.Name,

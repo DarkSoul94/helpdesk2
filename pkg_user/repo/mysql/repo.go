@@ -6,7 +6,6 @@ import (
 
 	"github.com/DarkSoul94/helpdesk2/models"
 	"github.com/DarkSoul94/helpdesk2/pkg/logger"
-	"github.com/DarkSoul94/helpdesk2/pkg_user"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -16,7 +15,7 @@ func NewRepo(db *sql.DB) *Repo {
 	}
 }
 
-func (r *Repo) CreateUser(user *pkg_user.User) (uint64, models.Err) {
+func (r *Repo) CreateUser(user *models.User) (uint64, models.Err) {
 	var (
 		query string
 		err   error
@@ -61,7 +60,7 @@ func (r *Repo) UpdateUser(userID, groupID uint64) models.Err {
 	return nil
 }
 
-func (r *Repo) GetUserByEmail(email string) (*pkg_user.User, models.Err) {
+func (r *Repo) GetUserByEmail(email string) (*models.User, models.Err) {
 	var (
 		dbUser dbUser
 		query  string
@@ -76,7 +75,7 @@ func (r *Repo) GetUserByEmail(email string) (*pkg_user.User, models.Err) {
 	return r.toModelUser(dbUser), nil
 }
 
-func (r *Repo) GetUserByID(id uint64) (*pkg_user.User, models.Err) {
+func (r *Repo) GetUserByID(id uint64) (*models.User, models.Err) {
 	var (
 		dbUser dbUser
 		query  string
@@ -93,7 +92,7 @@ func (r *Repo) GetUserByID(id uint64) (*pkg_user.User, models.Err) {
 	return r.toModelUser(dbUser), nil
 }
 
-func (r *Repo) GetUsersList() ([]*pkg_user.User, models.Err) {
+func (r *Repo) GetUsersList() ([]*models.User, models.Err) {
 	var (
 		dbUsersList []dbUser
 		err         error
@@ -106,7 +105,7 @@ func (r *Repo) GetUsersList() ([]*pkg_user.User, models.Err) {
 		return nil, UserErr_GetList
 	}
 
-	mUsersList := make([]*pkg_user.User, 0)
+	mUsersList := make([]*models.User, 0)
 	for _, val := range dbUsersList {
 		mUsersList = append(mUsersList, r.toModelUser(val))
 	}

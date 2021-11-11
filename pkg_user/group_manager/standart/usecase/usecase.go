@@ -27,34 +27,25 @@ func (u *Usecase) CheckPermission(groupID uint64, actions ...string) models.Err 
 	for _, action := range actions {
 		switch action {
 		case global_const.AdminTA_UserUpdate:
-			if err := checkUserUpdate(group); err != nil {
-				errArray = append(errArray, err)
-			}
+			errArray = append(errArray, checkUserUpdate(group))
 		case global_const.AdminTA_GroupCreate,
 			global_const.AdminTA_GroupUpdate:
-			if err := checkGroupChange(group); err != nil {
-				errArray = append(errArray, err)
-			}
+			errArray = append(errArray, checkGroupChange(group))
 		case global_const.AdminTA_GroupGet:
-
+			errArray = append(errArray, checkGroupGet(group))
 		}
 	}
-
-	if len(errArray) > 0 {
-		return models.Concat(errArray...)
-	}
-
-	return nil
+	return models.Concat(errArray...)
 }
 
-func (u *Usecase) CreateGroup(group *group_manager.Group) (uint64, models.Err) {
+func (u *Usecase) CreateGroup(group *models.Group) (uint64, models.Err) {
 	return u.repo.CreateGroup(group)
 }
 
-func (u *Usecase) GetGroupByID(groupID uint64) (*group_manager.Group, models.Err) {
+func (u *Usecase) GetGroupByID(groupID uint64) (*models.Group, models.Err) {
 	return u.repo.GetGroupByID(groupID)
 }
 
-func (u *Usecase) GetGroupList() ([]*group_manager.Group, models.Err) {
+func (u *Usecase) GetGroupList() ([]*models.Group, models.Err) {
 	return u.repo.GetGroupList()
 }

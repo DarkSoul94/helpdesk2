@@ -52,18 +52,24 @@ func ErrorWithSuccess(text string) Err {
 }
 
 func Concat(errs ...Err) Err {
-	var oErr err
-	if len(errs) > 1 {
-		for id, err := range errs {
-			oErr.StatusCode = err.Code()
-			if id == 0 {
-				oErr.Text = err.Error()
-			} else {
-				oErr.Text = fmt.Sprintf("%s\n%s", oErr.Text, err.Error())
-			}
+	var (
+		oErr err
+		ln   int
+	)
+	for _, err := range errs {
+		if err == nil {
+			continue
 		}
-		return oErr
-	} else {
-		return errs[0]
+		oErr.StatusCode = err.Code()
+		ln = len(oErr.Text)
+		if ln == 0 {
+			oErr.Text = err.Error()
+		} else {
+			oErr.Text = fmt.Sprintf("%s\n%s", oErr.Text, err.Error())
+		}
 	}
+	if ln == 0 {
+		return nil
+	}
+	return oErr
 }
