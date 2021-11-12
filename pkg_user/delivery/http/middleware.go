@@ -10,10 +10,10 @@ import (
 )
 
 type PermissionMiddleware struct {
-	usecase pkg_user.UserManagerUC
+	usecase pkg_user.IUserUsecase
 }
 
-func NewPermissionMiddleware(usecase pkg_user.UserManagerUC) gin.HandlerFunc {
+func NewPermissionMiddleware(usecase pkg_user.IUserUsecase) gin.HandlerFunc {
 	return (&PermissionMiddleware{
 		usecase: usecase,
 	}).CheckPermissions
