@@ -25,7 +25,9 @@ func (p *PermissionMiddleware) CheckPermissions(c *gin.Context) {
 	switch c.FullPath() {
 	case "/helpdesk/group/create",
 		"/helpdesk/group/update",
-		"/helpdesk/group/":
+		"/helpdesk/group/",
+		"/helpdesk/category/create",
+		"/helpdesk/category/update":
 		if err := p.usecase.CheckPermissions(user.(*models.User), global_const.AdminTA); err != nil {
 			c.AbortWithStatus(http.StatusForbidden)
 		}
