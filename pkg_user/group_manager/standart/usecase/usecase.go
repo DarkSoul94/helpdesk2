@@ -33,6 +33,13 @@ func (u *Usecase) CheckPermission(groupID uint64, actions ...string) models.Err 
 			errArray = append(errArray, checkGroupChange(group))
 		case global_const.AdminTA_GroupGet:
 			errArray = append(errArray, checkGroupGet(group))
+
+		case global_const.AdminTA:
+			errArray = append(errArray, checkIsAdmin(group))
+
+		case global_const.TicketTA_FullSearch:
+			errArray = append(errArray, checkFullSearch(group))
+
 		}
 	}
 	return models.Concat(errArray...)

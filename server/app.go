@@ -78,10 +78,12 @@ func (a *App) Run(port string) error {
 	)
 
 	apiRouter := router.Group("/helpdesk")
-	authhttp.RegisterHTTPEndpoints(apiRouter, a.authUC)
-	authMiddlware := authhttp.NewAuthMiddleware(a.authUC)
 
-	userhttp.RegisterHTTPEndpoints(apiRouter, a.userUC, authMiddlware)
+	authMiddlware := authhttp.NewAuthMiddleware(a.authUC)
+	authhttp.RegisterHTTPEndpoints(apiRouter, a.authUC)
+
+	permMiddleware := userhttp.NewPermissionMiddleware(a.userUC)
+	userhttp.RegisterHTTPEndpoints(apiRouter, a.userUC, authMiddlware, permMiddleware)
 
 	a.httpServer = &http.Server{
 		Addr:           ":" + port,

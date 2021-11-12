@@ -24,3 +24,17 @@ func checkGroupGet(group *models.Group) models.Err {
 	}
 	return nil
 }
+
+func checkIsAdmin(group *models.Group) models.Err {
+	if !group.ChangeSettings {
+		return models.Forbidden()
+	}
+	return nil
+}
+
+func checkFullSearch(group *models.Group) models.Err {
+	if !group.FullSearch {
+		return models.Forbidden()
+	}
+	return nil
+}
