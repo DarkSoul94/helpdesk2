@@ -6,7 +6,7 @@ import (
 )
 
 // RegisterHTTPEndpoints ...
-func RegisterHTTPEndpoints(router *gin.RouterGroup, uc pkg_user.UserManagerUC, middlewares ...gin.HandlerFunc) {
+func RegisterHTTPEndpoints(router *gin.RouterGroup, uc pkg_user.IUserUsecase, middlewares ...gin.HandlerFunc) {
 	h := NewHandler(uc)
 
 	usersEndpoints := router.Group("/user")

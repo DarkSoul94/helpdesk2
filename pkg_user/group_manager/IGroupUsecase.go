@@ -4,7 +4,7 @@ import (
 	"github.com/DarkSoul94/helpdesk2/models"
 )
 
-type GroupManager interface {
+type IGroupUsecase interface {
 	CheckPermission(groupID uint64, actions ...string) models.Err
 	CreateGroup(group *models.Group) (uint64, models.Err)
 	GetGroupByID(groupID uint64) (*models.Group, models.Err)

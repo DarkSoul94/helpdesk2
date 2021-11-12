@@ -14,7 +14,7 @@ import (
 
 // Usecase ...
 type Usecase struct {
-	userManager    pkg_user.UserManagerUC
+	userManager    pkg_user.IUserUsecase
 	secret         string
 	signingKey     []byte
 	expireDuration time.Duration
@@ -27,7 +27,7 @@ type AuthClaims struct {
 
 // NewUsecase ...
 func NewUsecase(
-	userManager pkg_user.UserManagerUC,
+	userManager pkg_user.IUserUsecase,
 	secret string,
 	signingKey []byte,
 	tokenTTL time.Duration) *Usecase {

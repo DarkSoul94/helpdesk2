@@ -11,11 +11,11 @@ import (
 )
 
 type Handler struct {
-	ucUserManager pkg_user.UserManagerUC
+	ucUserManager pkg_user.IUserUsecase
 }
 
 // NewHandler ...
-func NewHandler(uc pkg_user.UserManagerUC) *Handler {
+func NewHandler(uc pkg_user.IUserUsecase) *Handler {
 	return &Handler{
 		ucUserManager: uc,
 	}

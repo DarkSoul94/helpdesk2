@@ -2,7 +2,7 @@ package pkg_user
 
 import "github.com/DarkSoul94/helpdesk2/models"
 
-type UserManagerRepo interface {
+type IUserRepo interface {
 	CreateUser(user *models.User) (uint64, models.Err)
 	UpdateUser(userID, groupID uint64) models.Err
 	GetUserByEmail(email string) (*models.User, models.Err)

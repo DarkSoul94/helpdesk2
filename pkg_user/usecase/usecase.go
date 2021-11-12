@@ -7,26 +7,21 @@ import (
 	"github.com/DarkSoul94/helpdesk2/pkg_user"
 	group_manager "github.com/DarkSoul94/helpdesk2/pkg_user/group_manager"
 	groupUC "github.com/DarkSoul94/helpdesk2/pkg_user/group_manager/standart/usecase"
-	"github.com/DarkSoul94/helpdesk2/pkg_user/support_manager"
-	suppUC "github.com/DarkSoul94/helpdesk2/pkg_user/support_manager/usecase"
 )
 
 // NewUsecase ...
 func NewUsecase(
-	repo pkg_user.UserManagerRepo,
-	grpRepo group_manager.GroupRepo,
-	suppRepo support_manager.SupportRepo,
+	repo pkg_user.IUserRepo,
+	grpRepo group_manager.IGroupRepo,
 ) *Usecase {
 
 	group, err := groupUC.NewManager(grpRepo)
 	if err != nil {
 		logger.LogError("Init group manager", "user_manager/usecase", "", err)
 	}
-	support := suppUC.NewSupportUsecase(suppRepo)
 	uc := Usecase{
-		repo:    repo,
-		group:   group,
-		support: support,
+		repo:  repo,
+		group: group,
 	}
 	return &uc
 }

@@ -4,7 +4,7 @@ import (
 	"github.com/DarkSoul94/helpdesk2/models"
 )
 
-type UserManagerUC interface {
+type IUserUsecase interface {
 	CreateUser(user *models.User) (uint64, models.Err)
 	UserUpdate(askUser *models.User, userID, groupID uint64) models.Err
 	GetUserByEmail(email string) (*models.User, models.Err)

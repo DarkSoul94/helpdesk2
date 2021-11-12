@@ -20,9 +20,6 @@ import (
 	"github.com/DarkSoul94/helpdesk2/pkg_user/group_manager"
 	grouprepo "github.com/DarkSoul94/helpdesk2/pkg_user/group_manager/standart/repo/mysql"
 
-	"github.com/DarkSoul94/helpdesk2/pkg_user/support_manager"
-	supprepo "github.com/DarkSoul94/helpdesk2/pkg_user/support_manager/repo/mysql"
-
 	"github.com/DarkSoul94/helpdesk2/auth"
 	authhttp "github.com/DarkSoul94/helpdesk2/auth/delivery/http"
 	authusecase "github.com/DarkSoul94/helpdesk2/auth/usecase"
@@ -38,10 +35,9 @@ import (
 
 // App ...
 type App struct {
-	userUC    pkg_user.UserManagerUC
-	userRepo  pkg_user.UserManagerRepo
-	groupRepo group_manager.GroupRepo
-	suppRepo  support_manager.SupportRepo
+	userUC    pkg_user.IUserUsecase
+	userRepo  pkg_user.IUserRepo
+	groupRepo group_manager.IGroupRepo
 
 	authUC auth.AuthUC
 
@@ -54,8 +50,7 @@ func NewApp() *App {
 
 	userRepo := userrepo.NewRepo(db)
 	grpRepo := grouprepo.NewGroupRepo(db)
-	suppRepo := supprepo.NewSupportRepo(db)
-	userUC := userusecase.NewUsecase(userRepo, grpRepo, suppRepo)
+	userUC := userusecase.NewUsecase(userRepo, grpRepo)
 
 	authUC := authusecase.NewUsecase(userUC, viper.GetString("app.auth.secret_key"), []byte(viper.GetString("app.auth.signing_key")), viper.GetDuration("app.auth.ttl"))
 
@@ -193,5 +188,4 @@ func runGormMigrations(db *gorm.DB) {
 func (a *App) close() {
 	a.userRepo.Close()
 	a.groupRepo.Close()
-	a.suppRepo.Close()
 }

@@ -10,11 +10,11 @@ import (
 )
 
 type Manager struct {
-	repo        group_manager.GroupRepo
+	repo        group_manager.IGroupRepo
 	permissions map[string]layer
 }
 
-func NewManager(actions interface{}, repo group_manager.GroupRepo) (*Manager, error) {
+func NewManager(actions interface{}, repo group_manager.IGroupRepo) (*Manager, error) {
 	manager := &Manager{
 		repo:        repo,
 		permissions: make(map[string]layer),

@@ -7,10 +7,10 @@ import (
 )
 
 type Usecase struct {
-	repo group_manager.GroupRepo
+	repo group_manager.IGroupRepo
 }
 
-func NewManager(repo group_manager.GroupRepo) (*Usecase, error) {
+func NewManager(repo group_manager.IGroupRepo) (*Usecase, error) {
 	return &Usecase{repo: repo}, nil
 }
 
