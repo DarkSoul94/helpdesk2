@@ -18,6 +18,15 @@ import (
 	userrepo "github.com/DarkSoul94/helpdesk2/pkg_user/repo/mysql"
 	userusecase "github.com/DarkSoul94/helpdesk2/pkg_user/usecase"
 
+	"github.com/DarkSoul94/helpdesk2/pkg_ticket"
+	tickethttp "github.com/DarkSoul94/helpdesk2/pkg_ticket/delivery/http"
+	ticketrepo "github.com/DarkSoul94/helpdesk2/pkg_ticket/repo/mysql"
+	ticketusecase "github.com/DarkSoul94/helpdesk2/pkg_ticket/usecase"
+
+	"github.com/DarkSoul94/helpdesk2/pkg_ticket/cat_sec_manager"
+	catsecrepo "github.com/DarkSoul94/helpdesk2/pkg_ticket/cat_sec_manager/repo/mysql"
+	catsecusecase "github.com/DarkSoul94/helpdesk2/pkg_ticket/cat_sec_manager/usecase"
+
 	"github.com/DarkSoul94/helpdesk2/pkg_user/group_manager"
 	grouprepo "github.com/DarkSoul94/helpdesk2/pkg_user/group_manager/standart/repo/mysql"
 	groupusecase "github.com/DarkSoul94/helpdesk2/pkg_user/group_manager/standart/usecase/group"
@@ -54,6 +63,12 @@ type App struct {
 
 	authUC auth.AuthUC
 
+	catSecRepo cat_sec_manager.ICatSecRepo
+	catSecUC   cat_sec_manager.ICatSecUsecase
+
+	ticketRepo pkg_ticket.ITicketRepo
+	ticketUC   pkg_ticket.ITicketUsecase
+
 	httpServer *http.Server
 }
 
@@ -74,6 +89,12 @@ func NewApp() *App {
 
 	authUC := authusecase.NewUsecase(userUC, viper.GetString("app.auth.secret_key"), []byte(viper.GetString("app.auth.signing_key")), viper.GetDuration("app.auth.ttl"))
 
+	catsecRepo := catsecrepo.NewCatSecRepo(db)
+	catsecUC := catsecusecase.NewCatSecUsecase(catsecRepo)
+
+	ticketRepo := ticketrepo.NewTicketRepo(db)
+	ticketUC := ticketusecase.NewTicketUsecase(ticketRepo, catsecUC)
+
 	return &App{
 		groupRepo: grpRepo,
 		groupUC:   grpUC,
@@ -87,6 +108,12 @@ func NewApp() *App {
 		userUC:   userUC,
 
 		authUC: authUC,
+
+		catSecRepo: catsecRepo,
+		catSecUC:   catsecUC,
+
+		ticketRepo: ticketRepo,
+		ticketUC:   ticketUC,
 	}
 }
 
@@ -111,6 +138,8 @@ func (a *App) Run(port string) error {
 
 	permMiddleware := userhttp.NewPermissionMiddleware(a.permUC)
 	userhttp.RegisterHTTPEndpoints(apiRouter, a.userUC, authMiddlware, permMiddleware)
+
+	tickethttp.RegisterHTTPEndpoints(apiRouter, a.ticketUC, authMiddlware, permMiddleware)
 
 	a.httpServer = &http.Server{
 		Addr:           ":" + port,
