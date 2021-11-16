@@ -5,10 +5,9 @@ import (
 )
 
 type IGroupUsecase interface {
-	CheckPermission(groupID uint64, actions ...string) models.Err
 	CreateGroup(group *models.Group) (uint64, models.Err)
 	GetGroupByID(groupID uint64) (*models.Group, models.Err)
 	GetGroupList() ([]*models.Group, models.Err)
-
-	GetPermissionList() []byte
+	GroupUpdate(group *models.Group) models.Err
+	GetUsersByGroup(groupID uint64) ([]uint64, models.Err)
 }

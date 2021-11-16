@@ -1,8 +1,11 @@
 package global_const
 
 const (
-	AdminTA             string = "administration"              //для проверки доступа на урл
-	AdminTA_UserUpdate  string = "administration.user.update"  //изменение пользователя
+	AdminTA string = "administration" //для проверки доступа на урл
+
+	AdminTA_UserUpdate string = "administration.user.update" //изменение пользователя
+	AdminTA_UserGet    string = "administration.user.get"    //получение пользователя
+
 	AdminTA_GroupCreate string = "administration.group.create" //создание группы пользователей
 	AdminTA_GroupUpdate string = "administration.group.update" //изменение группы пользователей
 	AdminTA_GroupGet    string = "administration.group.get"    //получение групп пользователей

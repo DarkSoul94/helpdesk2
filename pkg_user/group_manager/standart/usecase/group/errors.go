@@ -1,4 +1,4 @@
-package usecase
+package group
 
 import "github.com/DarkSoul94/helpdesk2/models"
 

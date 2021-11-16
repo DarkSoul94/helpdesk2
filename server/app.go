@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/DarkSoul94/helpdesk2/pkg/logger"
+	"github.com/DarkSoul94/helpdesk2/pkg_support"
 	"github.com/DarkSoul94/helpdesk2/pkg_user"
 	userhttp "github.com/DarkSoul94/helpdesk2/pkg_user/delivery/http"
 	userrepo "github.com/DarkSoul94/helpdesk2/pkg_user/repo/mysql"
@@ -19,6 +20,11 @@ import (
 
 	"github.com/DarkSoul94/helpdesk2/pkg_user/group_manager"
 	grouprepo "github.com/DarkSoul94/helpdesk2/pkg_user/group_manager/standart/repo/mysql"
+	groupusecase "github.com/DarkSoul94/helpdesk2/pkg_user/group_manager/standart/usecase/group"
+	permusecase "github.com/DarkSoul94/helpdesk2/pkg_user/group_manager/standart/usecase/permissions"
+
+	supportrepo "github.com/DarkSoul94/helpdesk2/pkg_support/repo/mysql"
+	supportusecase "github.com/DarkSoul94/helpdesk2/pkg_support/usecase"
 
 	"github.com/DarkSoul94/helpdesk2/auth"
 	authhttp "github.com/DarkSoul94/helpdesk2/auth/delivery/http"
@@ -35,9 +41,16 @@ import (
 
 // App ...
 type App struct {
-	userUC    pkg_user.IUserUsecase
-	userRepo  pkg_user.IUserRepo
 	groupRepo group_manager.IGroupRepo
+	groupUC   group_manager.IGroupUsecase
+
+	suppRepo pkg_support.ISupportRepo
+	suppUC   pkg_support.ISupportUsecase
+
+	permUC group_manager.IPermManager
+
+	userUC   pkg_user.IUserUsecase
+	userRepo pkg_user.IUserRepo
 
 	authUC auth.AuthUC
 
@@ -48,16 +61,30 @@ type App struct {
 func NewApp() *App {
 	db := initDB()
 
-	userRepo := userrepo.NewRepo(db)
 	grpRepo := grouprepo.NewGroupRepo(db)
-	userUC := userusecase.NewUsecase(userRepo, grpRepo)
+	grpUC := groupusecase.NewGroupManager(grpRepo)
+
+	permUC := permusecase.NewPermManager(grpRepo)
+
+	suppRepo := supportrepo.NewSupportRepo(db)
+	suppUC := supportusecase.NewSupportUsecase(suppRepo, permUC)
+
+	userRepo := userrepo.NewRepo(db)
+	userUC := userusecase.NewUsecase(userRepo, grpUC, permUC, suppUC)
 
 	authUC := authusecase.NewUsecase(userUC, viper.GetString("app.auth.secret_key"), []byte(viper.GetString("app.auth.signing_key")), viper.GetDuration("app.auth.ttl"))
 
 	return &App{
-		userRepo:  userRepo,
 		groupRepo: grpRepo,
-		userUC:    userUC,
+		groupUC:   grpUC,
+
+		suppRepo: suppRepo,
+		suppUC:   suppUC,
+
+		permUC: permUC,
+
+		userRepo: userRepo,
+		userUC:   userUC,
 
 		authUC: authUC,
 	}
@@ -82,7 +109,7 @@ func (a *App) Run(port string) error {
 	authMiddlware := authhttp.NewAuthMiddleware(a.authUC)
 	authhttp.RegisterHTTPEndpoints(apiRouter, a.authUC)
 
-	permMiddleware := userhttp.NewPermissionMiddleware(a.userUC)
+	permMiddleware := userhttp.NewPermissionMiddleware(a.permUC)
 	userhttp.RegisterHTTPEndpoints(apiRouter, a.userUC, authMiddlware, permMiddleware)
 
 	a.httpServer = &http.Server{
@@ -190,4 +217,5 @@ func runGormMigrations(db *gorm.DB) {
 func (a *App) close() {
 	a.userRepo.Close()
 	a.groupRepo.Close()
+	a.suppRepo.Close()
 }

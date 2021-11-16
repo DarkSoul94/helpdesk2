@@ -79,6 +79,39 @@ func (r *GroupRepo) GetGroupList() ([]*models.Group, models.Err) {
 	return modelGroups, nil
 }
 
+func (r *GroupRepo) GroupUpdate(group *models.Group) models.Err {
+	dbGrp := r.toDbGroup(group)
+	query := `UPDATE user_groups SET
+							group_name = :group_name
+							create_ticket = :create_ticket
+							get_all_tickets = :get_all_tickets
+							see_additional_info = :see_additional_info
+							can_resolve_ticket = :can_resolve_ticket
+							work_on_tickets = :work_on_tickets
+							change_settings = :change_settings
+							can_reports = :can_reports
+							full_search = :full_search
+						WHERE group_id = :group_id`
+	if _, err := r.db.NamedExec(query, dbGrp); err != nil {
+		logger.LogError("Failed create group", "pkg_user/group_manager/standart/repo/mysql", "", err)
+		return GroupErr_Exist
+	}
+	return nil
+}
+
+func (r *GroupRepo) GetUsersByGroup(groupID uint64) ([]uint64, models.Err) {
+	users := make([]uint64, 0)
+	query := `
+		SELECT user_id FROM user
+		WHERE group_id = ?`
+
+	if err := r.db.Get(&users, query, groupID); err != nil {
+		logger.LogError("Group not found", "pkg_user/group_manager/standart/repo/mysql", strconv.FormatUint(groupID, 10), err)
+		return nil, GroupErr_NotFound
+	}
+	return users, nil
+}
+
 func (r *GroupRepo) Close() {
 	r.db.Close()
 }
