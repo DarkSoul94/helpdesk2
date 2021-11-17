@@ -16,7 +16,8 @@ func (r *Repo) toDbSupport(support *internal_models.Support) dbSupport {
 
 func (r *Repo) toModelSupport(dbSupp *dbSupport) *internal_models.Support {
 	return &internal_models.Support{
-		ID: dbSupp.SupportID,
+		ID:   dbSupp.SupportID,
+		Name: dbSupp.Name,
 		Status: &internal_models.Status{
 			ID: dbSupp.StatusID,
 		},

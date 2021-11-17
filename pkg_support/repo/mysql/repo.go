@@ -80,6 +80,20 @@ func (r *Repo) GetSupportList() ([]*internal_models.Support, models.Err) {
 	return mSupports, nil
 }
 
+func (r *Repo) GetStatusesList() ([]*internal_models.Status, models.Err) {
+	dbStat := make([]*dbStatus, 0)
+	mStat := make([]*internal_models.Status, 0)
+	query := `SELECT * FROM support_status`
+	if err := r.db.Select(dbStat, query); err != nil {
+		logger.LogError("Failed get support statuses list", "pkg_support/repo/mysql", "", err)
+		return nil, errSupportGet
+	}
+	for _, stat := range dbStat {
+		mStat = append(mStat, r.toModelsStatus(stat))
+	}
+	return mStat, nil
+}
+
 //CreateSupportCard создает новую запись карточки суппорта.
 func (r *Repo) CreateCard(card *internal_models.Card) models.Err {
 	dbCard := r.toDbSupportCard(card)

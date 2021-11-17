@@ -15,6 +15,7 @@ func RegisterHTTPEndpoints(router *gin.RouterGroup, uc pkg_support.ISupportUseca
 		//http://localhost:5555/helpdesk/support/support_list
 		supportEndpoints.GET("/support_list", h.GetSupportList)
 		//http://localhost:5555/helpdesk/support/status_list
+		supportEndpoints.GET("/status_list", h.GetStatusesList)
 		//http://localhost:5555/helpdesk/support/open_shift
 		//http://localhost:5555/helpdesk/support/close_shift
 		//http://localhost:5555/helpdesk/support/shift_status

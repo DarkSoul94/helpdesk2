@@ -9,4 +9,5 @@ type ISupportUsecase interface {
 	CreateSupport(usersID ...uint64) models.Err
 	DeleteSupport(usersID ...uint64) models.Err
 	GetSupportList() ([]*internal_models.Support, models.Err)
+	GetStatusesList() ([]*internal_models.Status, models.Err)
 }

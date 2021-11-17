@@ -33,3 +33,16 @@ func (h *Handler) GetSupportList(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, outSupports)
 }
+
+func (h *Handler) GetStatusesList(c *gin.Context) {
+	statuses, err := h.uc.GetStatusesList()
+	if err != nil {
+		c.JSON(err.Code(), map[string]string{"status": "error", "error": err.Error()})
+		return
+	}
+	outStatuses := make([]dto.OutSupportStatus, 0)
+	for _, status := range statuses {
+		outStatuses = append(outStatuses, dto.ToOutSupportStatus(status))
+	}
+	c.JSON(http.StatusOK, outStatuses)
+}

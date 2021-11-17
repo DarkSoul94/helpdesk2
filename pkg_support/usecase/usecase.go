@@ -71,3 +71,11 @@ func (u *SupportUsecase) GetSupportList() ([]*internal_models.Support, models.Er
 	}
 	return supports, nil
 }
+
+func (u *SupportUsecase) GetStatusesList() ([]*internal_models.Status, models.Err) {
+	statuses, err := u.repo.GetStatusesList()
+	if err != nil {
+		return nil, err
+	}
+	return statuses, nil
+}
