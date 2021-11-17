@@ -47,13 +47,37 @@ func (r *Repo) DeleteSupport(userID uint64) models.Err {
 func (r *Repo) GetSupport(userID uint64) (*internal_models.Support, models.Err) {
 	dbSupp := new(dbSupport)
 	query := `
-	SELECT * FROM support
+	SELECT 
+		support.*, 
+		users.user_name AS support_name 
+	FROM support 
+	LEFT JOIN users ON user_id = support_id
 	WHERE support_id = ?`
 	if err := r.db.Get(dbSupp, query, userID); err != nil {
 		logger.LogError("Failed get support", "pkg_support/repo/mysql", fmt.Sprintf("support id: %d", userID), err)
 		return nil, errSupportGet
 	}
 	return r.toModelSupport(dbSupp), nil
+}
+
+func (r *Repo) GetSupportList() ([]*internal_models.Support, models.Err) {
+	dbSupp := make([]*dbSupport, 0)
+	mSupports := make([]*internal_models.Support, 0)
+	query := `
+	SELECT 
+		support.*, 
+		users.user_name AS support_name 
+	FROM support 
+	LEFT JOIN users ON user_id = support_id`
+	if err := r.db.Select(dbSupp, query); err != nil {
+		logger.LogError("Failed get support list", "pkg_support/repo/mysql", "", err)
+		return nil, errSupportGet
+	}
+
+	for _, support := range dbSupp {
+		mSupports = append(mSupports, r.toModelSupport(support))
+	}
+	return mSupports, nil
 }
 
 //CreateSupportCard создает новую запись карточки суппорта.

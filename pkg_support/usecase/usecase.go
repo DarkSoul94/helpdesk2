@@ -63,3 +63,11 @@ func (u *SupportUsecase) DeleteSupport(usersID ...uint64) models.Err {
 	}
 	return nil
 }
+
+func (u *SupportUsecase) GetSupportList() ([]*internal_models.Support, models.Err) {
+	supports, err := u.repo.GetSupportList()
+	if err != nil {
+		return nil, err
+	}
+	return supports, nil
+}
