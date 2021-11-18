@@ -121,3 +121,116 @@ func (h *TicketHandler) GetCategorySectionList(c *gin.Context) {
 
 	c.JSON(http.StatusOK, outList)
 }
+
+func (h *TicketHandler) CreateRegion(c *gin.Context) {
+	var reg dto.InpRegion
+
+	if err := c.BindJSON(&reg); err != nil {
+		c.JSON(http.StatusBadRequest, map[string]string{"status": "error", "error": err.Error()})
+		return
+	}
+
+	id, err := h.uc.CreateRegion(dto.ToModelRegion(reg))
+	if err != nil {
+		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{"status": "ok", "region_id": id})
+}
+
+func (h *TicketHandler) UpdateRegion(c *gin.Context) {
+	var reg dto.InpRegion
+
+	if err := c.BindJSON(&reg); err != nil {
+		c.JSON(http.StatusBadRequest, map[string]string{"status": "error", "error": err.Error()})
+		return
+	}
+
+	err := h.uc.UpdateRegion(dto.ToModelRegion(reg))
+	if err != nil {
+		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{"status": "ok"})
+}
+
+func (h *TicketHandler) DeleteRegion(c *gin.Context) {
+	regionID, err := strconv.ParseUint(c.Request.URL.Query().Get("region_id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, map[string]string{"status": "error", "error": err.Error()})
+		return
+	}
+
+	if err := h.uc.DeleteRegion(regionID); err != nil {
+		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{"status": "ok"})
+}
+
+func (h *TicketHandler) CreateFilial(c *gin.Context) {
+	var fil dto.InpFilial
+
+	if err := c.BindJSON(&fil); err != nil {
+		c.JSON(http.StatusBadRequest, map[string]string{"status": "error", "error": err.Error()})
+		return
+	}
+
+	id, err := h.uc.CreateFilial(dto.ToModelFilial(fil))
+	if err != nil {
+		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{"status": "ok", "filial_id": id})
+}
+
+func (h *TicketHandler) UpdateFilial(c *gin.Context) {
+	var fil dto.InpFilial
+
+	if err := c.BindJSON(&fil); err != nil {
+		c.JSON(http.StatusBadRequest, map[string]string{"status": "error", "error": err.Error()})
+		return
+	}
+
+	err := h.uc.UpdateFilial(dto.ToModelFilial(fil))
+	if err != nil {
+		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{"status": "ok"})
+}
+
+func (h *TicketHandler) DeleteFilial(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Request.URL.Query().Get("filial_id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, map[string]string{"status": "error", "error": err.Error()})
+		return
+	}
+
+	if err := h.uc.DeleteFilial(id); err != nil {
+		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{"status": "ok"})
+}
+
+func (h *TicketHandler) GetFilialList(c *gin.Context) {
+	list, err := h.uc.GetRegionsWithFilials()
+	if err != nil {
+		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+
+	var outList []dto.OutRegionWithFilials
+	for _, reg := range list {
+		outList = append(outList, dto.ToOutRegionWithFilials(reg))
+	}
+
+	c.JSON(http.StatusOK, outList)
+}
