@@ -77,7 +77,19 @@ func (h *Handler) CreateGroup(ctx *gin.Context) {
 }
 
 func (h *Handler) UpdateGroup(ctx *gin.Context) {
+	var group dto.OutGroup
 
+	if err := ctx.BindJSON(&group); err != nil {
+		ctx.JSON(http.StatusBadRequest, map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+	user, _ := ctx.Get(global_const.CtxUserKey)
+	err := h.ucUserManager.GroupUpdate(user.(*models.User), dto.ToModelGroup(group))
+	if err != nil {
+		ctx.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, map[string]interface{}{"status": "ok"})
 }
 
 func (h *Handler) GetGroupsList(ctx *gin.Context) {
