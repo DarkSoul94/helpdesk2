@@ -16,27 +16,29 @@ func NewPermManager(repo group_manager.IGroupRepo) *Usecase {
 	}
 }
 
-func (u *Usecase) CheckPermission(groupID uint64, actions ...string) models.Err {
+func (u *Usecase) CheckPermission(groupID uint64, actions ...string) bool {
 	group, err := u.repo.GetGroupByID(groupID)
 	if err != nil {
-		return err
+		return false
 	}
-	errArray := make([]models.Err, 0)
 	for _, action := range actions {
-		errArray = append(errArray, u.check(group, action))
+		if !u.check(group, action) {
+			return false
+		}
 	}
-	return models.Concat(errArray...)
+	return true
 }
 
-func (u *Usecase) CheckUpdatedPermissions(group *models.Group, actions ...string) models.Err {
-	errArray := make([]models.Err, 0)
+func (u *Usecase) CheckUpdatedPermissions(group *models.Group, actions ...string) bool {
 	for _, action := range actions {
-		errArray = append(errArray, u.check(group, action))
+		if !u.check(group, action) {
+			return false
+		}
 	}
-	return models.Concat(errArray...)
+	return true
 }
 
-func (u *Usecase) check(group *models.Group, action string) models.Err {
+func (u *Usecase) check(group *models.Group, action string) bool {
 	switch action {
 	case global_const.AdminTA_UserUpdate:
 		return checkUserUpdate(group)
@@ -58,6 +60,6 @@ func (u *Usecase) check(group *models.Group, action string) models.Err {
 		return checkWorkOnTicket(group)
 
 	default:
-		return nil
+		return false
 	}
 }

@@ -23,15 +23,12 @@ func (p *PermissionMiddleware) CheckPermissions(c *gin.Context) {
 	user, _ := c.Get(global_const.CtxUserKey)
 
 	switch c.FullPath() {
-	case "/helpdesk/support/support_list":
+	case "/helpdesk/category/create",
+		"/helpdesk/category/update",
+		"/helpdesk/section/create",
+		"/helpdesk/section/update",
+		"/helpdesk/section/section_list":
 		if !p.usecase.CheckPermission(user.(*models.User).Group.ID, global_const.AdminTA) {
-			c.AbortWithStatus(http.StatusForbidden)
-		}
-	case "/helpdesk/support/status_list",
-		"/helpdesk/support/change_status":
-		res1 := p.usecase.CheckPermission(user.(*models.User).Group.ID, global_const.AdminTA)
-		res2 := p.usecase.CheckPermission(user.(*models.User).Group.ID, global_const.TicketTA_Work)
-		if !res1 || !res2 {
 			c.AbortWithStatus(http.StatusForbidden)
 		}
 	}

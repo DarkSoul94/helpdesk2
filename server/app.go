@@ -32,6 +32,7 @@ import (
 	groupusecase "github.com/DarkSoul94/helpdesk2/pkg_user/group_manager/standart/usecase/group"
 	permusecase "github.com/DarkSoul94/helpdesk2/pkg_user/group_manager/standart/usecase/permissions"
 
+	supporthttp "github.com/DarkSoul94/helpdesk2/pkg_support/delivery/http"
 	supportrepo "github.com/DarkSoul94/helpdesk2/pkg_support/repo/mysql"
 	supportusecase "github.com/DarkSoul94/helpdesk2/pkg_support/usecase"
 
@@ -87,7 +88,10 @@ func NewApp() *App {
 	userRepo := userrepo.NewRepo(db)
 	userUC := userusecase.NewUsecase(userRepo, grpUC, permUC, suppUC)
 
-	authUC := authusecase.NewUsecase(userUC, viper.GetString("app.auth.secret_key"), []byte(viper.GetString("app.auth.signing_key")), viper.GetDuration("app.auth.ttl"))
+	authUC := authusecase.NewUsecase(userUC,
+		viper.GetString("app.auth.secret_key"),
+		[]byte(viper.GetString("app.auth.signing_key")),
+		viper.GetDuration("app.auth.ttl"))
 
 	catsecRepo := catsecrepo.NewCatSecRepo(db)
 	catsecUC := catsecusecase.NewCatSecUsecase(catsecRepo)
@@ -136,10 +140,14 @@ func (a *App) Run(port string) error {
 	authMiddlware := authhttp.NewAuthMiddleware(a.authUC)
 	authhttp.RegisterHTTPEndpoints(apiRouter, a.authUC)
 
-	permMiddleware := userhttp.NewPermissionMiddleware(a.permUC)
-	userhttp.RegisterHTTPEndpoints(apiRouter, a.userUC, authMiddlware, permMiddleware)
+	userMiddleware := userhttp.NewPermissionMiddleware(a.permUC)
+	userhttp.RegisterHTTPEndpoints(apiRouter, a.userUC, authMiddlware, userMiddleware)
 
-	tickethttp.RegisterHTTPEndpoints(apiRouter, a.ticketUC, authMiddlware, permMiddleware)
+	supportMiddleware := supporthttp.NewPermissionMiddleware(a.permUC)
+	supporthttp.RegisterHTTPEndpoints(apiRouter, a.suppUC, authMiddlware, supportMiddleware)
+
+	ticketMiddleware := tickethttp.NewPermissionMiddleware(a.permUC)
+	tickethttp.RegisterHTTPEndpoints(apiRouter, a.ticketUC, authMiddlware, ticketMiddleware)
 
 	a.httpServer = &http.Server{
 		Addr:           ":" + port,

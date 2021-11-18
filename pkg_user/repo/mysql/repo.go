@@ -82,7 +82,7 @@ func (r *Repo) GetUserByID(id uint64) (*models.User, models.Err) {
 		err    error
 	)
 
-	query = `SELECT * FROM users WHERE id = ?`
+	query = `SELECT * FROM users WHERE user_id = ?`
 
 	if err = r.db.Get(&dbUser, query, id); err != nil {
 		logger.LogError(UserErr_Get.Error(), "user_manager/repo/mysql", fmt.Sprintf("user id: %d", id), err)

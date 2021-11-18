@@ -238,7 +238,7 @@ func (r *Repo) CreateCard(card *internal_models.Card) models.Err {
 //DeleteCard удаляет карточку саппорта из БД
 func (r *Repo) DeleteCard(supportID uint64) models.Err {
 	query := `
-	DELETE FROM support
+	DELETE FROM supports_cards
 	WHERE support_id = ?`
 	if _, err := r.db.Exec(query, supportID); err != nil {
 		logger.LogError("Failed delete support card", "pkg_support/repo/mysql", fmt.Sprintf("support id: %d", supportID), err)
