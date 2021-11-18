@@ -44,9 +44,10 @@ func BadRequest(text string) Err {
 	}
 }
 
-func Forbidden() Err {
+func Forbidden(text string) Err {
 	return err{
 		StatusCode: http.StatusForbidden,
+		Text:       text,
 	}
 }
 
