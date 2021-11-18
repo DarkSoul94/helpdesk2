@@ -2,6 +2,7 @@ package mysql
 
 import (
 	"database/sql"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/shopspring/decimal"
@@ -35,4 +36,21 @@ type dbCard struct {
 	Wager          decimal.Decimal `db:"wager"`
 	Comment        string          `db:"comment"`
 	Color          string          `db:"color"`
+}
+
+type dbShift struct {
+	ID            uint64       `db:"id"`
+	SupportID     uint64       `db:"support_id"`
+	OpeningTime   time.Time    `db:"opening_time"`
+	ClosingTime   sql.NullTime `db:"closing_time"`
+	ClosingStatus bool         `db:"closing_status"`
+}
+
+type dbStatusHistory struct {
+	ID         uint64        `db:"id"`
+	SupportID  uint64        `db:"support_id"`
+	StatusID   uint64        `db:"status_id"`
+	SelectTime time.Time     `db:"select_time"`
+	Duration   time.Duration `db:"duration"`
+	ShiftID    uint64        `db:"shift_id"`
 }

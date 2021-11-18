@@ -27,7 +27,8 @@ func (p *PermissionMiddleware) CheckPermissions(c *gin.Context) {
 		if err := p.usecase.CheckPermission(user.(*models.User).Group.ID, global_const.AdminTA); err != nil {
 			c.AbortWithStatus(http.StatusForbidden)
 		}
-	case "/helpdesk/support/status_list":
+	case "/helpdesk/support/status_list",
+		"/helpdesk/support/change_status":
 		err1 := p.usecase.CheckPermission(user.(*models.User).Group.ID, global_const.AdminTA)
 		err2 := p.usecase.CheckPermission(user.(*models.User).Group.ID, global_const.TicketTA_Work)
 		if err1 != nil || err2 != nil {

@@ -8,9 +8,20 @@ import (
 type ISupportRepo interface {
 	CreateSupport(support *internal_models.Support) models.Err
 	DeleteSupport(supportID uint64) models.Err
+	UpdateSupport(support *internal_models.Support) models.Err
 	GetSupport(userID uint64) (*internal_models.Support, models.Err)
 	GetSupportList() ([]*internal_models.Support, models.Err)
+	GetActiveSupports() ([]*internal_models.Support, models.Err)
+	GetPrioritizedSupportID() uint64
+
+	GetStatus(statusID uint64) (*internal_models.Status, models.Err)
 	GetStatusesList() ([]*internal_models.Status, models.Err)
+
+	GetLastShift(supportID uint64) (*internal_models.Shift, models.Err)
+
+	CreateHistoryRecord(statHistory *internal_models.StatusHistory) models.Err
+	UpdateHistoryRecord(statHistory *internal_models.StatusHistory) models.Err
+	GetLastStatusHistory(supportID, shiftID uint64) (*internal_models.StatusHistory, models.Err)
 
 	CreateCard(card *internal_models.Card) models.Err
 	DeleteCard(supportID uint64) models.Err

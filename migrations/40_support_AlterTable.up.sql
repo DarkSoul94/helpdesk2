@@ -6,6 +6,6 @@ SET `status_id` = DEFAULT;
 
 ALTER TABLE `support`
 DROP `id`,
-ADD FOREIGN KEY (`status_id`) REFERENCES `support_status` (`support_status_id`),
+ADD CONSTRAINT `status_id` FOREIGN KEY (`status_id`) REFERENCES `support_status` (`support_status_id`),
 ADD PRIMARY KEY `support_id` (`support_id`),
 DROP INDEX `support_id`;

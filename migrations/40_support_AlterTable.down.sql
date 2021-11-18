@@ -1,5 +1,5 @@
 ALTER TABLE `support`
-DROP FOREIGN KEY `support_ibfk_2`,
+DROP FOREIGN KEY (`status_id`),
 ADD `id` int unsigned NOT NULL AUTO_INCREMENT UNIQUE FIRST,
 CHANGE `status_id` `accept_ticket` tinyint NOT NULL DEFAULT '0' AFTER `support_id`;
 

@@ -17,13 +17,14 @@ func RegisterHTTPEndpoints(router *gin.RouterGroup, uc pkg_support.ISupportUseca
 		//http://localhost:5555/helpdesk/support/status_list
 		supportEndpoints.GET("/status_list", h.GetStatusesList)
 		//http://localhost:5555/helpdesk/support/open_shift
+		//http://localhost:5555/helpdesk/support/create_lateness
 		//http://localhost:5555/helpdesk/support/close_shift
 		//http://localhost:5555/helpdesk/support/shift_status
-		//http://localhost:5555/helpdesk/support/create_lateness
 		//http://localhost:5555/helpdesk/support/active_support_list
 		//http://localhost:5555/helpdesk/support/get_current_statuses
 		//http://localhost:5555/helpdesk/support/get_support_status
 		//http://localhost:5555/helpdesk/support/change_status
+		supportEndpoints.POST("/change_status", h.ChangeSupportStatus)
 	}
 
 	cardEndpoints := router.Group("/support/card")

@@ -79,3 +79,28 @@ func (u *SupportUsecase) GetStatusesList() ([]*internal_models.Status, models.Er
 	}
 	return statuses, nil
 }
+
+func (u *SupportUsecase) SetSupportStatus(supportID, statusID uint64) models.Err {
+	var (
+		support internal_models.Support = internal_models.Support{
+			ID:     supportID,
+			Status: &internal_models.Status{},
+		}
+	)
+	shift, err := u.repo.GetLastShift(supportID)
+	if shift.ClosingStatus || err != nil {
+		return supportErr_ClosedShift
+	}
+
+	if support.Status, err = u.repo.GetStatus(statusID); err != nil {
+		return err
+	}
+
+	forUpdate := u.priorityHelper(&support)
+	for _, val := range forUpdate {
+		if err := u.repo.UpdateSupport(val); err != nil {
+			return err
+		}
+	}
+	return u.statusHistoryHelper(&support, shift.ID)
+}
