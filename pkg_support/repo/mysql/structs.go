@@ -13,6 +13,7 @@ type Repo struct {
 
 type dbSupport struct {
 	SupportID uint64 `db:"support_id"`
+	Name      string `db:"support_name"`
 	StatusID  uint64 `db:"status_id"`
 	Priority  bool   `db:"priority"`
 }

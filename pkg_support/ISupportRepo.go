@@ -9,6 +9,8 @@ type ISupportRepo interface {
 	CreateSupport(support *internal_models.Support) models.Err
 	DeleteSupport(supportID uint64) models.Err
 	GetSupport(userID uint64) (*internal_models.Support, models.Err)
+	GetSupportList() ([]*internal_models.Support, models.Err)
+	GetStatusesList() ([]*internal_models.Status, models.Err)
 
 	CreateCard(card *internal_models.Card) models.Err
 	DeleteCard(supportID uint64) models.Err
