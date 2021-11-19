@@ -107,18 +107,39 @@ func (r *Repo) GetActiveSupports() ([]*internal_models.Support, models.Err) {
 		FROM support 
 		LEFT JOIN users 
 			ON user_id = support_id
-		RIGHT JOIN support_status AS Stat 
-			ON Stat.support_status_id = support.status_id
-			WHERE Stat.accept_ticket = true
+		WHERE EXISTS (
+			SELECT * FROM support_status
+			WHERE support_status_id = status_id
+				AND accept_ticket = true
+		)
 		ORDER BY support_id`
 	if err := r.db.Select(&dbSupp, query); err != nil {
 		logger.LogError("Failed get support list", "pkg_support/repo/mysql", "", err)
-		return nil, errSupportGet
+		return nil, errSupportGetActive
 	}
 	for _, support := range dbSupp {
 		mSupports = append(mSupports, r.toModelSupport(&support))
 	}
 	return mSupports, nil
+}
+
+func (r *Repo) GetRandomFreeSupport() (*internal_models.Support, models.Err) {
+	dbSupp := new(dbSupport)
+	query := `
+		SELECT * FROM support
+		WHERE EXISTS (
+			SELECT * FROM support_status
+			WHERE support_status_id = status_id
+				AND accept_ticket = true
+		) AND NOT EXIST (
+			SELECT * FROM supports_activity
+			WHERE supports_activity.support_id = support.support_id
+		) ORDER BY RAND() LIMIT 1`
+	if err := r.db.Get(dbSupp, query); err != nil {
+		logger.LogError("Failed get support status", "pkg_support/repo/mysql", "", err)
+		return nil, errSupportGetRandom
+	}
+	return r.toModelSupport(dbSupp), nil
 }
 
 //GetPrioritizedSupportID возвращает ID саппорта у которого установлен приоритет распределения
@@ -135,6 +156,66 @@ func (r *Repo) GetPrioritizedSupportID() uint64 {
 	return id
 }
 
+func (r *Repo) CheckForActivity(supportID uint64) bool {
+	var active bool
+	query := `
+		SELECT EXISTS (
+			SELECT * FROM support
+			RIGHT JOIN support_status AS Stat 
+				ON support.status_id = Stat.support_status_id 
+			WHERE support.support_id = ?
+				AND Stat.accept_ticket = true
+		)`
+	r.db.Get(&active, query, supportID)
+	return active
+}
+
+func (r *Repo) CheckForBusy(supportID uint64) bool {
+	var active bool
+	query := `
+		SELECT EXISTS (
+			SELECT * FROM supports_activity
+			WHERE support_id = ?
+		)`
+	r.db.Get(&active, query, supportID)
+	return active
+}
+
+func (r *Repo) CreateSupportActivity(supportID, ticketID uint64) models.Err {
+	query := `
+	INSERT INTO supports_activity SET
+		support_id = ?,
+		ticket_id = ?`
+	if _, err := r.db.Exec(query, supportID, ticketID); err != nil {
+		logger.LogError("Failed create support activity", "pkg_support/repo/mysql", fmt.Sprintf("support id: %d, ticket id: %d", supportID, ticketID), err)
+		return errSupportModifyActivity
+	}
+	return nil
+}
+
+func (r *Repo) RemoveSupportActivity(ticketID uint64) models.Err {
+	query := `
+	DELETE FROM support_activity
+		WHERE ticket_id = ?`
+	if _, err := r.db.Exec(query, ticketID); err != nil {
+		logger.LogError("Failed remove support activity", "pkg_support/repo/mysql", fmt.Sprintf("ticket id: %d", ticketID), err)
+		return errSupportModifyActivity
+	}
+	return nil
+}
+
+func (r *Repo) UpdateSupportActivity(supportID, ticketID uint64) models.Err {
+	query := `
+	UPDATE supports_activity SET
+		support_id = ?
+	WHERE ticket_id = ?`
+	if _, err := r.db.Exec(query, supportID, ticketID); err != nil {
+		logger.LogError("Failed update support activity", "pkg_support/repo/mysql", fmt.Sprintf("support id: %d, ticket id: %d", supportID, ticketID), err)
+		return errSupportModifyActivity
+	}
+	return nil
+}
+
 //GetStatus получить статус саппорта по ID статуса
 func (r *Repo) GetStatus(statusID uint64) (*internal_models.Status, models.Err) {
 	status := new(dbStatus)
@@ -142,7 +223,6 @@ func (r *Repo) GetStatus(statusID uint64) (*internal_models.Status, models.Err) 
 	if err := r.db.Get(status, query, statusID); err != nil {
 		logger.LogError("Failed get support status", "pkg_support/repo/mysql", fmt.Sprintf("status id: %d", statusID), err)
 		return nil, errStatusGet
-
 	}
 	return r.toModelsStatus(status), nil
 }

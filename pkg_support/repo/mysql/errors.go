@@ -3,10 +3,13 @@ package mysql
 import "github.com/DarkSoul94/helpdesk2/models"
 
 var (
-	errSupportCreate = models.InternalError("Не удалось создать нового саппорта")
-	errSupportUpdate = models.InternalError("Не удалось обновить статус саппорта")
-	errSupportDelete = models.InternalError("Не удалось удалить пользователя из списка саппортов")
-	errSupportGet    = models.BadRequest("Суппорт с таким ID не найден в базе")
+	errSupportCreate         = models.InternalError("Не удалось создать нового саппорта")
+	errSupportUpdate         = models.InternalError("Не удалось обновить статус саппорта")
+	errSupportDelete         = models.InternalError("Не удалось удалить пользователя из списка саппортов")
+	errSupportGetRandom      = models.InternalError("Не удалось получить случайного свободного саппорта")
+	errSupportModifyActivity = models.InternalError("Не удалось модифицировать запись о распределении запроса на саппорта")
+	errSupportGetActive      = models.BadRequest("Не найдены активные саппорты")
+	errSupportGet            = models.BadRequest("Суппорт с таким ID не найден в базе")
 
 	errShiftGet = models.InternalError("Не удалось получить данные по последней смене саппорта")
 

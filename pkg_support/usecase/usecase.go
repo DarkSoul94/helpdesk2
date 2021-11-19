@@ -88,6 +88,43 @@ func (u *SupportUsecase) GetActiveSupports() ([]*internal_models.Support, models
 	return u.repo.GetActiveSupports()
 }
 
+func (u *SupportUsecase) GetSupportForDistribution(supportID uint64) *internal_models.Support {
+	var support = new(internal_models.Support)
+	if supportID != 0 {
+		if u.repo.CheckForActivity(supportID) {
+			support, _ = u.repo.GetSupport(supportID)
+			return support
+		}
+	}
+
+	prioritized := u.repo.GetPrioritizedSupportID()
+	if u.repo.CheckForBusy(prioritized) {
+		support, _ = u.repo.GetRandomFreeSupport()
+	} else {
+		support, _ = u.repo.GetSupport(prioritized)
+	}
+	return support
+}
+
+func (u *SupportUsecase) AddSupportActivity(support *internal_models.Support, ticketID uint64) models.Err {
+	if support.Priority {
+		for _, val := range u.priorityHelper(support) {
+			if err := u.repo.UpdateSupport(val); err != nil {
+				return err
+			}
+		}
+	}
+	return u.repo.CreateSupportActivity(support.ID, ticketID)
+}
+
+func (u *SupportUsecase) RemoveSupportActivity(ticketID uint64) models.Err {
+	return u.repo.RemoveSupportActivity(ticketID)
+}
+
+func (u *SupportUsecase) UpdateSupportActivity(supportID, ticketID uint64) models.Err {
+	return u.repo.UpdateSupportActivity(supportID, ticketID)
+}
+
 func (u *SupportUsecase) SetSupportStatus(supportID, statusID uint64) models.Err {
 	var (
 		support internal_models.Support = internal_models.Support{
@@ -104,8 +141,7 @@ func (u *SupportUsecase) SetSupportStatus(supportID, statusID uint64) models.Err
 		return err
 	}
 
-	forUpdate := u.priorityHelper(&support)
-	for _, val := range forUpdate {
+	for _, val := range u.priorityHelper(&support) {
 		if err := u.repo.UpdateSupport(val); err != nil {
 			return err
 		}
