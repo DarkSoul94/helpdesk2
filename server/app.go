@@ -27,6 +27,10 @@ import (
 	catsecrepo "github.com/DarkSoul94/helpdesk2/pkg_ticket/cat_sec_manager/repo/mysql"
 	catsecusecase "github.com/DarkSoul94/helpdesk2/pkg_ticket/cat_sec_manager/usecase"
 
+	"github.com/DarkSoul94/helpdesk2/pkg_ticket/reg_fil_manager"
+	regfilrepo "github.com/DarkSoul94/helpdesk2/pkg_ticket/reg_fil_manager/repo/mysql"
+	regfilusecase "github.com/DarkSoul94/helpdesk2/pkg_ticket/reg_fil_manager/usecase"
+
 	"github.com/DarkSoul94/helpdesk2/pkg_user/group_manager"
 	grouprepo "github.com/DarkSoul94/helpdesk2/pkg_user/group_manager/standart/repo/mysql"
 	groupusecase "github.com/DarkSoul94/helpdesk2/pkg_user/group_manager/standart/usecase/group"
@@ -67,6 +71,9 @@ type App struct {
 	catSecRepo cat_sec_manager.ICatSecRepo
 	catSecUC   cat_sec_manager.ICatSecUsecase
 
+	regFilRepo reg_fil_manager.IRegFilRepo
+	regFilUC   reg_fil_manager.IRegFilUsecase
+
 	ticketRepo pkg_ticket.ITicketRepo
 	ticketUC   pkg_ticket.ITicketUsecase
 
@@ -96,8 +103,11 @@ func NewApp() *App {
 	catsecRepo := catsecrepo.NewCatSecRepo(db)
 	catsecUC := catsecusecase.NewCatSecUsecase(catsecRepo)
 
+	regfilRepo := regfilrepo.NewRegFilRepo(db)
+	regfilUC := regfilusecase.NewRegFilUsecase(regfilRepo)
+
 	ticketRepo := ticketrepo.NewTicketRepo(db)
-	ticketUC := ticketusecase.NewTicketUsecase(ticketRepo, catsecUC)
+	ticketUC := ticketusecase.NewTicketUsecase(ticketRepo, catsecUC, regfilUC)
 
 	return &App{
 		groupRepo: grpRepo,

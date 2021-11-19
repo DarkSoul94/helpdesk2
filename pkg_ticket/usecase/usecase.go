@@ -5,20 +5,24 @@ import (
 	"github.com/DarkSoul94/helpdesk2/pkg_ticket"
 	"github.com/DarkSoul94/helpdesk2/pkg_ticket/cat_sec_manager"
 	"github.com/DarkSoul94/helpdesk2/pkg_ticket/internal_models"
+	"github.com/DarkSoul94/helpdesk2/pkg_ticket/reg_fil_manager"
 )
 
 type TicketUsecase struct {
 	ticketRepo pkg_ticket.ITicketRepo
 	catSecUC   cat_sec_manager.ICatSecUsecase
+	regFilUC   reg_fil_manager.IRegFilUsecase
 }
 
 func NewTicketUsecase(
 	tRepo pkg_ticket.ITicketRepo,
 	catSecUC cat_sec_manager.ICatSecUsecase,
+	regFilUC reg_fil_manager.IRegFilUsecase,
 ) *TicketUsecase {
 	return &TicketUsecase{
 		ticketRepo: tRepo,
 		catSecUC:   catSecUC,
+		regFilUC:   regFilUC,
 	}
 }
 
@@ -75,4 +79,56 @@ func (u *TicketUsecase) GetCategorySection(forSearch bool) ([]*internal_models.S
 
 func (u *TicketUsecase) GetCategorySectionList() ([]internal_models.CategorySectionList, models.Err) {
 	return u.catSecUC.GetCategorySectionList()
+}
+
+func (u *TicketUsecase) CreateRegion(reg *internal_models.Region) (uint64, models.Err) {
+	if len(reg.Name) == 0 {
+		return 0, models.BadRequest("Имя региона не должно быть пустым")
+	}
+
+	return u.regFilUC.CreateRegion(reg)
+}
+
+func (u *TicketUsecase) UpdateRegion(reg *internal_models.Region) models.Err {
+	if len(reg.Name) == 0 {
+		return models.BadRequest("Имя региона не должно быть пустым")
+	}
+
+	return u.regFilUC.UpdateRegion(reg)
+}
+
+func (u *TicketUsecase) DeleteRegion(id uint64) models.Err {
+	return u.regFilUC.DeleteRegion(id)
+}
+
+func (u *TicketUsecase) CreateFilial(fil *internal_models.Filial) (uint64, models.Err) {
+	if fil.RegionID == 0 {
+		return 0, models.BadRequest("У данного филиала не указан регион")
+	}
+
+	if len(fil.Name) == 0 {
+		return 0, models.BadRequest("Имя не должно быть пустым")
+	}
+
+	return u.regFilUC.CreateFilial(fil)
+}
+
+func (u *TicketUsecase) UpdateFilial(fil *internal_models.Filial) models.Err {
+	if fil.RegionID == 0 {
+		return models.BadRequest("У данного филиала не указан регион")
+	}
+
+	if len(fil.Name) == 0 {
+		return models.BadRequest("Имя не должно быть пустым")
+	}
+
+	return u.regFilUC.UpdateFilial(fil)
+}
+
+func (u *TicketUsecase) DeleteFilial(id uint64) models.Err {
+	return u.regFilUC.DeleteFilial(id)
+}
+
+func (u *TicketUsecase) GetRegionsWithFilials() ([]*internal_models.RegionWithFilials, models.Err) {
+	return u.regFilUC.GetRegionsWithFilials()
 }
