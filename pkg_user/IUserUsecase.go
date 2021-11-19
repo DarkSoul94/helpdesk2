@@ -14,4 +14,6 @@ type IUserUsecase interface {
 	GetGroupList(askUser *models.User) ([]*models.Group, models.Err)
 	CreateGroup(askUser *models.User, group *models.Group) (uint64, models.Err)
 	GroupUpdate(askUser *models.User, group *models.Group) models.Err
+
+	GetDepartmentsList() ([]string, models.Err)
 }

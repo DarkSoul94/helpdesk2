@@ -8,6 +8,7 @@ type IUserRepo interface {
 	GetUserByEmail(email string) (*models.User, models.Err)
 	GetUserByID(id uint64) (*models.User, models.Err)
 	GetUsersList() ([]*models.User, models.Err)
+	GetDepartmentsList() ([]string, models.Err)
 
 	Close() error
 }

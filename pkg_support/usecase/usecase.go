@@ -19,16 +19,19 @@ func NewSupportUsecase(repo pkg_support.ISupportRepo, perm group_manager.IPermMa
 	}
 }
 
+//CreateSupport создание нового саппорта
 func (u *SupportUsecase) CreateSupport(usersID ...uint64) models.Err {
 	for _, userID := range usersID {
 		supp, _ := u.repo.GetSupport(userID)
 		if supp != nil {
 			continue
 		}
+		//Создание нового объекта саппорта и внесение его в базу
 		supp = internal_models.NewSupport(userID)
 		if err := u.repo.CreateSupport(supp); err != nil {
 			return err
 		}
+		//Создание нового объекта карточки саппорта и внесение ее в базу
 		card := internal_models.NewSupportCard(userID)
 		if err := u.repo.CreateCard(card); err != nil {
 			return err
@@ -37,6 +40,7 @@ func (u *SupportUsecase) CreateSupport(usersID ...uint64) models.Err {
 	return nil
 }
 
+//DeleteSupport - удаление саппорта из базы
 func (u *SupportUsecase) DeleteSupport(usersID ...uint64) models.Err {
 	for _, userID := range usersID {
 		//проверка что суппорт с таким ID есть в списке, если нет - переходим к следующему
@@ -78,6 +82,10 @@ func (u *SupportUsecase) GetStatusesList() ([]*internal_models.Status, models.Er
 		return nil, err
 	}
 	return statuses, nil
+}
+
+func (u *SupportUsecase) GetActiveSupports() ([]*internal_models.Support, models.Err) {
+	return u.repo.GetActiveSupports()
 }
 
 func (u *SupportUsecase) SetSupportStatus(supportID, statusID uint64) models.Err {

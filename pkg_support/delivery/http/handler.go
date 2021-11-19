@@ -36,6 +36,20 @@ func (h *Handler) GetSupportList(c *gin.Context) {
 	c.JSON(http.StatusOK, outSupports)
 }
 
+func (h *Handler) GetActiveSupports(c *gin.Context) {
+	supports, err := h.uc.GetActiveSupports()
+	if err != nil {
+		c.JSON(err.Code(), map[string]string{"status": "error", "error": err.Error()})
+		return
+	}
+	outSupports := make([]dto.OutUserShort, 0)
+	for _, support := range supports {
+		outSupports = append(outSupports, dto.ToOutShortSupport(support))
+	}
+	c.JSON(http.StatusOK, outSupports)
+
+}
+
 func (h *Handler) GetStatusesList(c *gin.Context) {
 	statuses, err := h.uc.GetStatusesList()
 	if err != nil {
