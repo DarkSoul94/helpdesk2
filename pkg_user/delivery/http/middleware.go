@@ -24,6 +24,7 @@ func (p *PermissionMiddleware) CheckPermissions(c *gin.Context) {
 
 	switch c.FullPath() {
 	case "/helpdesk/user/update",
+		"/helpdesk/user/departments_list",
 		"/helpdesk/group/create",
 		"/helpdesk/group/update",
 		"/helpdesk/group/":

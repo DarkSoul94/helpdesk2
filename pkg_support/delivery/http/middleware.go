@@ -23,7 +23,8 @@ func (p *PermissionMiddleware) CheckPermissions(c *gin.Context) {
 	user, _ := c.Get(global_const.CtxUserKey)
 
 	switch c.FullPath() {
-	case "/helpdesk/support/support_list":
+	case "/helpdesk/support/support_list",
+		"/helpdesk/support/active_support_list":
 		if !p.usecase.CheckPermission(user.(*models.User).Group.ID, global_const.AdminTA) {
 			c.AbortWithStatus(http.StatusForbidden)
 		}

@@ -43,6 +43,7 @@ func (r *Repo) DeleteSupport(userID uint64) models.Err {
 	return nil
 }
 
+//UpdateSupport обновление статуса и приоритета распределения саппорта
 func (r *Repo) UpdateSupport(support *internal_models.Support) models.Err {
 	dbSupp := r.toDbSupport(support)
 	query := `
@@ -74,6 +75,7 @@ func (r *Repo) GetSupport(userID uint64) (*internal_models.Support, models.Err) 
 	return r.toModelSupport(dbSupp), nil
 }
 
+//GetSupportList получить полный список саппортов
 func (r *Repo) GetSupportList() ([]*internal_models.Support, models.Err) {
 	dbSupp := make([]dbSupport, 0)
 	mSupports := make([]*internal_models.Support, 0)
@@ -94,6 +96,7 @@ func (r *Repo) GetSupportList() ([]*internal_models.Support, models.Err) {
 	return mSupports, nil
 }
 
+//GetActiveSupports получить список активных саппортов
 func (r *Repo) GetActiveSupports() ([]*internal_models.Support, models.Err) {
 	dbSupp := make([]dbSupport, 0)
 	mSupports := make([]*internal_models.Support, 0)
@@ -118,6 +121,7 @@ func (r *Repo) GetActiveSupports() ([]*internal_models.Support, models.Err) {
 	return mSupports, nil
 }
 
+//GetPrioritizedSupportID возвращает ID саппорта у которого установлен приоритет распределения
 func (r *Repo) GetPrioritizedSupportID() uint64 {
 	var id uint64
 	query := `
@@ -131,6 +135,7 @@ func (r *Repo) GetPrioritizedSupportID() uint64 {
 	return id
 }
 
+//GetStatus получить статус саппорта по ID статуса
 func (r *Repo) GetStatus(statusID uint64) (*internal_models.Status, models.Err) {
 	status := new(dbStatus)
 	query := `SELECT * FROM support_status WHERE support_status_id = ?`
@@ -142,6 +147,7 @@ func (r *Repo) GetStatus(statusID uint64) (*internal_models.Status, models.Err) 
 	return r.toModelsStatus(status), nil
 }
 
+//GetStatusesList получить список возможных статусов саппортов
 func (r *Repo) GetStatusesList() ([]*internal_models.Status, models.Err) {
 	dbStat := make([]dbStatus, 0)
 	mStat := make([]*internal_models.Status, 0)
@@ -156,13 +162,14 @@ func (r *Repo) GetStatusesList() ([]*internal_models.Status, models.Err) {
 	return mStat, nil
 }
 
+//GetLastShift получить последнюю смену саппорта
 func (r *Repo) GetLastShift(supportID uint64) (*internal_models.Shift, models.Err) {
 	shift := new(dbShift)
 	query := `
 		SELECT * 
 		FROM support_shifts
 		WHERE support_id = ?
-		ORDER BY "id" DESC LIMIT 1`
+		ORDER BY id DESC LIMIT 1`
 	if err := r.db.Get(shift, query, supportID); err != nil {
 		logger.LogError("Failed get support last shift", "pkg_support/repo/mysql", fmt.Sprintf("support id: %d", supportID), err)
 		return nil, errShiftGet
@@ -170,6 +177,7 @@ func (r *Repo) GetLastShift(supportID uint64) (*internal_models.Shift, models.Er
 	return r.toModelShift(shift), nil
 }
 
+//CreateHistoryRecord создает запись в истории изменения статусов сотрудников
 func (r *Repo) CreateHistoryRecord(statHistory *internal_models.StatusHistory) models.Err {
 	dbHistory := r.toDbStatusHistory(statHistory)
 	query := `
@@ -187,6 +195,7 @@ func (r *Repo) CreateHistoryRecord(statHistory *internal_models.StatusHistory) m
 	return nil
 }
 
+//UpdateHistoryRecord внесение длительности нахождения саппорта в указанном статусе
 func (r *Repo) UpdateHistoryRecord(statHistory *internal_models.StatusHistory) models.Err {
 	dbHistory := r.toDbStatusHistory(statHistory)
 	query := `
@@ -201,6 +210,7 @@ func (r *Repo) UpdateHistoryRecord(statHistory *internal_models.StatusHistory) m
 	return nil
 }
 
+//GetLastStatusHistory получить последнюю запись из истории статусов саппортов
 func (r *Repo) GetLastStatusHistory(supportID, shiftID uint64) (*internal_models.StatusHistory, models.Err) {
 	dbHistory := new(dbStatusHistory)
 	query := `

@@ -161,3 +161,7 @@ func (u *Usecase) CreateGroup(askUser *models.User, group *models.Group) (uint64
 	}
 	return u.group.CreateGroup(group)
 }
+
+func (u *Usecase) GetDepartmentsList() ([]string, models.Err) {
+	return u.repo.GetDepartmentsList()
+}

@@ -16,6 +16,8 @@ func RegisterHTTPEndpoints(router *gin.RouterGroup, uc pkg_user.IUserUsecase, mi
 		usersEndpoints.GET("/", h.GetUsersList)
 		//http://localhost:5555/helpdesk/user/update
 		usersEndpoints.POST("/update", h.UpdateUser)
+		//http://localhost:5555/helpdesk/user/departments_list
+		usersEndpoints.GET("/departments_list", h.GetDepartmentsList)
 	}
 
 	groupsEndpoints := router.Group("/group")
