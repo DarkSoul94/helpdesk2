@@ -107,7 +107,7 @@ func NewApp() *App {
 	regfilUC := regfilusecase.NewRegFilUsecase(regfilRepo)
 
 	ticketRepo := ticketrepo.NewTicketRepo(db)
-	ticketUC := ticketusecase.NewTicketUsecase(ticketRepo, catsecUC, regfilUC)
+	ticketUC := ticketusecase.NewTicketUsecase(ticketRepo, catsecUC, regfilUC, userUC)
 
 	return &App{
 		groupRepo: grpRepo,
@@ -265,4 +265,7 @@ func (a *App) close() {
 	a.userRepo.Close()
 	a.groupRepo.Close()
 	a.suppRepo.Close()
+	a.catSecRepo.Close()
+	a.regFilRepo.Close()
+	a.ticketRepo.Close()
 }

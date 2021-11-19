@@ -53,4 +53,13 @@ func RegisterHTTPEndpoints(router *gin.RouterGroup, uc pkg_ticket.ITicketUsecase
 		//http://localhost:8888/helpdesk/filial/filial_list
 		filialEndpoints.GET("/filial_list", h.GetFilialList)
 	}
+
+	ticketStatusEndpoints := router.Group("/ticket_status")
+	ticketStatusEndpoints.Use(middlewares...)
+	{
+		//http://localhost:8888/helpdesk/ticket_status/
+		ticketStatusEndpoints.GET("/", h.GetTicketStatuses)
+		//http://localhost:8888/helpdesk/ticket_status/list
+		ticketStatusEndpoints.GET("/list", h.GetAllTicketStatuses)
+	}
 }
