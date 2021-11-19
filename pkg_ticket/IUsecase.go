@@ -22,4 +22,6 @@ type ITicketUsecase interface {
 	UpdateFilial(fil *internal_models.Filial) models.Err
 	DeleteFilial(id uint64) models.Err
 	GetRegionsWithFilials() ([]*internal_models.RegionWithFilials, models.Err)
+
+	GetTicketStatuses(group_id uint64, all bool) ([]*internal_models.TicketStatus, models.Err)
 }

@@ -6,23 +6,27 @@ import (
 	"github.com/DarkSoul94/helpdesk2/pkg_ticket/cat_sec_manager"
 	"github.com/DarkSoul94/helpdesk2/pkg_ticket/internal_models"
 	"github.com/DarkSoul94/helpdesk2/pkg_ticket/reg_fil_manager"
+	"github.com/DarkSoul94/helpdesk2/pkg_user"
 )
 
 type TicketUsecase struct {
-	ticketRepo pkg_ticket.ITicketRepo
-	catSecUC   cat_sec_manager.ICatSecUsecase
-	regFilUC   reg_fil_manager.IRegFilUsecase
+	repo     pkg_ticket.ITicketRepo
+	catSecUC cat_sec_manager.ICatSecUsecase
+	regFilUC reg_fil_manager.IRegFilUsecase
+	userUC   pkg_user.IUserUsecase
 }
 
 func NewTicketUsecase(
 	tRepo pkg_ticket.ITicketRepo,
 	catSecUC cat_sec_manager.ICatSecUsecase,
 	regFilUC reg_fil_manager.IRegFilUsecase,
+	userUC pkg_user.IUserUsecase,
 ) *TicketUsecase {
 	return &TicketUsecase{
-		ticketRepo: tRepo,
-		catSecUC:   catSecUC,
-		regFilUC:   regFilUC,
+		repo:     tRepo,
+		catSecUC: catSecUC,
+		regFilUC: regFilUC,
+		userUC:   userUC,
 	}
 }
 
@@ -131,4 +135,17 @@ func (u *TicketUsecase) DeleteFilial(id uint64) models.Err {
 
 func (u *TicketUsecase) GetRegionsWithFilials() ([]*internal_models.RegionWithFilials, models.Err) {
 	return u.regFilUC.GetRegionsWithFilials()
+}
+
+func (u *TicketUsecase) GetTicketStatuses(group_id uint64, all bool) ([]*internal_models.TicketStatus, models.Err) {
+	list, err := u.repo.GetTicketStatuses()
+	if err != nil {
+		return nil, models.InternalError(err.Error())
+	}
+
+	if !all {
+
+	}
+
+	return list, nil
 }

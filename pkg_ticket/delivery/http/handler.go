@@ -5,6 +5,8 @@ import (
 	"strconv"
 
 	"github.com/DarkSoul94/helpdesk2/dto"
+	"github.com/DarkSoul94/helpdesk2/global_const"
+	"github.com/DarkSoul94/helpdesk2/models"
 	"github.com/DarkSoul94/helpdesk2/pkg_ticket"
 	"github.com/gin-gonic/gin"
 )
@@ -230,6 +232,40 @@ func (h *TicketHandler) GetFilialList(c *gin.Context) {
 	var outList []dto.OutRegionWithFilials
 	for _, reg := range list {
 		outList = append(outList, dto.ToOutRegionWithFilials(reg))
+	}
+
+	c.JSON(http.StatusOK, outList)
+}
+
+func (h *TicketHandler) GetTicketStatuses(c *gin.Context) {
+	user, _ := c.Get(global_const.CtxUserKey)
+
+	list, err := h.uc.GetTicketStatuses(user.(*models.User).Group.ID, false)
+	if err != nil {
+		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+
+	var outList []dto.OutTicketStatus
+	for _, stat := range list {
+		outList = append(outList, dto.ToOutTicketStatus(stat))
+	}
+
+	c.JSON(http.StatusOK, outList)
+}
+
+func (h *TicketHandler) GetAllTicketStatuses(c *gin.Context) {
+	user, _ := c.Get(global_const.CtxUserKey)
+
+	list, err := h.uc.GetTicketStatuses(user.(*models.User).Group.ID, false)
+	if err != nil {
+		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+
+	var outList []dto.OutTicketStatus
+	for _, stat := range list {
+		outList = append(outList, dto.ToOutTicketStatus(stat))
 	}
 
 	c.JSON(http.StatusOK, outList)
