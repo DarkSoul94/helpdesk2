@@ -12,7 +12,16 @@ type ISupportRepo interface {
 	GetSupport(userID uint64) (*internal_models.Support, models.Err)
 	GetSupportList() ([]*internal_models.Support, models.Err)
 	GetActiveSupports() ([]*internal_models.Support, models.Err)
+	GetRandomFreeSupport() (*internal_models.Support, models.Err)
 	GetPrioritizedSupportID() uint64
+
+	UpdateShift(shift *internal_models.Shift) models.Err
+
+	CheckForActivity(supportID uint64) bool
+	CheckForBusy(supportID uint64) bool
+	CreateSupportActivity(supportID, ticketID uint64) models.Err
+	RemoveSupportActivity(ticketID uint64) models.Err
+	UpdateSupportActivity(supportID, ticketID uint64) models.Err
 
 	GetStatus(statusID uint64) (*internal_models.Status, models.Err)
 	GetStatusesList() ([]*internal_models.Status, models.Err)

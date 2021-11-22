@@ -29,7 +29,9 @@ func (p *PermissionMiddleware) CheckPermissions(c *gin.Context) {
 			c.AbortWithStatus(http.StatusForbidden)
 		}
 	case "/helpdesk/support/status_list",
-		"/helpdesk/support/change_status":
+		"/helpdesk/support/change_status",
+		"/helpdesk/support/open_shift",
+		"/helpdesk/support/close_shift":
 		res1 := p.usecase.CheckPermission(user.(*models.User).Group.ID, global_const.AdminTA)
 		res2 := p.usecase.CheckPermission(user.(*models.User).Group.ID, global_const.TicketTA_Work)
 		if !res1 || !res2 {

@@ -51,6 +51,22 @@ func (r *Repo) toModelShift(shift *dbShift) *internal_models.Shift {
 	return mShift
 }
 
+func (r *Repo) toDbShift(shift *internal_models.Shift) dbShift {
+	db := dbShift{
+		ID:            shift.ID,
+		SupportID:     shift.Support.ID,
+		OpeningTime:   shift.OpeningTime,
+		ClosingStatus: shift.ClosingStatus,
+	}
+	if shift.ClosingStatus {
+		db.ClosingTime.Time = shift.ClosingTime
+		db.ClosingTime.Valid = true
+	} else {
+		db.ClosingTime.Valid = false
+	}
+	return db
+}
+
 func (r *Repo) toDbStatusHistory(statHistory *internal_models.StatusHistory) dbStatusHistory {
 	return dbStatusHistory{
 		ID:         statHistory.ID,

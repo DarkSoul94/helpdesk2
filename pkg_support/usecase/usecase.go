@@ -1,6 +1,9 @@
 package usecase
 
 import (
+	"time"
+
+	"github.com/DarkSoul94/helpdesk2/global_const"
 	"github.com/DarkSoul94/helpdesk2/models"
 	"github.com/DarkSoul94/helpdesk2/pkg_support"
 	"github.com/DarkSoul94/helpdesk2/pkg_support/internal_models"
@@ -88,6 +91,43 @@ func (u *SupportUsecase) GetActiveSupports() ([]*internal_models.Support, models
 	return u.repo.GetActiveSupports()
 }
 
+func (u *SupportUsecase) GetSupportForDistribution(supportID uint64) *internal_models.Support {
+	var support = new(internal_models.Support)
+	if supportID != 0 {
+		if u.repo.CheckForActivity(supportID) {
+			support, _ = u.repo.GetSupport(supportID)
+			return support
+		}
+	}
+
+	prioritized := u.repo.GetPrioritizedSupportID()
+	if u.repo.CheckForBusy(prioritized) {
+		support, _ = u.repo.GetRandomFreeSupport()
+	} else {
+		support, _ = u.repo.GetSupport(prioritized)
+	}
+	return support
+}
+
+func (u *SupportUsecase) AddSupportActivity(support *internal_models.Support, ticketID uint64) models.Err {
+	if support.Priority {
+		for _, val := range u.priorityHelper(support) {
+			if err := u.repo.UpdateSupport(val); err != nil {
+				return err
+			}
+		}
+	}
+	return u.repo.CreateSupportActivity(support.ID, ticketID)
+}
+
+func (u *SupportUsecase) RemoveSupportActivity(ticketID uint64) models.Err {
+	return u.repo.RemoveSupportActivity(ticketID)
+}
+
+func (u *SupportUsecase) UpdateSupportActivity(supportID, ticketID uint64) models.Err {
+	return u.repo.UpdateSupportActivity(supportID, ticketID)
+}
+
 func (u *SupportUsecase) SetSupportStatus(supportID, statusID uint64) models.Err {
 	var (
 		support internal_models.Support = internal_models.Support{
@@ -104,11 +144,69 @@ func (u *SupportUsecase) SetSupportStatus(supportID, statusID uint64) models.Err
 		return err
 	}
 
-	forUpdate := u.priorityHelper(&support)
-	for _, val := range forUpdate {
+	for _, val := range u.priorityHelper(&support) {
 		if err := u.repo.UpdateSupport(val); err != nil {
 			return err
 		}
 	}
 	return u.statusHistoryHelper(&support, shift.ID)
+}
+
+func (u *SupportUsecase) OpenShift(supportID uint64, user *models.User) models.Err {
+	shift, err := u.repo.GetLastShift(supportID)
+	if err != nil {
+		return err
+	}
+	if shift.ClosingStatus {
+		if shift.WasOpenedToday() {
+			if !u.perm.CheckPermission(user.Group.ID, global_const.AdminTA) {
+				return supportErr_CannotReopen
+			}
+			shift.Reopen()
+			return u.updateShift(shift)
+		}
+
+		//TODO добавить проверку на опоздание по графику и можно ли вообще открывать смену
+		shift.Open(supportID, time.Now())
+		return u.updateShift(shift)
+	}
+	return supportErr_AlreadyOpen
+}
+
+func (u *SupportUsecase) CloseShift(supportID uint64, user *models.User) models.Err {
+	shift, err := u.repo.GetLastShift(supportID)
+	if err != nil {
+		return err
+	}
+	if !shift.ClosingStatus {
+		if u.repo.CheckForBusy(supportID) {
+			if !u.perm.CheckPermission(user.Group.ID, global_const.AdminTA) {
+				return supportErr_Busy
+			}
+			//TODO добавить возврат запросов на распределение если смену закрывает админ
+		}
+		shift.Close()
+		return u.updateShift(shift)
+	}
+	return supportErr_ClosedShift
+}
+
+func (u *SupportUsecase) updateShift(shift *internal_models.Shift) models.Err {
+	var err models.Err
+	if shift.Support.Status != nil {
+		shift.Support.Status, err = u.repo.GetStatus(shift.Support.Status.ID)
+		if err != nil {
+			return err
+		}
+		forUpdate := u.priorityHelper(shift.Support)
+		for _, support := range forUpdate {
+			if err := u.repo.UpdateSupport(support); err != nil {
+				return err
+			}
+		}
+		if err := u.statusHistoryHelper(shift.Support, shift.ID); err != nil {
+			return err
+		}
+	}
+	return u.repo.UpdateShift(shift)
 }
