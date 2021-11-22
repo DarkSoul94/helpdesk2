@@ -52,6 +52,5 @@ var TicketStatusMap map[string]TicketStatus = map[string]TicketStatus{
 }
 
 func (ts *TicketStatus) Set(Key string) {
-	ts.ID = TicketStatusMap[Key].ID
-	ts.Name = TicketStatusMap[Key].Name
+	*ts = TicketStatusMap[Key]
 }

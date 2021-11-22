@@ -1,32 +1,40 @@
 package usecase
 
 import (
+	"fmt"
+	"time"
+
+	"github.com/DarkSoul94/helpdesk2/cachettl"
+	"github.com/DarkSoul94/helpdesk2/global_const"
 	"github.com/DarkSoul94/helpdesk2/models"
 	"github.com/DarkSoul94/helpdesk2/pkg_ticket"
 	"github.com/DarkSoul94/helpdesk2/pkg_ticket/cat_sec_manager"
 	"github.com/DarkSoul94/helpdesk2/pkg_ticket/internal_models"
 	"github.com/DarkSoul94/helpdesk2/pkg_ticket/reg_fil_manager"
-	"github.com/DarkSoul94/helpdesk2/pkg_user"
+	"github.com/DarkSoul94/helpdesk2/pkg_user/group_manager"
+	"github.com/spf13/viper"
 )
 
 type TicketUsecase struct {
 	repo     pkg_ticket.ITicketRepo
 	catSecUC cat_sec_manager.ICatSecUsecase
 	regFilUC reg_fil_manager.IRegFilUsecase
-	userUC   pkg_user.IUserUsecase
+	permUC   group_manager.IPermManager
+	store    cachettl.ObjectStore
 }
 
 func NewTicketUsecase(
 	tRepo pkg_ticket.ITicketRepo,
 	catSecUC cat_sec_manager.ICatSecUsecase,
 	regFilUC reg_fil_manager.IRegFilUsecase,
-	userUC pkg_user.IUserUsecase,
+	permUC group_manager.IPermManager,
 ) *TicketUsecase {
 	return &TicketUsecase{
 		repo:     tRepo,
 		catSecUC: catSecUC,
 		regFilUC: regFilUC,
-		userUC:   userUC,
+		permUC:   permUC,
+		store:    *cachettl.NewObjectStore(viper.GetDuration("app.ttl_cache.clear_period") * time.Second),
 	}
 }
 
@@ -144,8 +152,78 @@ func (u *TicketUsecase) GetTicketStatuses(group_id uint64, all bool) ([]*interna
 	}
 
 	if !all {
-
+		list = u.ticketStatusFilter(list, group_id)
 	}
 
 	return list, nil
+}
+
+func (u *TicketUsecase) ticketStatusFilter(list []*internal_models.TicketStatus, group_id uint64) []*internal_models.TicketStatus {
+	filteredList := make([]*internal_models.TicketStatus, 0)
+	if u.permUC.CheckPermission(group_id, global_const.AdminTA) {
+		return list
+	}
+
+	if u.permUC.CheckPermission(group_id, global_const.TicketTA_Work) {
+		for _, stat := range list {
+			if stat.ID == internal_models.TicketStatusMap[internal_models.KeyTSResolve].ID ||
+				stat.ID == internal_models.TicketStatusMap[internal_models.KeyTSWait].ID {
+				continue
+			} else {
+				filteredList = append(filteredList, stat)
+			}
+		}
+	} else if u.permUC.CheckPermission(group_id, global_const.TicketTA_Resolve) {
+		for _, stat := range list {
+			if stat.ID == internal_models.TicketStatusMap[internal_models.KeyTSRevision].ID ||
+				stat.ID == internal_models.TicketStatusMap[internal_models.KeyTSRejected].ID {
+				filteredList = append(filteredList, stat)
+			}
+		}
+	}
+
+	return filteredList
+}
+
+func (u *TicketUsecase) CreateTicket(ticket *internal_models.Ticket) (uint64, models.Err) {
+	var (
+		hash, ticketHash string
+		err              models.Err
+	)
+
+	if ticket.CatSect, err = u.catSecUC.GetCategorySectionByID(ticket.CatSect.ID); err != nil {
+		return 0, err
+	}
+
+	ticketHash = ticket.HashСalculation()
+	if err := u.store.Get(ticket.Author.Email, &hash); err == nil && hash == ticketHash {
+		return 0, nil
+	}
+
+	if ticket.CatSect.NeedApproval {
+		ticket.Status.Set(internal_models.KeyTSResolve)
+	} else {
+		ticket.Status.Set(internal_models.KeyTSWait)
+	}
+
+	ticket.Date = time.Now().Truncate(time.Millisecond)
+
+	if mask, err := ticket.IpMask(); err != nil {
+		ticket.Filial = "not found"
+	} else {
+		if fil, reg, err := u.regFilUC.GetFilialByIp(mask); err != nil {
+			ticket.Filial = "not found"
+		} else {
+			ticket.Filial = fmt.Sprintf("%s / %s", fil.Name, reg.Name)
+		}
+	}
+
+	id, er := u.repo.CreateTicket(ticket)
+	if er != nil {
+		return 0, models.InternalError(er.Error())
+	}
+
+	u.store.Add(ticket.Author.Email, ticketHash, viper.GetInt64("app.ttl_cache.life_time"))
+
+	return id, nil
 }

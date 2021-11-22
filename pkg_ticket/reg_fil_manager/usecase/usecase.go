@@ -86,6 +86,15 @@ func (u *RegFilUsecase) DeleteFilial(id uint64) models.Err {
 	return nil
 }
 
+func (u *RegFilUsecase) GetFilialByIp(ip string) (*internal_models.Filial, *internal_models.Region, models.Err) {
+	fil, reg, err := u.repo.GetFilialByIp(ip)
+	if err != nil {
+		return nil, nil, models.InternalError(err.Error())
+	}
+
+	return fil, reg, nil
+}
+
 func (u *RegFilUsecase) GetRegionsWithFilials() ([]*internal_models.RegionWithFilials, models.Err) {
 	list, err := u.repo.GetRegionsWithFilials()
 	if err != nil {

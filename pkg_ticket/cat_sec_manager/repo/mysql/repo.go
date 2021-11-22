@@ -111,9 +111,9 @@ func (r *CatSecRepo) CheckCategorySectionExist(id, cat_id uint64, name string) b
 
 	if id != 0 {
 		query = `SELECT category_id FROM category_section
-			WHERE section_id = ? AND category_id = ?`
+			WHERE section_id = ?`
 
-		err = r.db.Get(&db_id, query, id, cat_id)
+		err = r.db.Get(&db_id, query, id)
 		if err != nil {
 			return false
 		}
@@ -309,6 +309,29 @@ func (r *CatSecRepo) GetCategorySectionList() ([]internal_models.CategorySection
 	}
 
 	return catWithSec, nil
+}
+
+func (r *CatSecRepo) GetCategorySectionByID(id uint64) (*internal_models.CategorySection, error) {
+	var (
+		sect  dbCategorySection
+		query string
+		err   error
+	)
+
+	query = `SELECT * FROM category_section
+				WHERE section_id = ?`
+	err = r.db.Get(&sect, query, id)
+	if err != nil {
+		logger.LogError(
+			"Failed read category section",
+			"pkg_ticket/cat_sec_manager/repo/mysql",
+			fmt.Sprintf("id: %d", id),
+			err,
+		)
+		return nil, err
+	}
+
+	return r.toModelCategorySection(sect), nil
 }
 
 func (r *CatSecRepo) Close() error {

@@ -12,6 +12,8 @@ type IRegFilRepo interface {
 	CreateFilial(fil *internal_models.Filial) (uint64, error)
 	UpdateFilial(fil *internal_models.Filial) error
 	DeleteFilial(id uint64) error
+	GetFilialByIp(ip string) (*internal_models.Filial, *internal_models.Region, error)
 	GetRegionsWithFilials() ([]*internal_models.RegionWithFilials, error)
+
 	Close() error
 }

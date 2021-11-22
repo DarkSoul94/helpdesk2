@@ -56,7 +56,7 @@ func (u *CatSecUsecase) CreateCategorySection(sec *internal_models.CategorySecti
 }
 
 func (u *CatSecUsecase) UpdateCategorySection(sec *internal_models.CategorySection) models.Err {
-	if !u.repo.CheckCategorySectionExist(sec.ID, sec.CategoryID, "") {
+	if !u.repo.CheckCategorySectionExist(sec.ID, 0, "") {
 		return ErrCategorySectionExist
 	}
 
@@ -84,4 +84,17 @@ func (u *CatSecUsecase) GetCategorySectionList() ([]internal_models.CategorySect
 	}
 
 	return list, nil
+}
+
+func (u *CatSecUsecase) GetCategorySectionByID(id uint64) (*internal_models.CategorySection, models.Err) {
+	if !u.repo.CheckCategorySectionExist(id, 0, "") {
+		return nil, ErrCategorySectionExist
+	}
+
+	sect, err := u.repo.GetCategorySectionByID(id)
+	if err != nil {
+		return nil, models.InternalError(err.Error())
+	}
+
+	return sect, nil
 }

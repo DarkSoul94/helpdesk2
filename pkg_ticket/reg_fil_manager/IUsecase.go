@@ -13,5 +13,6 @@ type IRegFilUsecase interface {
 	CreateFilial(fil *internal_models.Filial) (uint64, models.Err)
 	UpdateFilial(fil *internal_models.Filial) models.Err
 	DeleteFilial(id uint64) models.Err
+	GetFilialByIp(ip string) (*internal_models.Filial, *internal_models.Region, models.Err)
 	GetRegionsWithFilials() ([]*internal_models.RegionWithFilials, models.Err)
 }

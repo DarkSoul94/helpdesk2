@@ -24,4 +24,6 @@ type ITicketUsecase interface {
 	GetRegionsWithFilials() ([]*internal_models.RegionWithFilials, models.Err)
 
 	GetTicketStatuses(group_id uint64, all bool) ([]*internal_models.TicketStatus, models.Err)
+
+	CreateTicket(ticket *internal_models.Ticket) (uint64, models.Err)
 }

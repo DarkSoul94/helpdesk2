@@ -40,3 +40,13 @@ func ToOutUserList(users []*models.User) []OutUser {
 
 	return outUsers
 }
+
+func ToModelUser(user OutUser) *models.User {
+	return &models.User{
+		ID:         user.ID,
+		Email:      user.Email,
+		Name:       user.Name,
+		Department: user.Department,
+		Group:      ToModelGroup(user.Group),
+	}
+}

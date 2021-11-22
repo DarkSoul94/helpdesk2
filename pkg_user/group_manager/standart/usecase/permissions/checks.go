@@ -27,3 +27,7 @@ func checkFullSearch(group *models.Group) bool {
 func checkWorkOnTicket(group *models.Group) bool {
 	return group.WorkOnTickets
 }
+
+func checkResolveTicket(group *models.Group) bool {
+	return group.CanResolveTicket
+}

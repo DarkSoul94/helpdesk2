@@ -257,7 +257,7 @@ func (h *TicketHandler) GetTicketStatuses(c *gin.Context) {
 func (h *TicketHandler) GetAllTicketStatuses(c *gin.Context) {
 	user, _ := c.Get(global_const.CtxUserKey)
 
-	list, err := h.uc.GetTicketStatuses(user.(*models.User).Group.ID, false)
+	list, err := h.uc.GetTicketStatuses(user.(*models.User).Group.ID, true)
 	if err != nil {
 		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
 		return
@@ -269,4 +269,29 @@ func (h *TicketHandler) GetAllTicketStatuses(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, outList)
+}
+
+func (h *TicketHandler) CreateTicket(c *gin.Context) {
+	var ticket dto.NewTicket
+
+	if err := c.BindJSON(&ticket); err != nil {
+		c.JSON(http.StatusBadRequest, map[string]string{"status": "error", "error": err.Error()})
+		return
+	}
+
+	user, _ := c.Get(global_const.CtxUserKey)
+	ticket.Author = dto.OutUser{
+		ID:    user.(*models.User).ID,
+		Name:  user.(*models.User).Name,
+		Email: user.(*models.User).Email,
+	}
+	ticket.Ip = c.GetHeader("X-Forwarded-For")
+
+	id, err := h.uc.CreateTicket(dto.NewTicketToModelTicket(ticket))
+	if err != nil {
+		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{"status": "ok", "ticket_id": id})
 }
