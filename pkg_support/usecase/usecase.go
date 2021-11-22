@@ -1,6 +1,9 @@
 package usecase
 
 import (
+	"time"
+
+	"github.com/DarkSoul94/helpdesk2/global_const"
 	"github.com/DarkSoul94/helpdesk2/models"
 	"github.com/DarkSoul94/helpdesk2/pkg_support"
 	"github.com/DarkSoul94/helpdesk2/pkg_support/internal_models"
@@ -147,4 +150,63 @@ func (u *SupportUsecase) SetSupportStatus(supportID, statusID uint64) models.Err
 		}
 	}
 	return u.statusHistoryHelper(&support, shift.ID)
+}
+
+func (u *SupportUsecase) OpenShift(supportID uint64, user *models.User) models.Err {
+	shift, err := u.repo.GetLastShift(supportID)
+	if err != nil {
+		return err
+	}
+	if shift.ClosingStatus {
+		if shift.WasOpenedToday() {
+			if !u.perm.CheckPermission(user.Group.ID, global_const.AdminTA) {
+				return supportErr_CannotReopen
+			}
+			shift.Reopen()
+			return u.updateShift(shift)
+		}
+
+		//TODO добавить проверку на опоздание по графику и можно ли вообще открывать смену
+		shift.Open(supportID, time.Now())
+		return u.updateShift(shift)
+	}
+	return supportErr_AlreadyOpen
+}
+
+func (u *SupportUsecase) CloseShift(supportID uint64, user *models.User) models.Err {
+	shift, err := u.repo.GetLastShift(supportID)
+	if err != nil {
+		return err
+	}
+	if !shift.ClosingStatus {
+		if u.repo.CheckForBusy(supportID) {
+			if !u.perm.CheckPermission(user.Group.ID, global_const.AdminTA) {
+				return supportErr_Busy
+			}
+			//TODO добавить возврат запросов на распределение если смену закрывает админ
+		}
+		shift.Close()
+		return u.updateShift(shift)
+	}
+	return supportErr_ClosedShift
+}
+
+func (u *SupportUsecase) updateShift(shift *internal_models.Shift) models.Err {
+	var err models.Err
+	if shift.Support.Status != nil {
+		shift.Support.Status, err = u.repo.GetStatus(shift.Support.Status.ID)
+		if err != nil {
+			return err
+		}
+		forUpdate := u.priorityHelper(shift.Support)
+		for _, support := range forUpdate {
+			if err := u.repo.UpdateSupport(support); err != nil {
+				return err
+			}
+		}
+		if err := u.statusHistoryHelper(shift.Support, shift.ID); err != nil {
+			return err
+		}
+	}
+	return u.repo.UpdateShift(shift)
 }

@@ -19,6 +19,4 @@ const (
 	TicketTA_Filtered   string = "ticket.get.filtered" //получить отфильтрованный список запросов
 	TicketTA_Work       string = "ticket.work"         //обрабатывать запрос
 	TicketTA_FullSearch string = "ticket.full_search"  //расширенный поиск
-	TicketTa_Create     string = "ticket.create"       // создание
-
 )

@@ -11,7 +11,8 @@ var (
 	errSupportGetActive      = models.BadRequest("Не найдены активные саппорты")
 	errSupportGet            = models.BadRequest("Суппорт с таким ID не найден в базе")
 
-	errShiftGet = models.InternalError("Не удалось получить данные по последней смене саппорта")
+	errShiftGet         = models.InternalError("Не удалось получить данные по последней смене саппорта")
+	errShiftUpdateShift = models.InternalError("Не удалось обновить смену саппорту")
 
 	errStatusGet = models.InternalError("Не удалось получить статус саппорта")
 

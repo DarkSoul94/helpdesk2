@@ -3,6 +3,7 @@ package mysql
 import (
 	"database/sql"
 	"fmt"
+	"strconv"
 
 	"github.com/DarkSoul94/helpdesk2/models"
 	"github.com/DarkSoul94/helpdesk2/pkg/logger"
@@ -240,6 +241,28 @@ func (r *Repo) GetStatusesList() ([]*internal_models.Status, models.Err) {
 		mStat = append(mStat, r.toModelsStatus(&stat))
 	}
 	return mStat, nil
+}
+
+func (r *Repo) UpdateShift(shift *internal_models.Shift) models.Err {
+	var query string
+	dbShift := r.toDbShift(shift)
+
+	if dbShift.ID == 0 {
+		query = `INSERT INTO supports_shifts SET
+		support_id = :support_id,
+		opening_time = :opening_time`
+	} else {
+		query = `UPDATE supports_shifts SET
+		support_id = :support_id,
+		closing_time = :closing_time,
+		closing_status = :closing_status
+		WHERE id = :id`
+	}
+	if _, err := r.db.NamedExec(query, dbShift); err != nil {
+		logger.LogError("Failed insert shift changes to db", "helpdesk/repo/mysql", strconv.FormatUint(shift.Support.ID, 10), err)
+		return errShiftUpdateShift
+	}
+	return nil
 }
 
 //GetLastShift получить последнюю смену саппорта
