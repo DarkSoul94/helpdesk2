@@ -334,6 +334,31 @@ func (r *CatSecRepo) GetCategorySectionByID(id uint64) (*internal_models.Categor
 	return r.toModelCategorySection(sect), nil
 }
 
+func (r *CatSecRepo) GetSectionWithCategoryByID(id uint64) (*internal_models.SectionWithCategory, error) {
+	var (
+		sect  dbSectionWithCategory
+		query string
+		err   error
+	)
+
+	query = `SELECT * FROM category_section AS CS
+				INNER JOIN category AS C ON CS.category_id = C.category_id
+				WHERE CS.section_id = ?`
+
+	err = r.db.Get(&sect, query, id)
+	if err != nil {
+		logger.LogError(
+			"Failed read section with category",
+			"pkg_ticket/cat_sec_manager/repo/mysql",
+			fmt.Sprintf("id: %d", id),
+			err,
+		)
+		return nil, err
+	}
+
+	return r.toModelSectionWithCategory(sect), nil
+}
+
 func (r *CatSecRepo) Close() error {
 	r.db.Close()
 	return nil

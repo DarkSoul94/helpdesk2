@@ -14,4 +14,5 @@ type ICatSecUsecase interface {
 	GetCategorySection(forSearch bool) ([]*internal_models.SectionWithCategory, models.Err)
 	GetCategorySectionList() ([]internal_models.CategorySectionList, models.Err)
 	GetCategorySectionByID(id uint64) (*internal_models.CategorySection, models.Err)
+	GetSectionWithCategoryByID(id uint64) (*internal_models.SectionWithCategory, models.Err)
 }

@@ -98,3 +98,16 @@ func (u *CatSecUsecase) GetCategorySectionByID(id uint64) (*internal_models.Cate
 
 	return sect, nil
 }
+
+func (u *CatSecUsecase) GetSectionWithCategoryByID(id uint64) (*internal_models.SectionWithCategory, models.Err) {
+	if !u.repo.CheckCategorySectionExist(id, 0, "") {
+		return nil, ErrCategorySectionExist
+	}
+
+	sect, err := u.repo.GetSectionWithCategoryByID(id)
+	if err != nil {
+		return nil, models.InternalError(err.Error())
+	}
+
+	return sect, nil
+}

@@ -14,11 +14,11 @@ import (
 type Ticket struct {
 	ID             uint64
 	Date           time.Time
-	CatSect        *CategorySection
+	CatSect        *SectionWithCategory
 	Text           string
 	Status         *TicketStatus
 	Filial         string
-	Ip             string
+	IP             string
 	Author         *models.User
 	Support        *models.User
 	ResolvedUser   *models.User
@@ -37,7 +37,7 @@ func (t *Ticket) HashСalculation() string {
 }
 
 func (t *Ticket) IpMask() (string, error) {
-	octets := strings.Split(t.Ip, ".")
+	octets := strings.Split(t.IP, ".")
 	if len(octets) > 1 {
 		return octets[0] + "." + octets[1] + "." + octets[2], nil
 	}

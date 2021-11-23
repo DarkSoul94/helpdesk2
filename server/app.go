@@ -113,7 +113,7 @@ func NewApp() *App {
 	regfilUC := regfilusecase.NewRegFilUsecase(regfilRepo)
 
 	ticketRepo := ticketrepo.NewTicketRepo(db)
-	ticketUC := ticketusecase.NewTicketUsecase(ticketRepo, catsecUC, regfilUC, permUC)
+	ticketUC := ticketusecase.NewTicketUsecase(ticketRepo, catsecUC, regfilUC, permUC, userUC)
 
 	return &App{
 		groupRepo: grpRepo,
