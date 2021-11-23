@@ -387,6 +387,29 @@ func (r *Repo) ResetSenior(seniorID uint64) models.Err {
 	return nil
 }
 
+func (r *Repo) GetSupportListForToday() ([]*internal_models.Support, models.Err) {
+	list := make([]dbSupport, 0)
+	mList := make([]*internal_models.Support, 0)
+	query := `
+		SELECT * FROM support
+		WHERE EXISTS (
+			SELECT * FROM supports_shifts
+			WHERE supports_shifts.support_id = support.support_id
+			AND (
+				CAST(opening_time AS DATE) = CURRENT_DATE
+				OR closing_status = false
+				) 
+		)`
+	if err := r.db.Select(&list, query); err != nil {
+		logger.LogError("Failed get support list", "pkg_support/repo/mysql", "", err)
+		return nil, errSupportGetList
+	}
+	for _, val := range list {
+		mList = append(mList, r.toModelSupport(&val))
+	}
+	return mList, nil
+}
+
 func (r *Repo) Close() error {
 	r.db.Close()
 	return nil

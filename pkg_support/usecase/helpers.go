@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"github.com/DarkSoul94/helpdesk2/global_const/literal_keys"
 	"github.com/DarkSoul94/helpdesk2/models"
 	"github.com/DarkSoul94/helpdesk2/pkg_support/internal_models"
 )
@@ -57,4 +58,75 @@ func (u *SupportUsecase) statusHistoryHelper(support *internal_models.Support, s
 	}
 	statusHistory.New(support, shiftID)
 	return u.repo.CreateHistoryRecord(statusHistory)
+}
+
+func (u *SupportUsecase) getInfoHelper(support *internal_models.Support) (*internal_models.SupportInfo, models.Err) {
+	info := new(internal_models.SupportInfo)
+	shift, err := u.repo.GetLastShift(support.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	shift.Support = support
+	if shift.Support.Status, err = u.repo.GetStatus(support.Status.ID); err != nil {
+		return nil, err
+	}
+
+	countArgs := []string{
+		literal_keys.TS_InWork,
+		literal_keys.TS_Implementation,
+		literal_keys.TS_Postponed,
+		literal_keys.TS_Revision,
+	}
+
+	todayCountArgs := []string{
+		literal_keys.TS_Completed,
+	}
+
+	for key, val := range u.ticket.GetTicketsCounts(support.ID, countArgs...) {
+		if key == literal_keys.TS_InWork ||
+			key == literal_keys.TS_Implementation {
+			info.Tickets[literal_keys.TS_InWork] += val
+			continue
+		}
+
+		info.Tickets[key] = val
+	}
+
+	for key, val := range u.ticket.GetTodayTicketsCounts(support.ID, todayCountArgs...) {
+		info.Tickets[key] = val
+	}
+
+	return info, nil
+}
+
+func (u *SupportUsecase) totalInfoHelper() map[string]int {
+	info := make(map[string]int)
+	countArgs := []string{
+		literal_keys.TS_InWork,
+		literal_keys.TS_Implementation,
+		literal_keys.TS_Postponed,
+		literal_keys.TS_Revision,
+		literal_keys.TS_Wait,
+	}
+
+	todayCountArgs := []string{
+		literal_keys.TS_Completed,
+	}
+
+	for key, val := range u.ticket.GetTicketsCounts(0, countArgs...) {
+		if key == literal_keys.TS_InWork ||
+			key == literal_keys.TS_Implementation {
+			info[literal_keys.TS_InWork] += val
+			continue
+		}
+
+		info[key] = val
+	}
+
+	for key, val := range u.ticket.GetTodayTicketsCounts(0, todayCountArgs...) {
+		info[key] = val
+	}
+
+	return info
 }

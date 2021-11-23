@@ -1,7 +1,7 @@
 package permissions
 
 import (
-	"github.com/DarkSoul94/helpdesk2/global_const"
+	"github.com/DarkSoul94/helpdesk2/global_const/actions"
 	"github.com/DarkSoul94/helpdesk2/models"
 	"github.com/DarkSoul94/helpdesk2/pkg_user/group_manager"
 )
@@ -40,26 +40,26 @@ func (u *Usecase) CheckUpdatedPermissions(group *models.Group, actions ...string
 
 func (u *Usecase) check(group *models.Group, action string) bool {
 	switch action {
-	case global_const.AdminTA_UserUpdate:
+	case actions.AdminTA_UserUpdate:
 		return checkUserUpdate(group)
 
-	case global_const.AdminTA_GroupCreate,
-		global_const.AdminTA_GroupUpdate:
+	case actions.AdminTA_GroupCreate,
+		actions.AdminTA_GroupUpdate:
 		return checkGroupChange(group)
 
-	case global_const.AdminTA_GroupGet:
+	case actions.AdminTA_GroupGet:
 		return checkGroupGet(group)
 
-	case global_const.AdminTA:
+	case actions.AdminTA:
 		return checkIsAdmin(group)
 
-	case global_const.TicketTA_FullSearch:
+	case actions.TicketTA_FullSearch:
 		return checkFullSearch(group)
 
-	case global_const.TicketTA_Work:
+	case actions.TicketTA_Work:
 		return checkWorkOnTicket(group)
 
-	case global_const.TicketTA_Resolve:
+	case actions.TicketTA_Resolve:
 		return checkResolveTicket(group)
 
 	default:

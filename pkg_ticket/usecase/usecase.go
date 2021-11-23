@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/DarkSoul94/helpdesk2/cachettl"
-	"github.com/DarkSoul94/helpdesk2/global_const"
+	"github.com/DarkSoul94/helpdesk2/global_const/actions"
 	"github.com/DarkSoul94/helpdesk2/models"
 	"github.com/DarkSoul94/helpdesk2/pkg_ticket"
 	"github.com/DarkSoul94/helpdesk2/pkg_ticket/cat_sec_manager"
@@ -164,11 +164,11 @@ func (u *TicketUsecase) GetTicketStatuses(group_id uint64, all bool) ([]*interna
 
 func (u *TicketUsecase) ticketStatusFilter(list []*internal_models.TicketStatus, group_id uint64) []*internal_models.TicketStatus {
 	filteredList := make([]*internal_models.TicketStatus, 0)
-	if u.permUC.CheckPermission(group_id, global_const.AdminTA) {
+	if u.permUC.CheckPermission(group_id, actions.AdminTA) {
 		return list
 	}
 
-	if u.permUC.CheckPermission(group_id, global_const.TicketTA_Work) {
+	if u.permUC.CheckPermission(group_id, actions.TicketTA_Work) {
 		for _, stat := range list {
 			if stat.ID == internal_models.TicketStatusMap[internal_models.KeyTSResolve].ID ||
 				stat.ID == internal_models.TicketStatusMap[internal_models.KeyTSWait].ID {
@@ -177,7 +177,7 @@ func (u *TicketUsecase) ticketStatusFilter(list []*internal_models.TicketStatus,
 				filteredList = append(filteredList, stat)
 			}
 		}
-	} else if u.permUC.CheckPermission(group_id, global_const.TicketTA_Resolve) {
+	} else if u.permUC.CheckPermission(group_id, actions.TicketTA_Resolve) {
 		for _, stat := range list {
 			if stat.ID == internal_models.TicketStatusMap[internal_models.KeyTSRevision].ID ||
 				stat.ID == internal_models.TicketStatusMap[internal_models.KeyTSRejected].ID {

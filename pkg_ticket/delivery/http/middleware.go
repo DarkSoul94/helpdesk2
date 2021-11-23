@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/DarkSoul94/helpdesk2/global_const"
+	"github.com/DarkSoul94/helpdesk2/global_const/actions"
 	"github.com/DarkSoul94/helpdesk2/models"
 	"github.com/DarkSoul94/helpdesk2/pkg_user/group_manager"
 	"github.com/gin-gonic/gin"
@@ -35,7 +36,7 @@ func (p *PermissionMiddleware) CheckPermissions(c *gin.Context) {
 		"/helpdesk/filial/update",
 		"/helpdesk/filial/",
 		"/helpdesk/filial/filial_list":
-		if !p.usecase.CheckPermission(user.(*models.User).Group.ID, global_const.AdminTA) {
+		if !p.usecase.CheckPermission(user.(*models.User).Group.ID, actions.AdminTA) {
 			c.AbortWithStatus(http.StatusForbidden)
 		}
 	}

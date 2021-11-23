@@ -10,5 +10,5 @@ type Usecase struct {
 	repo    pkg_user.IUserRepo
 	group   group_manager.IGroupUsecase
 	perm    group_manager.IPermManager
-	support pkg_support.ISupportUsecase
+	support pkg_support.ISuppForUser
 }
