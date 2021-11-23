@@ -34,7 +34,7 @@ func (u *SupportUsecase) priorityHelper(support *internal_models.Support) []*int
 func nextPrioritizedSupport(support *internal_models.Support, active []*internal_models.Support) *internal_models.Support {
 	for id, val := range active {
 		if val.ID == support.ID {
-			if id+1 <= len(active) {
+			if id+1 < len(active) {
 				return active[id+1]
 			}
 			if active[0].ID != support.ID {
@@ -48,20 +48,26 @@ func nextPrioritizedSupport(support *internal_models.Support, active []*internal
 
 //statusHistoryHelper предназначена для работы с историей статусов суппорта
 func (u *SupportUsecase) statusHistoryHelper(support *internal_models.Support, shiftID uint64) models.Err {
-	statusHistory, err := u.repo.GetLastStatusHistory(support.ID, shiftID)
-	if err == nil && statusHistory != nil {
+	statusHistory, _ := u.repo.GetLastStatusHistory(support.ID, shiftID)
+	if statusHistory != nil {
 		//расчет и установка длительности нахождения в статусе
 		statusHistory.SetDuration()
 		if err := u.repo.UpdateHistoryRecord(statusHistory); err != nil {
 			return err
 		}
 	}
-	statusHistory.New(support, shiftID)
-	return u.repo.CreateHistoryRecord(statusHistory)
+	newHistory := internal_models.StatusHistory{}
+	newHistory.New(support, shiftID)
+	return u.repo.CreateHistoryRecord(&newHistory)
 }
 
 func (u *SupportUsecase) getInfoHelper(support *internal_models.Support) (*internal_models.SupportInfo, models.Err) {
-	info := new(internal_models.SupportInfo)
+	var (
+		info = internal_models.SupportInfo{
+			Tickets: map[string]int{},
+		}
+	)
+
 	shift, err := u.repo.GetLastShift(support.ID)
 	if err != nil {
 		return nil, err
@@ -82,22 +88,20 @@ func (u *SupportUsecase) getInfoHelper(support *internal_models.Support) (*inter
 	todayCountArgs := []string{
 		literal_keys.TS_Completed,
 	}
-
 	for key, val := range u.ticket.GetTicketsCounts(support.ID, countArgs...) {
 		if key == literal_keys.TS_InWork ||
 			key == literal_keys.TS_Implementation {
 			info.Tickets[literal_keys.TS_InWork] += val
 			continue
 		}
-
 		info.Tickets[key] = val
 	}
 
 	for key, val := range u.ticket.GetTodayTicketsCounts(support.ID, todayCountArgs...) {
 		info.Tickets[key] = val
 	}
-
-	return info, nil
+	info.Shift = shift
+	return &info, nil
 }
 
 func (u *SupportUsecase) totalInfoHelper() map[string]int {

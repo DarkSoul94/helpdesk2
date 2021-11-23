@@ -149,12 +149,10 @@ func (a *App) Run(port string) error {
 	} else {
 		router.Use(gin.Logger())
 	}
-	/*
-		router.Use(
-			gin.RecoveryWithWriter(logger.GetOutFile()),
-		)
-	*/
-	router.Use(gin.Recovery())
+	router.Use(
+		gin.Recovery(),
+		//gin.RecoveryWithWriter(logger.GetOutFile()),
+	)
 
 	apiRouter := router.Group("/helpdesk")
 

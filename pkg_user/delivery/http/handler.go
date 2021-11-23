@@ -1,6 +1,7 @@
 package http
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/DarkSoul94/helpdesk2/dto"
@@ -55,7 +56,7 @@ func (h *Handler) GetUsersList(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, map[string]interface{}{"status": "error", "error": err.Error()})
 		return
 	}
-
+	fmt.Println(userList)
 	ctx.JSON(http.StatusOK, dto.ToOutUserList(userList))
 }
 

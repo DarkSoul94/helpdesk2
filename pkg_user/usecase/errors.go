@@ -5,7 +5,8 @@ import (
 )
 
 var (
-	errPermissions_UserUpdate = models.Forbidden("Недостаточно прав для обновления пользователя")
+	errPermissions_UserUpdate  = models.Forbidden("Недостаточно прав для обновления пользователя")
+	errPermissions_GetUserList = models.Forbidden("Недостаточно прав для получения списка групп")
 
 	errPermissions_CreateGroup  = models.Forbidden("Недостаточно прав для создания группы")
 	errPermissions_UpdateGroup  = models.Forbidden("Недостаточно прав для обновления группы")

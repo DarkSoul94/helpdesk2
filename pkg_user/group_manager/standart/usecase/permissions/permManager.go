@@ -40,7 +40,8 @@ func (u *Usecase) CheckUpdatedPermissions(group *models.Group, actions ...string
 
 func (u *Usecase) check(group *models.Group, action string) bool {
 	switch action {
-	case actions.AdminTA_UserUpdate:
+	case actions.AdminTA_UserUpdate,
+		actions.AdminTA_UserGet:
 		return checkUserUpdate(group)
 
 	case actions.AdminTA_GroupCreate,

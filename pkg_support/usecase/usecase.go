@@ -162,7 +162,8 @@ func (u *SupportUsecase) SetSupportStatus(supportID, statusID uint64) models.Err
 func (u *SupportUsecase) OpenShift(supportID uint64, user *models.User) models.Err {
 	shift, err := u.repo.GetLastShift(supportID)
 	if err != nil {
-		return err
+		shift = new(internal_models.Shift)
+		shift.ClosingStatus = true
 	}
 	if shift.ClosingStatus {
 		if shift.WasOpenedToday() {
@@ -172,7 +173,6 @@ func (u *SupportUsecase) OpenShift(supportID uint64, user *models.User) models.E
 			shift.Reopen()
 			return u.updateShift(shift)
 		}
-
 		//TODO добавить проверку на опоздание по графику и можно ли вообще открывать смену
 		shift.Open(supportID, time.Now())
 		return u.updateShift(shift)
@@ -199,7 +199,16 @@ func (u *SupportUsecase) CloseShift(supportID uint64, user *models.User) models.
 }
 
 func (u *SupportUsecase) updateShift(shift *internal_models.Shift) models.Err {
-	var err models.Err
+	var (
+		err models.Err
+		id  uint64
+	)
+	if id, err = u.repo.UpdateShift(shift); err != nil {
+		return err
+	}
+	if shift.ID == 0 {
+		shift.ID = id
+	}
 	if shift.Support.Status != nil {
 		shift.Support.Status, err = u.repo.GetStatus(shift.Support.Status.ID)
 		if err != nil {
@@ -215,7 +224,7 @@ func (u *SupportUsecase) updateShift(shift *internal_models.Shift) models.Err {
 			return err
 		}
 	}
-	return u.repo.UpdateShift(shift)
+	return nil
 }
 
 func (u *SupportUsecase) GetLastShift(supportID uint64) (*internal_models.Shift, models.Err) {
