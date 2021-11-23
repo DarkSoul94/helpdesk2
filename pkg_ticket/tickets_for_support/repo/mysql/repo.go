@@ -32,7 +32,7 @@ func (r *Repo) GetTicketsCount(supportID, statusID uint64) int {
 		return count
 	}
 	query := getCountWithoutSupp()
-	if err := r.db.Get(&count, query, supportID, statusID); err != nil {
+	if err := r.db.Get(&count, query, statusID); err != nil {
 		logger.LogError(
 			"Failed read tickets count",
 			"pkg_ticket/repo/mysql",
