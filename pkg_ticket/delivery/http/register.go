@@ -62,4 +62,12 @@ func RegisterHTTPEndpoints(router *gin.RouterGroup, uc pkg_ticket.ITicketUsecase
 		//http://localhost:8888/helpdesk/ticket_status/list
 		ticketStatusEndpoints.GET("/list", h.GetAllTicketStatuses)
 	}
+
+	ticketEndpoints := router.Group("/ticket")
+	ticketEndpoints.Use(middlewares...)
+	{
+		//http://localhost:8888/helpdesk/ticket/create
+		ticketEndpoints.POST("/create", h.CreateTicket)
+	}
+
 }

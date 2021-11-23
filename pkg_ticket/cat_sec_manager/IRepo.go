@@ -12,6 +12,7 @@ type ICatSecRepo interface {
 	UpdateCategorySection(sec *internal_models.CategorySection) error
 	GetCategorySection(forSearch bool) ([]*internal_models.SectionWithCategory, error)
 	GetCategorySectionList() ([]internal_models.CategorySectionList, error)
+	GetCategorySectionByID(id uint64) (*internal_models.CategorySection, error)
 
 	Close() error
 }

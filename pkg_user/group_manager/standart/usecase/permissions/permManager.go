@@ -59,6 +59,9 @@ func (u *Usecase) check(group *models.Group, action string) bool {
 	case actions.TicketTA_Work:
 		return checkWorkOnTicket(group)
 
+	case global_const.TicketTA_Resolve:
+		return checkResolveTicket(group)
+
 	default:
 		return false
 	}

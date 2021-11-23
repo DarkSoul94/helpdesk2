@@ -207,6 +207,41 @@ func (r *RegFilRepo) DeleteFilial(id uint64) error {
 	return nil
 }
 
+func (r *RegFilRepo) GetFilialByIp(ip string) (*internal_models.Filial, *internal_models.Region, error) {
+	var (
+		fil   dbFilial
+		reg   dbRegion
+		query string
+		err   error
+	)
+
+	query = `SELECT * FROM filials WHERE ip = ?`
+	err = r.db.Get(&fil, query, ip)
+	if err != nil {
+		logger.LogError(
+			"Failed read filial",
+			"pkg_ticket/reg_fil_manager/repo/mysql",
+			fmt.Sprintf("ip: %s;", ip),
+			err,
+		)
+		return nil, nil, err
+	}
+
+	query = `SELECT * FROM regions WHERE region_id = ?`
+	err = r.db.Get(&reg, query, fil.RegionID)
+	if err != nil {
+		logger.LogError(
+			"Failed read region",
+			"pkg_ticket/reg_fil_manager/repo/mysql",
+			fmt.Sprintf("id: %d;", fil.RegionID),
+			err,
+		)
+		return nil, nil, err
+	}
+
+	return r.toModelFilial(fil), r.toModelRegion(reg), nil
+}
+
 func (r *RegFilRepo) GetRegionsWithFilials() ([]*internal_models.RegionWithFilials, error) {
 	var (
 		outList   []*internal_models.RegionWithFilials
