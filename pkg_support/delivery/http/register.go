@@ -19,13 +19,17 @@ func RegisterHTTPEndpoints(router *gin.RouterGroup, uc pkg_support.ISupportUseca
 		//http://localhost:5555/helpdesk/support/open_shift
 		supportEndpoints.POST("/open_shift", h.OpenShift)
 		//http://localhost:5555/helpdesk/support/create_lateness
+		//supportEndpoints.POST("/create_lateness", h.CreateLateness)
 		//http://localhost:5555/helpdesk/support/close_shift
 		supportEndpoints.POST("/close_shift", h.CloseShift)
 		//http://localhost:5555/helpdesk/support/shift_status
+		supportEndpoints.GET("/shift_status", h.GetShiftStatus)
 		//http://localhost:5555/helpdesk/support/active_support_list
 		supportEndpoints.GET("/active_support_list", h.GetActiveSupports)
 		//http://localhost:5555/helpdesk/support/get_current_statuses
+		supportEndpoints.GET("/get_current_statuses", h.GetCurrentStatuses)
 		//http://localhost:5555/helpdesk/support/get_support_status
+		supportEndpoints.GET("/get_support_status", h.GetSupportStatus)
 		//http://localhost:5555/helpdesk/support/change_status
 		supportEndpoints.POST("/change_status", h.ChangeSupportStatus)
 	}

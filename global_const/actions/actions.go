@@ -1,4 +1,4 @@
-package global_const
+package actions
 
 const (
 	AdminTA string = "administration" //для проверки доступа на урл

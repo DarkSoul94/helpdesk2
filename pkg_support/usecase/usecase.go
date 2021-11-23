@@ -3,22 +3,29 @@ package usecase
 import (
 	"time"
 
-	"github.com/DarkSoul94/helpdesk2/global_const"
+	"github.com/DarkSoul94/helpdesk2/global_const/actions"
 	"github.com/DarkSoul94/helpdesk2/models"
 	"github.com/DarkSoul94/helpdesk2/pkg_support"
 	"github.com/DarkSoul94/helpdesk2/pkg_support/internal_models"
+	"github.com/DarkSoul94/helpdesk2/pkg_ticket"
 	"github.com/DarkSoul94/helpdesk2/pkg_user/group_manager"
 )
 
 type SupportUsecase struct {
-	repo pkg_support.ISupportRepo
-	perm group_manager.IPermManager
+	repo   pkg_support.ISupportRepo
+	ticket pkg_ticket.IUCForSupport
+	perm   group_manager.IPermManager
 }
 
-func NewSupportUsecase(repo pkg_support.ISupportRepo, perm group_manager.IPermManager) *SupportUsecase {
+func NewSupportUsecase(
+	repo pkg_support.ISupportRepo,
+	perm group_manager.IPermManager,
+	ticket pkg_ticket.IUCForSupport,
+) *SupportUsecase {
 	return &SupportUsecase{
-		repo: repo,
-		perm: perm,
+		repo:   repo,
+		perm:   perm,
+		ticket: ticket,
 	}
 }
 
@@ -159,7 +166,7 @@ func (u *SupportUsecase) OpenShift(supportID uint64, user *models.User) models.E
 	}
 	if shift.ClosingStatus {
 		if shift.WasOpenedToday() {
-			if !u.perm.CheckPermission(user.Group.ID, global_const.AdminTA) {
+			if !u.perm.CheckPermission(user.Group.ID, actions.AdminTA) {
 				return supportErr_CannotReopen
 			}
 			shift.Reopen()
@@ -180,7 +187,7 @@ func (u *SupportUsecase) CloseShift(supportID uint64, user *models.User) models.
 	}
 	if !shift.ClosingStatus {
 		if u.repo.CheckForBusy(supportID) {
-			if !u.perm.CheckPermission(user.Group.ID, global_const.AdminTA) {
+			if !u.perm.CheckPermission(user.Group.ID, actions.AdminTA) {
 				return supportErr_Busy
 			}
 			//TODO добавить возврат запросов на распределение если смену закрывает админ
@@ -209,4 +216,32 @@ func (u *SupportUsecase) updateShift(shift *internal_models.Shift) models.Err {
 		}
 	}
 	return u.repo.UpdateShift(shift)
+}
+
+func (u *SupportUsecase) GetLastShift(supportID uint64) (*internal_models.Shift, models.Err) {
+	return u.repo.GetLastShift(supportID)
+}
+
+func (u *SupportUsecase) GetSupportStatus(supportID uint64) (*internal_models.Status, models.Err) {
+	supp, err := u.repo.GetSupport(supportID)
+	if err != nil {
+		return nil, err
+	}
+	return u.repo.GetStatus(supp.Status.ID)
+}
+
+func (u *SupportUsecase) GetCurrentStatuses() ([]*internal_models.SupportInfo, map[string]int, models.Err) {
+	infoArray := make([]*internal_models.SupportInfo, 0)
+	suppList, err := u.repo.GetSupportListForToday()
+	if err != nil {
+		return nil, nil, err
+	}
+	for _, supp := range suppList {
+		info, err := u.getInfoHelper(supp)
+		if err != nil {
+			return nil, nil, err
+		}
+		infoArray = append(infoArray, info)
+	}
+	return infoArray, u.totalInfoHelper(), nil
 }

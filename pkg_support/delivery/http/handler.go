@@ -65,7 +65,7 @@ func (h *Handler) GetStatusesList(c *gin.Context) {
 
 func (h *Handler) OpenShift(c *gin.Context) {
 	type support struct {
-		SupportID uint64 `json:"support_id,omitempty"`
+		SupportID uint64 `json:"support_id"`
 	}
 	var sup support
 	if err := c.BindJSON(&sup); err != nil {
@@ -85,7 +85,7 @@ func (h *Handler) OpenShift(c *gin.Context) {
 
 func (h *Handler) CloseShift(c *gin.Context) {
 	type support struct {
-		SupportID uint64 `json:"support_id,omitempty"`
+		SupportID uint64 `json:"support_id"`
 	}
 	var sup support
 	if err := c.BindJSON(&sup); err != nil {
@@ -101,6 +101,35 @@ func (h *Handler) CloseShift(c *gin.Context) {
 
 	c.JSON(http.StatusOK, map[string]string{"status": "ok"})
 
+}
+
+func (h *Handler) GetShiftStatus(c *gin.Context) {
+	user, _ := c.Get(global_const.CtxUserKey)
+	shift, err := h.uc.GetLastShift(user.(*models.User).ID)
+	if err != nil {
+		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, map[string]interface{}{"status": "ok", "shift_status": !shift.ClosingStatus})
+}
+
+func (h *Handler) GetCurrentStatuses(c *gin.Context) {
+	statuses, total, err := h.uc.GetCurrentStatuses()
+	if err != nil {
+		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, dto.ToOutCurrentStatus(statuses, total))
+}
+
+func (h *Handler) GetSupportStatus(c *gin.Context) {
+	user, _ := c.Get(global_const.CtxUserKey)
+	status, err := h.uc.GetSupportStatus(user.(*models.User).ID)
+	if err != nil {
+		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, dto.ToOutSupportStatus(status))
 }
 
 //ChangeSupportStatus ...

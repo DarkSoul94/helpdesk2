@@ -6,14 +6,14 @@ type TicketStatus struct {
 }
 
 const (
-	KeyTSWait           string = "ожидание"
-	KeyTSResolve        string = "согласование"
-	KeyTSInWork         string = "работа"
-	KeyTSImplementation string = "реализация"
-	KeyTSRevision       string = "доработка"
-	KeyTSPostponed      string = "отложен"
-	KeyTSRejected       string = "отклонен"
-	KeyTSCompleted      string = "выполнен"
+	KeyTSWait           string = "wait"
+	KeyTSResolve        string = "resolve"
+	KeyTSInWork         string = "in_work"
+	KeyTSImplementation string = "implementation"
+	KeyTSRevision       string = "revision"
+	KeyTSPostponed      string = "postponed"
+	KeyTSRejected       string = "rejected"
+	KeyTSCompleted      string = "completed"
 )
 
 var TicketStatusMap map[string]TicketStatus = map[string]TicketStatus{

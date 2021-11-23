@@ -8,6 +8,7 @@ var (
 	errSupportDelete         = models.InternalError("Не удалось удалить пользователя из списка саппортов")
 	errSupportGetRandom      = models.InternalError("Не удалось получить случайного свободного саппорта")
 	errSupportModifyActivity = models.InternalError("Не удалось модифицировать запись о распределении запроса на саппорта")
+	errSupportGetList        = models.InternalError("Не удалось получить список саппортов")
 	errSupportGetActive      = models.BadRequest("Не найдены активные саппорты")
 	errSupportGet            = models.BadRequest("Суппорт с таким ID не найден в базе")
 

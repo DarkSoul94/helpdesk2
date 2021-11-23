@@ -21,6 +21,8 @@ import (
 	"github.com/DarkSoul94/helpdesk2/pkg_ticket"
 	tickethttp "github.com/DarkSoul94/helpdesk2/pkg_ticket/delivery/http"
 	ticketrepo "github.com/DarkSoul94/helpdesk2/pkg_ticket/repo/mysql"
+	ticketrepoforsupp "github.com/DarkSoul94/helpdesk2/pkg_ticket/tickets_for_support/repo/mysql"
+	ticketucforsupp "github.com/DarkSoul94/helpdesk2/pkg_ticket/tickets_for_support/usecase"
 	ticketusecase "github.com/DarkSoul94/helpdesk2/pkg_ticket/usecase"
 
 	"github.com/DarkSoul94/helpdesk2/pkg_ticket/cat_sec_manager"
@@ -58,8 +60,10 @@ type App struct {
 	groupRepo group_manager.IGroupRepo
 	groupUC   group_manager.IGroupUsecase
 
-	suppRepo pkg_support.ISupportRepo
-	suppUC   pkg_support.ISupportUsecase
+	ticketRepoForSupp pkg_ticket.IRepoForSupport
+	ticketUCForSupp   pkg_ticket.IUCForSupport
+	suppRepo          pkg_support.ISupportRepo
+	suppUC            pkg_support.ISupportUsecase
 
 	permUC group_manager.IPermManager
 
@@ -89,8 +93,11 @@ func NewApp() *App {
 
 	permUC := permusecase.NewPermManager(grpRepo)
 
+	ticketRepoForSupp := ticketrepoforsupp.NewTicketRepoForSupport(db)
+	ticketUCForSupp := ticketucforsupp.NewTicketUCForSupport(ticketRepoForSupp)
+
 	suppRepo := supportrepo.NewSupportRepo(db)
-	suppUC := supportusecase.NewSupportUsecase(suppRepo, permUC)
+	suppUC := supportusecase.NewSupportUsecase(suppRepo, permUC, ticketUCForSupp)
 
 	userRepo := userrepo.NewRepo(db)
 	userUC := userusecase.NewUsecase(userRepo, grpUC, permUC, suppUC)
@@ -113,8 +120,10 @@ func NewApp() *App {
 		groupRepo: grpRepo,
 		groupUC:   grpUC,
 
-		suppRepo: suppRepo,
-		suppUC:   suppUC,
+		ticketRepoForSupp: ticketRepoForSupp,
+		ticketUCForSupp:   ticketUCForSupp,
+		suppRepo:          suppRepo,
+		suppUC:            suppUC,
 
 		permUC: permUC,
 
@@ -264,6 +273,7 @@ func runGormMigrations(db *gorm.DB) {
 func (a *App) close() {
 	a.userRepo.Close()
 	a.groupRepo.Close()
+	a.ticketRepoForSupp.Close()
 	a.suppRepo.Close()
 	a.catSecRepo.Close()
 	a.regFilRepo.Close()
