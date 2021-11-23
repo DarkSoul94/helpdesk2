@@ -11,7 +11,6 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/DarkSoul94/helpdesk2/pkg/logger"
 	"github.com/DarkSoul94/helpdesk2/pkg_support"
 	"github.com/DarkSoul94/helpdesk2/pkg_user"
 	userhttp "github.com/DarkSoul94/helpdesk2/pkg_user/delivery/http"
@@ -107,7 +106,7 @@ func NewApp() *App {
 	regfilUC := regfilusecase.NewRegFilUsecase(regfilRepo)
 
 	ticketRepo := ticketrepo.NewTicketRepo(db)
-	ticketUC := ticketusecase.NewTicketUsecase(ticketRepo, catsecUC, regfilUC, permUC)
+	ticketUC := ticketusecase.NewTicketUsecase(ticketRepo, catsecUC, regfilUC, permUC, userUC)
 
 	return &App{
 		groupRepo: grpRepo,
@@ -141,9 +140,12 @@ func (a *App) Run(port string) error {
 	} else {
 		router.Use(gin.Logger())
 	}
-	router.Use(
-		gin.RecoveryWithWriter(logger.GetOutFile()),
-	)
+	/*
+		router.Use(
+			gin.RecoveryWithWriter(logger.GetOutFile()),
+		)
+	*/
+	router.Use(gin.Recovery())
 
 	apiRouter := router.Group("/helpdesk")
 

@@ -295,3 +295,49 @@ func (h *TicketHandler) CreateTicket(c *gin.Context) {
 
 	c.JSON(http.StatusOK, map[string]interface{}{"status": "ok", "ticket_id": id})
 }
+
+func (h *TicketHandler) GetTicketsList(c *gin.Context) {
+	count, _ := strconv.Atoi(c.Request.URL.Query().Get("count"))
+	offset, _ := strconv.Atoi(c.Request.URL.Query().Get("offset"))
+	user, _ := c.Get(global_const.CtxUserKey)
+
+	list, tags, priority, err := h.uc.GetTicketList(user.(*models.User).Group.ID, count, offset)
+	if err != nil {
+		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+
+	outList := make([]dto.OutTicketForList, 0)
+	for _, tick := range list {
+		outList = append(outList, dto.ToOutTicketForList(tick, priority))
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{"fields": tags, "tickets": outList})
+}
+
+func (h *TicketHandler) CheckNeedApprovalTicketExist(c *gin.Context) {
+	user, _ := c.Get(global_const.CtxUserKey)
+
+	exist := h.uc.CheckNeedApprovalTicketExist(user.(*models.User).Group.ID)
+
+	c.JSON(http.StatusOK, map[string]interface{}{"status": "ok", "exist": exist})
+}
+
+func (h *TicketHandler) GetApprovalTicketList(c *gin.Context) {
+	count, _ := strconv.Atoi(c.Request.URL.Query().Get("count"))
+	offset, _ := strconv.Atoi(c.Request.URL.Query().Get("offset"))
+	user, _ := c.Get(global_const.CtxUserKey)
+
+	list, tags, err := h.uc.GetApprovalTicketList(user.(*models.User).Group.ID, count, offset)
+	if err != nil {
+		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+
+	outList := make([]dto.OutTicketForList, 0)
+	for _, tick := range list {
+		outList = append(outList, dto.ToOutTicketForList(tick, nil))
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{"fields": tags, "tickets": outList})
+}

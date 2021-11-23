@@ -11,6 +11,7 @@ import (
 	"github.com/DarkSoul94/helpdesk2/pkg_ticket/cat_sec_manager"
 	"github.com/DarkSoul94/helpdesk2/pkg_ticket/internal_models"
 	"github.com/DarkSoul94/helpdesk2/pkg_ticket/reg_fil_manager"
+	"github.com/DarkSoul94/helpdesk2/pkg_user"
 	"github.com/DarkSoul94/helpdesk2/pkg_user/group_manager"
 	"github.com/spf13/viper"
 )
@@ -20,6 +21,7 @@ type TicketUsecase struct {
 	catSecUC cat_sec_manager.ICatSecUsecase
 	regFilUC reg_fil_manager.IRegFilUsecase
 	permUC   group_manager.IPermManager
+	userUC   pkg_user.IUserUsecase
 	store    cachettl.ObjectStore
 }
 
@@ -28,12 +30,14 @@ func NewTicketUsecase(
 	catSecUC cat_sec_manager.ICatSecUsecase,
 	regFilUC reg_fil_manager.IRegFilUsecase,
 	permUC group_manager.IPermManager,
+	userUC pkg_user.IUserUsecase,
 ) *TicketUsecase {
 	return &TicketUsecase{
 		repo:     tRepo,
 		catSecUC: catSecUC,
 		regFilUC: regFilUC,
 		permUC:   permUC,
+		userUC:   userUC,
 		store:    *cachettl.NewObjectStore(viper.GetDuration("app.ttl_cache.clear_period") * time.Second),
 	}
 }
@@ -191,7 +195,7 @@ func (u *TicketUsecase) CreateTicket(ticket *internal_models.Ticket) (uint64, mo
 		err              models.Err
 	)
 
-	if ticket.CatSect, err = u.catSecUC.GetCategorySectionByID(ticket.CatSect.ID); err != nil {
+	if ticket.CatSect, err = u.catSecUC.GetSectionWithCategoryByID(ticket.CatSect.ID); err != nil {
 		return 0, err
 	}
 
@@ -226,4 +230,111 @@ func (u *TicketUsecase) CreateTicket(ticket *internal_models.Ticket) (uint64, mo
 	u.store.Add(ticket.Author.Email, ticketHash, viper.GetInt64("app.ttl_cache.life_time"))
 
 	return id, nil
+}
+
+func (u *TicketUsecase) GetTicketList(groupID uint64, limit, offset int) ([]*internal_models.Ticket, []string, map[uint]uint, models.Err) {
+	var (
+		list     []*internal_models.Ticket
+		priority map[uint]uint
+		err      error
+	)
+
+	if u.permUC.CheckPermission(groupID, global_const.AdminTA) {
+		list, err = u.repo.GetTicketListForAdmin(limit, offset)
+		priority = nil
+	} else if u.permUC.CheckPermission(groupID, global_const.TicketTA_Work) {
+		list, err = u.repo.GetTicketListForSupport(groupID, limit, offset)
+		priority = u.repo.GetTicketStatusesSortPriority(true)
+	} else {
+		list, err = u.repo.GetTicketListForUser(groupID, limit, offset)
+		priority = u.repo.GetTicketStatusesSortPriority(false)
+	}
+
+	for _, ticket := range list {
+		ticket.CatSect, err = u.catSecUC.GetSectionWithCategoryByID(ticket.CatSect.ID)
+		if err != nil {
+			return nil, nil, nil, models.InternalError(err.Error())
+		}
+
+		if ticket.Author != nil {
+			ticket.Author, err = u.userUC.GetUserByID(ticket.Author.ID)
+			if err != nil {
+				return nil, nil, nil, models.InternalError(err.Error())
+			}
+		}
+
+		if ticket.Support != nil && u.permUC.CheckPermission(groupID, global_const.AdminTA) {
+			ticket.Support, err = u.userUC.GetUserByID(ticket.Support.ID)
+			if err != nil {
+				return nil, nil, nil, models.InternalError(err.Error())
+			}
+		} else {
+			ticket.Support = nil
+		}
+
+		if ticket.ResolvedUser != nil {
+			ticket.ResolvedUser, err = u.userUC.GetUserByID(ticket.ResolvedUser.ID)
+			if err != nil {
+				return nil, nil, nil, models.InternalError(err.Error())
+			}
+		}
+	}
+
+	return list, u.makeTagList(groupID), priority, nil
+}
+
+func (u *TicketUsecase) makeTagList(groupID uint64) []string {
+	tags := []string{
+		"ticket_id",
+		"ticket_date",
+		"category",
+		"section",
+		"ticket_text",
+		"status",
+		"filial",
+		"ticket_author",
+	}
+
+	if u.permUC.CheckPermission(groupID, global_const.AdminTA) {
+		tags = append(tags, "support")
+	}
+	if !u.permUC.CheckPermission(groupID, global_const.TicketTA_Resolve) {
+		tags = append(tags, "grade")
+	}
+
+	return tags
+}
+
+func (u *TicketUsecase) CheckNeedApprovalTicketExist(groupID uint64) bool {
+	exist, err := u.repo.CheckNeedApprovalTicketExist(groupID, u.permUC.CheckPermission(groupID, global_const.TicketTA_Resolve))
+	if err != nil {
+		return false
+	}
+
+	return exist
+}
+
+func (u *TicketUsecase) GetApprovalTicketList(groupID uint64, limit, offset int) ([]*internal_models.Ticket, []string, models.Err) {
+	list, err := u.repo.GetTicketListForApproval(groupID, limit, offset, u.permUC.CheckPermission(groupID, global_const.TicketTA_Resolve))
+	if err != nil {
+		return nil, nil, models.InternalError(err.Error())
+	}
+
+	for _, ticket := range list {
+		ticket.CatSect, err = u.catSecUC.GetSectionWithCategoryByID(ticket.CatSect.ID)
+		if err != nil {
+			return nil, nil, models.InternalError(err.Error())
+		}
+
+		if ticket.Author != nil {
+			ticket.Author, err = u.userUC.GetUserByID(ticket.Author.ID)
+			if err != nil {
+				return nil, nil, models.InternalError(err.Error())
+			}
+		}
+
+		ticket.Support = nil
+	}
+
+	return list, u.makeTagList(groupID), nil
 }

@@ -68,6 +68,16 @@ func RegisterHTTPEndpoints(router *gin.RouterGroup, uc pkg_ticket.ITicketUsecase
 	{
 		//http://localhost:8888/helpdesk/ticket/create
 		ticketEndpoints.POST("/create", h.CreateTicket)
+		//http://localhost:8888/helpdesk/ticket/tickets_list?count=5&offset=0
+		ticketEndpoints.GET("/tickets_list", h.GetTicketsList)
 	}
 
+	resolveTicketEndpoints := router.Group("/resolve_ticket")
+	resolveTicketEndpoints.Use(middlewares...)
+	{
+		//http://localhost:8888/helpdesk/resolve_ticket/check_exist
+		resolveTicketEndpoints.GET("/check_exist", h.CheckNeedApprovalTicketExist)
+		//http://localhost:8888/helpdesk/resolve_ticket/resolve_tickets_list?count=5&offset=0
+		resolveTicketEndpoints.GET("/resolve_tickets_list", h.GetApprovalTicketList)
+	}
 }
