@@ -294,8 +294,8 @@ func (r *Repo) CreateHistoryRecord(statHistory *internal_models.StatusHistory) m
 			shift_id = :shift_id`
 	if _, err := r.db.NamedExec(query, dbHistory); err != nil {
 		logger.LogError("Failed create record to support status history", "pkg_support/repo/mysql",
-			fmt.Sprintf("support id: %d, status id: %d", dbHistory.SupportID, dbHistory.StatusID), err)
-		return errCardCreate
+			fmt.Sprintf("support id: %d, status id: %d, shift id: %d", dbHistory.SupportID, dbHistory.StatusID, dbHistory.ShiftID), err)
+		return errHistoryCreate
 	}
 	return nil
 }
@@ -322,13 +322,14 @@ func (r *Repo) GetLastStatusHistory(supportID, shiftID uint64) (*internal_models
 		SELECT * FROM support_status_history
 		WHERE support_id = ?
 			AND shift_id = ?
+		ORDER BY id DESC
 		LIMIT 1`
 	if err := r.db.Get(dbHistory, query, supportID, shiftID); err != nil {
 		logger.LogError("Failed get support status history record", "pkg_support/repo/mysql",
 			fmt.Sprintf("support id: %d, shift id: %d", supportID, shiftID), err)
 		return nil, errHistoryGet
 	}
-	return nil, nil
+	return r.toModelsStatusHistory(dbHistory), nil
 }
 
 //CreateSupportCard создает новую запись карточки суппорта.

@@ -199,11 +199,16 @@ func (u *SupportUsecase) CloseShift(supportID uint64, user *models.User) models.
 }
 
 func (u *SupportUsecase) updateShift(shift *internal_models.Shift) models.Err {
-	var err models.Err
-	if shift.ID, err = u.repo.UpdateShift(shift); err != nil {
+	var (
+		err models.Err
+		id  uint64
+	)
+	if id, err = u.repo.UpdateShift(shift); err != nil {
 		return err
 	}
-
+	if shift.ID == 0 {
+		shift.ID = id
+	}
 	if shift.Support.Status != nil {
 		shift.Support.Status, err = u.repo.GetStatus(shift.Support.Status.ID)
 		if err != nil {

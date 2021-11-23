@@ -78,6 +78,21 @@ func (r *Repo) toDbStatusHistory(statHistory *internal_models.StatusHistory) dbS
 	}
 }
 
+func (r *Repo) toModelsStatusHistory(dbStat *dbStatusHistory) *internal_models.StatusHistory {
+	return &internal_models.StatusHistory{
+		ID: dbStat.ID,
+		Support: &internal_models.Support{
+			ID: dbStat.SupportID,
+			Status: &internal_models.Status{
+				ID: dbStat.StatusID,
+			},
+		},
+		SelectTime: dbStat.SelectTime,
+		Duration:   dbStat.Duration,
+		ShiftID:    dbStat.ShiftID,
+	}
+}
+
 func toModelStatusHistory(stat *dbStatusHistory) internal_models.StatusHistory {
 	return internal_models.StatusHistory{
 		ID: stat.ID,

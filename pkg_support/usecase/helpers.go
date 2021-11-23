@@ -34,7 +34,7 @@ func (u *SupportUsecase) priorityHelper(support *internal_models.Support) []*int
 func nextPrioritizedSupport(support *internal_models.Support, active []*internal_models.Support) *internal_models.Support {
 	for id, val := range active {
 		if val.ID == support.ID {
-			if id+1 <= len(active) {
+			if id+1 < len(active) {
 				return active[id+1]
 			}
 			if active[0].ID != support.ID {
