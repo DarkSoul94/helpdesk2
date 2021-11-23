@@ -11,7 +11,6 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/DarkSoul94/helpdesk2/pkg/logger"
 	"github.com/DarkSoul94/helpdesk2/pkg_support"
 	"github.com/DarkSoul94/helpdesk2/pkg_user"
 	userhttp "github.com/DarkSoul94/helpdesk2/pkg_user/delivery/http"
@@ -151,7 +150,8 @@ func (a *App) Run(port string) error {
 		router.Use(gin.Logger())
 	}
 	router.Use(
-		gin.RecoveryWithWriter(logger.GetOutFile()),
+		gin.Recovery(),
+		//gin.RecoveryWithWriter(logger.GetOutFile()),
 	)
 
 	apiRouter := router.Group("/helpdesk")

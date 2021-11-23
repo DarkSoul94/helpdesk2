@@ -16,7 +16,7 @@ type ISupportRepo interface {
 	GetRandomFreeSupport() (*internal_models.Support, models.Err)
 	GetPrioritizedSupportID() uint64
 
-	UpdateShift(shift *internal_models.Shift) models.Err
+	UpdateShift(shift *internal_models.Shift) (uint64, models.Err)
 
 	CheckForActivity(supportID uint64) bool
 	CheckForBusy(supportID uint64) bool

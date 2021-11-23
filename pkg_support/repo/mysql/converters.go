@@ -73,7 +73,7 @@ func (r *Repo) toDbStatusHistory(statHistory *internal_models.StatusHistory) dbS
 		SupportID:  statHistory.Support.ID,
 		StatusID:   statHistory.Support.Status.ID,
 		SelectTime: statHistory.SelectTime,
-		ShiftID:    statHistory.Shift.ID,
+		ShiftID:    statHistory.ShiftID,
 		Duration:   statHistory.Duration,
 	}
 }
@@ -89,9 +89,7 @@ func toModelStatusHistory(stat *dbStatusHistory) internal_models.StatusHistory {
 		},
 		SelectTime: stat.SelectTime,
 		Duration:   stat.Duration,
-		Shift: &internal_models.Shift{
-			ID: stat.ShiftID,
-		},
+		ShiftID:    stat.ShiftID,
 	}
 }
 

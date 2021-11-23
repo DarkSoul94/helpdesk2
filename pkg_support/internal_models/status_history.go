@@ -7,7 +7,7 @@ type StatusHistory struct {
 	Support    *Support
 	SelectTime time.Time
 	Duration   time.Duration
-	Shift      *Shift
+	ShiftID    uint64
 }
 
 func (sh *StatusHistory) New(support *Support, shiftID uint64) {
@@ -15,9 +15,7 @@ func (sh *StatusHistory) New(support *Support, shiftID uint64) {
 		Support:    support,
 		SelectTime: time.Now().Truncate(time.Second),
 		Duration:   0,
-		Shift: &Shift{
-			ID: shiftID,
-		},
+		ShiftID:    shiftID,
 	}
 }
 

@@ -101,7 +101,7 @@ func (u *Usecase) GetUsersList(askUser *models.User) ([]*models.User, models.Err
 	)
 
 	if !u.perm.CheckPermission(askUser.Group.ID, actions.AdminTA_UserGet) {
-		return nil, err
+		return nil, errPermissions_GetUserList
 	}
 
 	if userList, err = u.repo.GetUsersList(); err != nil {

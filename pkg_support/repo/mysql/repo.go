@@ -243,7 +243,7 @@ func (r *Repo) GetStatusesList() ([]*internal_models.Status, models.Err) {
 	return mStat, nil
 }
 
-func (r *Repo) UpdateShift(shift *internal_models.Shift) models.Err {
+func (r *Repo) UpdateShift(shift *internal_models.Shift) (uint64, models.Err) {
 	var query string
 	dbShift := r.toDbShift(shift)
 
@@ -258,11 +258,13 @@ func (r *Repo) UpdateShift(shift *internal_models.Shift) models.Err {
 		closing_status = :closing_status
 		WHERE id = :id`
 	}
-	if _, err := r.db.NamedExec(query, dbShift); err != nil {
+	res, err := r.db.NamedExec(query, dbShift)
+	if err != nil {
 		logger.LogError("Failed insert shift changes to db", "helpdesk/repo/mysql", strconv.FormatUint(shift.Support.ID, 10), err)
-		return errShiftUpdateShift
+		return 0, errShiftUpdateShift
 	}
-	return nil
+	id, _ := res.LastInsertId()
+	return uint64(id), nil
 }
 
 //GetLastShift получить последнюю смену саппорта
@@ -270,7 +272,7 @@ func (r *Repo) GetLastShift(supportID uint64) (*internal_models.Shift, models.Er
 	shift := new(dbShift)
 	query := `
 		SELECT * 
-		FROM support_shifts
+		FROM supports_shifts
 		WHERE support_id = ?
 		ORDER BY id DESC LIMIT 1`
 	if err := r.db.Get(shift, query, supportID); err != nil {
@@ -322,6 +324,8 @@ func (r *Repo) GetLastStatusHistory(supportID, shiftID uint64) (*internal_models
 			AND shift_id = ?
 		LIMIT 1`
 	if err := r.db.Get(dbHistory, query, supportID, shiftID); err != nil {
+		logger.LogError("Failed get support status history record", "pkg_support/repo/mysql",
+			fmt.Sprintf("support id: %d, shift id: %d", supportID, shiftID), err)
 		return nil, errHistoryGet
 	}
 	return nil, nil
@@ -391,7 +395,8 @@ func (r *Repo) GetSupportListForToday() ([]*internal_models.Support, models.Err)
 	list := make([]dbSupport, 0)
 	mList := make([]*internal_models.Support, 0)
 	query := `
-		SELECT * FROM support
+		SELECT support.*, users.user_name AS support_name FROM support
+		RIGHT JOIN users ON users.user_id = support.support_id
 		WHERE EXISTS (
 			SELECT * FROM supports_shifts
 			WHERE supports_shifts.support_id = support.support_id
