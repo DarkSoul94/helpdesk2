@@ -8,6 +8,7 @@ SET `accept_ticket` = DEFAULT;
 
 ALTER TABLE `support`
 ADD INDEX `support_id` (`support_id`),
+ADD CONSTRAINT `support_ibfk_1` FOREIGN KEY (`support_id`) REFERENCES `users`(`user_id`),
 ADD PRIMARY KEY `PRIMARY` (`id`),
 DROP INDEX `PRIMARY`,
 DROP INDEX `status_id`,

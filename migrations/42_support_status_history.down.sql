@@ -7,4 +7,4 @@ CHANGE `status_id` `curr_support_status_id` int unsigned NULL AFTER `prev_suppor
 CHANGE `duration` `difference` int unsigned NULL AFTER `curr_support_status_id`;
 
 ALTER TABLE `support_status_history`
-ADD CONSTRAINT `prev_support_status_id` FOREIGN KEY (`prev_support_status_id`) REFERENCES `support_status` (`support_status_id`);
+ADD CONSTRAINT `support_status_history_ibfk_1` FOREIGN KEY (`prev_support_status_id`) REFERENCES `support_status` (`support_status_id`);
