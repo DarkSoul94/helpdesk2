@@ -295,8 +295,8 @@ func (r *TicketRepo) GetTicketListForUser(authorID uint64, limit, offset int) ([
 					T.ticket_status_id NOT IN(8, 9)
 					OR T.ticket_id IN (
 						SELECT ticket_id FROM ticket_status_history
-						WHERE curr_status_id IN (8, 9)
-						AND CAST(curr_status_time AS DATE) = CURRENT_DATE
+						WHERE ticket_status_id IN (8, 9)
+						AND CAST(select_time AS DATE) = CURRENT_DATE
 					)
 				)
 				ORDER BY TS.sort_priority_user, T.ticket_id
