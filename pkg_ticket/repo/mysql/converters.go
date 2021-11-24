@@ -122,7 +122,7 @@ func (r *TicketRepo) toModelTicketStatusHistory(history dbTicketStatusHistory) *
 		TicketId:    history.TicketId,
 		ChangedUser: &models.User{ID: history.ChangedUserID},
 		SelectTime:  history.SelectTime,
-		Status:      &internal_models.TicketStatus{ID: history.StatusID},
+		Status:      r.toModelTicketStatus(*history.Status),
 		Duration:    history.Duration,
 	}
 }
@@ -133,7 +133,7 @@ func (r *TicketRepo) toDbTicketStatusHistory(history *internal_models.TicketStat
 		TicketId:      history.TicketId,
 		ChangedUserID: history.ChangedUser.ID,
 		SelectTime:    history.SelectTime,
-		StatusID:      history.Status.ID,
+		Status:        r.toDbTicketStatus(history.Status),
 		Duration:      history.Duration,
 	}
 }

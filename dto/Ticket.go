@@ -30,12 +30,29 @@ type OutTicketForList struct {
 	SortPriority uint      `json:"sort_priority,omitempty"`
 }
 
+type OutTicket struct {
+	ID              uint64                  `json:"ticket_id"`
+	Date            time.Time               `json:"ticket_date"`
+	CategorySection *OutSectionWithCategory `json:"category_section"`
+	Text            string                  `json:"ticket_text"`
+	Status          *OutTicketStatus        `json:"ticket_status"`
+	Filial          string                  `json:"filial"`
+	IP              string                  `json:"ip"`
+	Author          *OutUserWithOutGroup    `json:"ticket_author"`
+	Support         *OutUserWithOutGroup    `json:"support"`
+	ResolvedUser    *OutUserWithOutGroup    `json:"resolved_user"`
+	ServiceComment  string                  `json:"service_comment"`
+	//Comment         []*outComment       `json:"comments"`
+	//Files           []*outFiles         `json:"files"`
+}
+
 func NewTicketToModelTicket(tick NewTicket) *internal_models.Ticket {
 	return &internal_models.Ticket{
 		CatSect: &internal_models.SectionWithCategory{ID: tick.SectionID},
 		Text:    tick.Text,
 		Author:  ToModelUser(tick.Author),
 		Status:  &internal_models.TicketStatus{},
+		IP:      tick.Ip,
 	}
 }
 
@@ -70,4 +87,37 @@ func ToOutTicketForList(tick *internal_models.Ticket, priority map[uint]uint) Ou
 	}
 
 	return outTick
+}
+
+func ToOutTicket(ticket *internal_models.Ticket) OutTicket {
+	section := ToOutSectionWithCategory(ticket.CatSect)
+	status := ToOutTicketStatus(ticket.Status)
+
+	outTicket := OutTicket{
+		ID:              ticket.ID,
+		Date:            ticket.Date,
+		CategorySection: &section,
+		Text:            ticket.Text,
+		Status:          &status,
+		Filial:          ticket.Filial,
+		IP:              ticket.IP,
+		ServiceComment:  ticket.ServiceComment,
+	}
+
+	if ticket.Author != nil {
+		author := ToOutUserWithOutGroup(ticket.Author)
+		outTicket.Author = &author
+	}
+
+	if ticket.Support != nil {
+		support := ToOutUserWithOutGroup(ticket.Support)
+		outTicket.Support = &support
+	}
+
+	if ticket.ResolvedUser != nil {
+		resolvUser := ToOutUserWithOutGroup(ticket.ResolvedUser)
+		outTicket.ResolvedUser = &resolvUser
+	}
+
+	return outTicket
 }

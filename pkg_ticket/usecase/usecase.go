@@ -211,6 +211,22 @@ func (u *TicketUsecase) CreateTicketStatusHistory(ticketID, changedUserID uint64
 	return nil
 }
 
+func (u *TicketUsecase) GetAllTicketStatusHistory(ticketID, groupID uint64) ([]*internal_models.TicketStatusHistory, models.Err) {
+	historyList, err := u.repo.GetAllTicketStatusHistory(ticketID)
+	if err != nil {
+		return nil, models.InternalError(err.Error())
+	}
+
+	for _, history := range historyList {
+		history.ChangedUser, err = u.userUC.GetUserByID(history.ChangedUser.ID)
+		if err != nil {
+			return nil, models.InternalError(err.Error())
+		}
+	}
+
+	return historyList, nil
+}
+
 func (u *TicketUsecase) CreateTicket(ticket *internal_models.Ticket) (uint64, models.Err) {
 	var (
 		hash, ticketHash string
@@ -330,6 +346,47 @@ func (u *TicketUsecase) makeTagList(groupID uint64) []string {
 	}
 
 	return tags
+}
+
+func (u *TicketUsecase) GetTicket(ticketID, groupID uint64) (*internal_models.Ticket, models.Err) {
+	ticket, err := u.repo.GetTicket(ticketID)
+	if err != nil {
+		return nil, models.InternalError(err.Error())
+	}
+
+	ticket.CatSect, err = u.catSecUC.GetSectionWithCategoryByID(ticket.CatSect.ID)
+	if err != nil {
+		return nil, models.InternalError(err.Error())
+	}
+
+	ticket.Author, err = u.userUC.GetUserByID(ticket.Author.ID)
+	if err != nil {
+		return nil, models.InternalError(err.Error())
+	}
+
+	if u.permUC.CheckPermission(groupID, actions.TicketTA_SeeAdditionalInfo) {
+		if ticket.Support != nil {
+			ticket.Support, err = u.userUC.GetUserByID(ticket.Support.ID)
+			if err != nil {
+				return nil, models.InternalError(err.Error())
+			}
+		}
+
+		if ticket.ResolvedUser != nil {
+			ticket.ResolvedUser, err = u.userUC.GetUserByID(ticket.ResolvedUser.ID)
+			if err != nil {
+				return nil, models.InternalError(err.Error())
+			}
+		}
+
+		if u.permUC.CheckPermission(groupID, actions.TicketTA_Resolve) &&
+			!(u.permUC.CheckPermission(groupID, actions.AdminTA) ||
+				u.permUC.CheckPermission(groupID, actions.TicketTA_Work)) {
+			ticket.ServiceComment = ""
+		}
+	}
+
+	return ticket, nil
 }
 
 func (u *TicketUsecase) CheckNeedApprovalTicketExist(groupID uint64) bool {

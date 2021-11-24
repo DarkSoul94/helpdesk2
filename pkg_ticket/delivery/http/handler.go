@@ -271,6 +271,24 @@ func (h *TicketHandler) GetAllTicketStatuses(c *gin.Context) {
 	c.JSON(http.StatusOK, outList)
 }
 
+func (h *TicketHandler) GetTicketStatusHistory(c *gin.Context) {
+	ticketID, _ := strconv.ParseUint(c.Request.URL.Query().Get("ticket_id"), 10, 64)
+	user, _ := c.Get(global_const.CtxUserKey)
+
+	historyList, err := h.uc.GetAllTicketStatusHistory(ticketID, user.(*models.User).Group.ID)
+	if err != nil {
+		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+
+	outList := make([]dto.OutTicketStatusHistory, 0)
+	for _, history := range historyList {
+		outList = append(outList, dto.ToOutTicketStatusHistory(history))
+	}
+
+	c.JSON(http.StatusOK, outList)
+}
+
 func (h *TicketHandler) CreateTicket(c *gin.Context) {
 	var ticket dto.NewTicket
 
@@ -313,6 +331,19 @@ func (h *TicketHandler) GetTicketsList(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, map[string]interface{}{"fields": tags, "tickets": outList})
+}
+
+func (h *TicketHandler) GetTicket(c *gin.Context) {
+	ticketID, _ := strconv.ParseUint(c.Request.URL.Query().Get("ticket_id"), 10, 64)
+	user, _ := c.Get(global_const.CtxUserKey)
+
+	ticket, err := h.uc.GetTicket(ticketID, user.(*models.User).Group.ID)
+	if err != nil {
+		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.ToOutTicket(ticket))
 }
 
 func (h *TicketHandler) CheckNeedApprovalTicketExist(c *gin.Context) {

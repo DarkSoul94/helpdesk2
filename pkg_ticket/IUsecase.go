@@ -24,8 +24,10 @@ type ITicketUsecase interface {
 	GetRegionsWithFilials() ([]*internal_models.RegionWithFilials, models.Err)
 
 	GetTicketStatuses(group_id uint64, all bool) ([]*internal_models.TicketStatus, models.Err)
+	GetAllTicketStatusHistory(ticketID, groupID uint64) ([]*internal_models.TicketStatusHistory, models.Err)
 	CreateTicket(ticket *internal_models.Ticket) (uint64, models.Err)
 	GetTicketList(groupID uint64, limit, offset int) ([]*internal_models.Ticket, []string, map[uint]uint, models.Err)
+	GetTicket(ticketID, groupID uint64) (*internal_models.Ticket, models.Err)
 	CheckNeedApprovalTicketExist(groupID uint64) bool
 	GetApprovalTicketList(groupID uint64, limit, offset int) ([]*internal_models.Ticket, []string, models.Err)
 }

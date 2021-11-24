@@ -31,3 +31,7 @@ func checkWorkOnTicket(group *models.Group) bool {
 func checkResolveTicket(group *models.Group) bool {
 	return group.CanResolveTicket
 }
+
+func checkSeeAdditionalInfo(group *models.Group) bool {
+	return group.SeeAdditionalInfo
+}

@@ -118,9 +118,10 @@ func (r *TicketRepo) GetLastTicketStatusHistory(ticketID uint64) (*internal_mode
 		err     error
 	)
 
-	query = `SELECT * FROM ticket_status_history
-				WHERE ticket_id = ?
-				ORDER BY id DESC LIMIT 1`
+	query = `SELECT TH.*, TS.ticket_status_id, TS.ticket_status_name FROM ticket_status_history AS TH
+				INNER JOIN ticket_status AS TS ON TS.ticket_status_id = TH.ticket_status_id 
+				WHERE TH.ticket_id = ?
+				ORDER BY TH.id DESC LIMIT 1`
 
 	err = r.db.Get(&history, query, ticketID)
 	if err != nil {
@@ -146,7 +147,7 @@ func (r *TicketRepo) CreateTicketStatusHistory(history *internal_models.TicketSt
 		ticket_id = :ticket_id,
 		changed_user_id = :changed_user_id,
 		select_time = :select_time,
-		status_id = :status_id,
+		ticket_status_id = :ticket_status_id,
 		duration = :duration`
 
 	_, err = r.db.NamedExec(query, r.toDbTicketStatusHistory(history))
@@ -185,6 +186,38 @@ func (r *TicketRepo) UpdateTicketStatusHistory(history *internal_models.TicketSt
 	}
 
 	return nil
+}
+
+func (r *TicketRepo) GetAllTicketStatusHistory(ticketID uint64) ([]*internal_models.TicketStatusHistory, error) {
+	var (
+		historyList  []dbTicketStatusHistory
+		mHistoryList []*internal_models.TicketStatusHistory
+		query        string
+		err          error
+	)
+
+	query = `SELECT TH.*, TS.ticket_status_id, TS.ticket_status_name FROM ticket_status_history AS TH
+				INNER JOIN ticket_status AS TS ON TS.ticket_status_id = TH.ticket_status_id 
+				WHERE TH.ticket_id = ?
+				ORDER BY TH.id`
+
+	err = r.db.Select(&historyList, query, ticketID)
+	if err != nil {
+		logger.LogError(
+			"Failed read all ticket status history",
+			"pkg_ticket/repo/mysql",
+			fmt.Sprintf("ticket id: %d;", ticketID),
+			err,
+		)
+
+		return nil, err
+	}
+
+	for _, history := range historyList {
+		mHistoryList = append(mHistoryList, r.toModelTicketStatusHistory(history))
+	}
+
+	return mHistoryList, nil
 }
 
 func (r *TicketRepo) GetTicketListForAdmin(limit, offset int) ([]*internal_models.Ticket, error) {
@@ -355,6 +388,31 @@ func (r *TicketRepo) convertTicketList(dbList []dbTicket) []*internal_models.Tic
 	}
 
 	return mList
+}
+
+func (r *TicketRepo) GetTicket(ticketID uint64) (*internal_models.Ticket, error) {
+	var (
+		ticket dbTicket
+		query  string
+		err    error
+	)
+
+	query = `SELECT T.*, TS.ticket_status_id, TS.ticket_status_name FROM tickets AS T
+				INNER JOIN ticket_status AS TS ON TS.ticket_status_id = T.ticket_status_id
+				WHERE ticket_id = ?`
+
+	err = r.db.Get(&ticket, query, ticketID)
+	if err != nil {
+		logger.LogError(
+			"Failed get ticket",
+			"pkg_ticket/repo/mysql",
+			fmt.Sprintf("ticket id: %d;", ticketID),
+			err,
+		)
+		return nil, err
+	}
+
+	return r.toModelTicket(ticket), nil
 }
 
 func (r *TicketRepo) CheckNeedApprovalTicketExist(groupID uint64, forResolver bool) (bool, error) {

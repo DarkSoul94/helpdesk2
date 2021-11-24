@@ -61,6 +61,8 @@ func RegisterHTTPEndpoints(router *gin.RouterGroup, uc pkg_ticket.ITicketUsecase
 		ticketStatusEndpoints.GET("/", h.GetTicketStatuses)
 		//http://localhost:8888/helpdesk/ticket_status/list
 		ticketStatusEndpoints.GET("/list", h.GetAllTicketStatuses)
+		//http://localhost:8888/helpdesk/ticket_status/history?ticket_id=23
+		ticketStatusEndpoints.GET("/history", h.GetTicketStatusHistory)
 	}
 
 	ticketEndpoints := router.Group("/ticket")
@@ -70,6 +72,8 @@ func RegisterHTTPEndpoints(router *gin.RouterGroup, uc pkg_ticket.ITicketUsecase
 		ticketEndpoints.POST("/create", h.CreateTicket)
 		//http://localhost:8888/helpdesk/ticket/tickets_list?count=5&offset=0
 		ticketEndpoints.GET("/tickets_list", h.GetTicketsList)
+		//http://localhost:8888/helpdesk/ticket/ticket?ticket_id=23
+		ticketEndpoints.GET("/ticket", h.GetTicket)
 	}
 
 	resolveTicketEndpoints := router.Group("/resolve_ticket")

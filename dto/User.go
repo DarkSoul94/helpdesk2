@@ -12,6 +12,14 @@ type OutUser struct {
 	Group      OutGroup `json:"group"`
 }
 
+type OutUserWithOutGroup struct {
+	ID         uint64 `json:"user_id"`
+	Name       string `json:"user_name"`
+	Email      string `json:"email"`
+	Department string `json:"department,omitempty"`
+	GroupID    uint64 `json:"group_id"`
+}
+
 func ToOutUser(user *models.User) OutUser {
 	return OutUser{
 		ID:         user.ID,
@@ -48,5 +56,15 @@ func ToModelUser(user OutUser) *models.User {
 		Name:       user.Name,
 		Department: user.Department,
 		Group:      ToModelGroup(user.Group),
+	}
+}
+
+func ToOutUserWithOutGroup(user *models.User) OutUserWithOutGroup {
+	return OutUserWithOutGroup{
+		ID:         user.ID,
+		Name:       user.Name,
+		Email:      user.Email,
+		Department: user.Department,
+		GroupID:    user.Group.ID,
 	}
 }
