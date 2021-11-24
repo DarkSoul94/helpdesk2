@@ -346,6 +346,28 @@ func (h *TicketHandler) GetTicket(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToOutTicket(ticket))
 }
 
+func (h *TicketHandler) CreateComment(c *gin.Context) {
+	var comment dto.InpComment
+
+	if err := c.BindJSON(&comment); err != nil {
+		c.JSON(http.StatusBadRequest, map[string]string{"status": "error", "error": err.Error()})
+		return
+	}
+
+	user, _ := c.Get(global_const.CtxUserKey)
+
+	mComment := dto.ToModelComment(comment)
+	mComment.Author = user.(*models.User)
+
+	id, err := h.uc.CreateComment(mComment)
+	if err != nil {
+		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{"status": "ok", "comment_id": id})
+}
+
 func (h *TicketHandler) CheckNeedApprovalTicketExist(c *gin.Context) {
 	user, _ := c.Get(global_const.CtxUserKey)
 

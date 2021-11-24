@@ -23,9 +23,9 @@ type Ticket struct {
 	Support        *models.User
 	ResolvedUser   *models.User
 	ServiceComment string
+	Comments       []*Comment
+	Grade          uint
 	//Files          []*File
-	//Comments       []*CommentHistory
-	Grade uint
 }
 
 //HashСalculation расчитывает хэш над текстом тикета, email-ом автора и разделом категории.

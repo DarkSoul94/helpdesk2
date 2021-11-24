@@ -42,7 +42,7 @@ type OutTicket struct {
 	Support         *OutUserWithOutGroup    `json:"support"`
 	ResolvedUser    *OutUserWithOutGroup    `json:"resolved_user"`
 	ServiceComment  string                  `json:"service_comment"`
-	//Comment         []*outComment       `json:"comments"`
+	Comments        []*OutComment           `json:"comments"`
 	//Files           []*outFiles         `json:"files"`
 }
 
@@ -117,6 +117,12 @@ func ToOutTicket(ticket *internal_models.Ticket) OutTicket {
 	if ticket.ResolvedUser != nil {
 		resolvUser := ToOutUserWithOutGroup(ticket.ResolvedUser)
 		outTicket.ResolvedUser = &resolvUser
+	}
+
+	if ticket.Comments != nil {
+		for _, comment := range ticket.Comments {
+			outTicket.Comments = append(outTicket.Comments, ToOutComment(comment))
+		}
 	}
 
 	return outTicket

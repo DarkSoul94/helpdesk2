@@ -9,6 +9,7 @@ import (
 	"github.com/DarkSoul94/helpdesk2/models"
 	"github.com/DarkSoul94/helpdesk2/pkg_ticket"
 	"github.com/DarkSoul94/helpdesk2/pkg_ticket/cat_sec_manager"
+	"github.com/DarkSoul94/helpdesk2/pkg_ticket/comment_manager"
 	"github.com/DarkSoul94/helpdesk2/pkg_ticket/internal_models"
 	"github.com/DarkSoul94/helpdesk2/pkg_ticket/reg_fil_manager"
 	"github.com/DarkSoul94/helpdesk2/pkg_user"
@@ -17,12 +18,13 @@ import (
 )
 
 type TicketUsecase struct {
-	repo     pkg_ticket.ITicketRepo
-	catSecUC cat_sec_manager.ICatSecUsecase
-	regFilUC reg_fil_manager.IRegFilUsecase
-	permUC   group_manager.IPermManager
-	userUC   pkg_user.IUserUsecase
-	store    cachettl.ObjectStore
+	repo      pkg_ticket.ITicketRepo
+	catSecUC  cat_sec_manager.ICatSecUsecase
+	regFilUC  reg_fil_manager.IRegFilUsecase
+	permUC    group_manager.IPermManager
+	userUC    pkg_user.IUserUsecase
+	commentUC comment_manager.ICommentUsecase
+	store     cachettl.ObjectStore
 }
 
 func NewTicketUsecase(
@@ -31,14 +33,16 @@ func NewTicketUsecase(
 	regFilUC reg_fil_manager.IRegFilUsecase,
 	permUC group_manager.IPermManager,
 	userUC pkg_user.IUserUsecase,
+	commentUC comment_manager.ICommentUsecase,
 ) *TicketUsecase {
 	return &TicketUsecase{
-		repo:     tRepo,
-		catSecUC: catSecUC,
-		regFilUC: regFilUC,
-		permUC:   permUC,
-		userUC:   userUC,
-		store:    *cachettl.NewObjectStore(viper.GetDuration("app.ttl_cache.clear_period") * time.Second),
+		repo:      tRepo,
+		catSecUC:  catSecUC,
+		regFilUC:  regFilUC,
+		permUC:    permUC,
+		userUC:    userUC,
+		commentUC: commentUC,
+		store:     *cachettl.NewObjectStore(viper.GetDuration("app.ttl_cache.clear_period") * time.Second),
 	}
 }
 
@@ -364,6 +368,12 @@ func (u *TicketUsecase) GetTicket(ticketID, groupID uint64) (*internal_models.Ti
 		return nil, models.InternalError(err.Error())
 	}
 
+	if comments, err := u.commentUC.GetTicketComments(ticket.ID); err != nil {
+		return nil, err
+	} else {
+		ticket.Comments = comments
+	}
+
 	if u.permUC.CheckPermission(groupID, actions.TicketTA_SeeAdditionalInfo) {
 		if ticket.Support != nil {
 			ticket.Support, err = u.userUC.GetUserByID(ticket.Support.ID)
@@ -421,4 +431,21 @@ func (u *TicketUsecase) GetApprovalTicketList(groupID uint64, limit, offset int)
 	}
 
 	return list, u.makeTagList(groupID), nil
+}
+
+func (u *TicketUsecase) CreateComment(comment *internal_models.Comment) (uint64, models.Err) {
+	if err := u.createCommentDispatcher(); err != nil {
+		return 0, err
+	}
+
+	id, err := u.commentUC.CreateComment(comment)
+	if err != nil {
+		return 0, err
+	}
+
+	return id, nil
+}
+
+func (u *TicketUsecase) createCommentDispatcher() models.Err {
+	return nil
 }

@@ -76,6 +76,13 @@ func RegisterHTTPEndpoints(router *gin.RouterGroup, uc pkg_ticket.ITicketUsecase
 		ticketEndpoints.GET("/ticket", h.GetTicket)
 	}
 
+	commentEndpoints := router.Group("/comment")
+	commentEndpoints.Use(middlewares...)
+	{
+		//http://localhost:8888/helpdesk/comment/create
+		commentEndpoints.POST("/create", h.CreateComment)
+	}
+
 	resolveTicketEndpoints := router.Group("/resolve_ticket")
 	resolveTicketEndpoints.Use(middlewares...)
 	{

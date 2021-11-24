@@ -30,4 +30,6 @@ type ITicketUsecase interface {
 	GetTicket(ticketID, groupID uint64) (*internal_models.Ticket, models.Err)
 	CheckNeedApprovalTicketExist(groupID uint64) bool
 	GetApprovalTicketList(groupID uint64, limit, offset int) ([]*internal_models.Ticket, []string, models.Err)
+
+	CreateComment(comment *internal_models.Comment) (uint64, models.Err)
 }
