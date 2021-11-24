@@ -254,3 +254,33 @@ func (u *SupportUsecase) GetCurrentStatuses() ([]*internal_models.SupportInfo, m
 	}
 	return infoArray, u.totalInfoHelper(), nil
 }
+
+func (u *SupportUsecase) GetCard(cardID uint64) (*internal_models.Card, models.Err) {
+	return u.repo.GetCard(cardID)
+}
+
+func (u *SupportUsecase) UpdateCard(card *internal_models.Card) models.Err {
+	currentCard, err := u.repo.GetCard(card.ID)
+	if err != nil {
+		return err
+	}
+	if currentCard.IsSenior && !card.IsSenior {
+		if err := u.repo.ResetSenior(card.ID); err != nil {
+			return err
+		}
+	}
+	if currentCard.Senior.ID != card.Senior.ID {
+		if card.Senior.ID == 0 {
+			if err := u.repo.ResetSenior(card.ID); err != nil {
+				return err
+			}
+		} else {
+			seniorCard, err := u.repo.GetCardBySupportID(card.Senior.ID)
+			if err != nil {
+				return err
+			}
+			card.Color = seniorCard.Color
+		}
+	}
+	return u.repo.UpdateCard(card)
+}

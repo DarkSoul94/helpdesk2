@@ -21,6 +21,7 @@ var (
 	errHistoryCreate = models.InternalError("Не удалось создать запись в истории статусов саппортов")
 
 	errCardCreate = models.InternalError("Не удалось создать карточку саппорта")
+	errCardUpdate = models.InternalError("Не удалось обновить карточку саппорта")
 	errCardDelete = models.InternalError("Не удалось удалить карточку саппорта")
 	errCardGet    = models.InternalError("Не удалось получить карточку саппорта")
 )
