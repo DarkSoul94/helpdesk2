@@ -466,6 +466,55 @@ func (r *TicketRepo) CheckNeedApprovalTicketExist(groupID uint64, forResolver bo
 	}
 }
 
+func (r *TicketRepo) GetTicketsCount(supportID, statusID uint64) int {
+	var count int
+	if supportID != 0 {
+		query := getCountWithSupp()
+		if err := r.db.Get(&count, query, supportID, statusID); err != nil {
+			logger.LogError(
+				"Failed read tickets count",
+				"pkg_ticket/repo/mysql",
+				fmt.Sprintf("support id: %d, status id: %d", supportID, statusID),
+				err)
+		}
+		return count
+	}
+	query := getCountWithoutSupp()
+	if err := r.db.Get(&count, query, statusID); err != nil {
+		logger.LogError(
+			"Failed read tickets count",
+			"pkg_ticket/repo/mysql",
+			fmt.Sprintf("support id: %d, status id: %d", supportID, statusID),
+			err)
+	}
+	return count
+}
+
+func (r *TicketRepo) GetTodayTicketsCount(supportID, statusID uint64) int {
+	var count int
+	if supportID != 0 {
+		query := getTodaysCountWithSupp()
+		if err := r.db.Get(&count, query, supportID, statusID); err != nil {
+			logger.LogError(
+				"Failed read tickets count",
+				"pkg_ticket/repo/mysql",
+				fmt.Sprintf("support id: %d, status id: %d", supportID, statusID),
+				err)
+		}
+		return count
+	}
+
+	query := getTodaysCountWithoutSupp()
+	if err := r.db.Get(&count, query, statusID); err != nil {
+		logger.LogError(
+			"Failed read tickets count",
+			"pkg_ticket/repo/mysql",
+			fmt.Sprintf("support id: %d, status id: %d", supportID, statusID),
+			err)
+	}
+	return count
+}
+
 func (r *TicketRepo) Close() error {
 	r.db.Close()
 	return nil
