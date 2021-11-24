@@ -107,7 +107,7 @@ func (h *Handler) GetShiftStatus(c *gin.Context) {
 	user, _ := c.Get(global_const.CtxUserKey)
 	shift, err := h.uc.GetLastShift(user.(*models.User).ID)
 	if err != nil {
-		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
+		c.JSON(http.StatusOK, map[string]interface{}{"status": "ok", "shift_status": false})
 		return
 	}
 	c.JSON(http.StatusOK, map[string]interface{}{"status": "ok", "shift_status": !shift.ClosingStatus})
