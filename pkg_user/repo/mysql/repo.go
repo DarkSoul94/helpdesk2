@@ -103,7 +103,6 @@ func (r *Repo) GetUsersList() ([]*models.User, models.Err) {
 		logger.LogError("Failed to get users list", "pkg_user/repo/mysql", "", err)
 		return nil, userErr_GetList
 	}
-	fmt.Println(dbUsersList)
 
 	mUsersList := make([]*models.User, 0)
 	for _, val := range dbUsersList {
