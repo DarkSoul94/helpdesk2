@@ -275,21 +275,21 @@ func (u *TicketUsecase) CreateTicket(ticket *internal_models.Ticket) (uint64, mo
 	return id, nil
 }
 
-func (u *TicketUsecase) GetTicketList(groupID uint64, limit, offset int) ([]*internal_models.Ticket, []string, map[uint]uint, models.Err) {
+func (u *TicketUsecase) GetTicketList(user *models.User, limit, offset int) ([]*internal_models.Ticket, []string, map[uint]uint, models.Err) {
 	var (
 		list     []*internal_models.Ticket
 		priority map[uint]uint
 		err      error
 	)
 
-	if u.permUC.CheckPermission(groupID, actions.AdminTA) {
+	if u.permUC.CheckPermission(user.Group.ID, actions.AdminTA) {
 		list, err = u.repo.GetTicketListForAdmin(limit, offset)
 		priority = nil
-	} else if u.permUC.CheckPermission(groupID, actions.TicketTA_Work) {
-		list, err = u.repo.GetTicketListForSupport(groupID, limit, offset)
+	} else if u.permUC.CheckPermission(user.Group.ID, actions.TicketTA_Work) {
+		list, err = u.repo.GetTicketListForSupport(user.ID, limit, offset)
 		priority = u.repo.GetTicketStatusesSortPriority(true)
 	} else {
-		list, err = u.repo.GetTicketListForUser(groupID, limit, offset)
+		list, err = u.repo.GetTicketListForUser(user.ID, limit, offset)
 		priority = u.repo.GetTicketStatusesSortPriority(false)
 	}
 
@@ -306,7 +306,7 @@ func (u *TicketUsecase) GetTicketList(groupID uint64, limit, offset int) ([]*int
 			}
 		}
 
-		if ticket.Support != nil && u.permUC.CheckPermission(groupID, actions.AdminTA) {
+		if ticket.Support != nil && u.permUC.CheckPermission(user.Group.ID, actions.AdminTA) {
 			ticket.Support, err = u.userUC.GetUserByID(ticket.Support.ID)
 			if err != nil {
 				return nil, nil, nil, models.InternalError(err.Error())
@@ -323,7 +323,7 @@ func (u *TicketUsecase) GetTicketList(groupID uint64, limit, offset int) ([]*int
 		}
 	}
 
-	return list, u.makeTagList(groupID), priority, nil
+	return list, u.makeTagList(user.Group.ID), priority, nil
 }
 
 func (u *TicketUsecase) makeTagList(groupID uint64) []string {

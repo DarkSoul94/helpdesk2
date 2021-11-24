@@ -319,7 +319,7 @@ func (h *TicketHandler) GetTicketsList(c *gin.Context) {
 	offset, _ := strconv.Atoi(c.Request.URL.Query().Get("offset"))
 	user, _ := c.Get(global_const.CtxUserKey)
 
-	list, tags, priority, err := h.uc.GetTicketList(user.(*models.User).Group.ID, count, offset)
+	list, tags, priority, err := h.uc.GetTicketList(user.(*models.User), count, offset)
 	if err != nil {
 		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
 		return
