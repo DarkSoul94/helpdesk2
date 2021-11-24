@@ -35,6 +35,8 @@ type ISupportRepo interface {
 
 	CreateCard(card *internal_models.Card) models.Err
 	DeleteCard(supportID uint64) models.Err
+	GetCard(cardID uint64) (*internal_models.Card, models.Err)
+	UpdateCard(card *internal_models.Card) models.Err
 	GetCardBySupportID(supportID uint64) (*internal_models.Card, models.Err)
 	ResetSenior(seniorID uint64) models.Err
 

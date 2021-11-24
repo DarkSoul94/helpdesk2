@@ -365,6 +365,38 @@ func (r *Repo) DeleteCard(supportID uint64) models.Err {
 	return nil
 }
 
+func (r *Repo) GetCard(cardID uint64) (*internal_models.Card, models.Err) {
+	card := new(dbCard)
+	query := `
+	SELECT * FROM supports_cards 
+	WHERE id = ?`
+	if err := r.db.Get(card, query, cardID); err != nil {
+		logger.LogError("Failed get support card", "pkg_support/repo/mysql", fmt.Sprintf("card id: %d", cardID), err)
+		return nil, errCardGet
+	}
+	return r.toModelSupportCard(card), nil
+}
+
+func (r *Repo) UpdateCard(card *internal_models.Card) models.Err {
+	dbCard := r.toDbSupportCard(card)
+	query := `
+	UPDATE cupports_cards SET
+		internal_number = :internal_number,
+		mobile_number = :mobile_number,
+		birth_date = :birth_date,
+		is_senior = :is_senior,
+		senior_id = :senior_id,
+		wager = :wager,
+		comment = :comment,
+		color = :color
+	WHERE id = :id`
+	if _, err := r.db.NamedExec(query, dbCard); err != nil {
+		logger.LogError("Failed update support card", "pkg_support/repo/mysql", fmt.Sprintf("card id: %d", dbCard.ID), err)
+		return errCardUpdate
+	}
+	return nil
+}
+
 //GetCardBySupportID получение карточки суппорта по ID саппорта
 func (r *Repo) GetCardBySupportID(supportID uint64) (*internal_models.Card, models.Err) {
 	card := new(dbCard)
@@ -372,7 +404,7 @@ func (r *Repo) GetCardBySupportID(supportID uint64) (*internal_models.Card, mode
 	SELECT * FROM supports_cards 
 	WHERE support_id = ?`
 	if err := r.db.Get(card, query, supportID); err != nil {
-		logger.LogError("Failed delete support card", "pkg_support/repo/mysql", fmt.Sprintf("support id: %d", supportID), err)
+		logger.LogError("Failed get support card", "pkg_support/repo/mysql", fmt.Sprintf("support id: %d", supportID), err)
 		return nil, errCardGet
 	}
 	return r.toModelSupportCard(card), nil
