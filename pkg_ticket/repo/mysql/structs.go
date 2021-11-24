@@ -33,3 +33,12 @@ type dbTicket struct {
 	ServiceComment sql.NullString  `db:"service_comment"`
 	Grade          sql.NullInt32   `db:"ticket_grade"`
 }
+
+type dbTicketStatusHistory struct {
+	ID            uint64        `db:"id"`
+	TicketId      uint64        `db:"ticket_id"`
+	ChangedUserID uint64        `db:"changed_user_id"`
+	SelectTime    time.Time     `db:"select_time"`
+	StatusID      uint64        `db:"status_id"`
+	Duration      time.Duration `db:"duration"`
+}

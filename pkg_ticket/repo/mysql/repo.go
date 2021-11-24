@@ -111,6 +111,82 @@ func (r *TicketRepo) CreateTicket(ticket *internal_models.Ticket) (uint64, error
 	return uint64(id), nil
 }
 
+func (r *TicketRepo) GetLastTicketStatusHistory(ticketID uint64) (*internal_models.TicketStatusHistory, error) {
+	var (
+		history dbTicketStatusHistory
+		query   string
+		err     error
+	)
+
+	query = `SELECT * FROM ticket_status_history
+				WHERE ticket_id = ?
+				ORDER BY id DESC LIMIT 1`
+
+	err = r.db.Get(&history, query, ticketID)
+	if err != nil {
+		logger.LogError(
+			"Failed read ticket status history",
+			"pkg_ticket/repo/mysql",
+			fmt.Sprintf("ticket id: %d;", ticketID),
+			err,
+		)
+		return nil, err
+	}
+
+	return r.toModelTicketStatusHistory(history), nil
+}
+
+func (r *TicketRepo) CreateTicketStatusHistory(history *internal_models.TicketStatusHistory) error {
+	var (
+		query string
+		err   error
+	)
+
+	query = `INSERT INTO ticket_status_history SET
+		ticket_id = :ticket_id,
+		changed_user_id = :changed_user_id,
+		select_time = :select_time,
+		status_id = :status_id,
+		duration = :duration`
+
+	_, err = r.db.NamedExec(query, r.toDbTicketStatusHistory(history))
+	if err != nil {
+		logger.LogError(
+			"Failed create ticket status history",
+			"pkg_ticket/repo/mysql",
+			fmt.Sprintf("ticket id: %d; changed user id: %d; select time: %s; status id: %d; duration: %d;", history.TicketId, history.ChangedUser.ID, history.SelectTime, history.Status.ID, history.Duration),
+			err,
+		)
+		return err
+	}
+
+	return nil
+}
+
+func (r *TicketRepo) UpdateTicketStatusHistory(history *internal_models.TicketStatusHistory) error {
+	var (
+		query string
+		err   error
+	)
+
+	query = `UPDATE ticket_status_history SET
+				duration = :duration
+				WHERE id = :id`
+
+	_, err = r.db.NamedExec(query, r.toDbTicketStatusHistory(history))
+	if err != nil {
+		logger.LogError(
+			"Failed update ticket status history",
+			"pkg_ticket/repo/mysql",
+			fmt.Sprintf("id: %d;", history.ID),
+			err,
+		)
+		return err
+	}
+
+	return nil
+}
+
 func (r *TicketRepo) GetTicketListForAdmin(limit, offset int) ([]*internal_models.Ticket, error) {
 	var (
 		dbList []dbTicket

@@ -115,3 +115,25 @@ func (r *TicketRepo) toModelTicket(dbTick dbTicket) *internal_models.Ticket {
 
 	return mTick
 }
+
+func (r *TicketRepo) toModelTicketStatusHistory(history dbTicketStatusHistory) *internal_models.TicketStatusHistory {
+	return &internal_models.TicketStatusHistory{
+		ID:          history.ID,
+		TicketId:    history.TicketId,
+		ChangedUser: &models.User{ID: history.ChangedUserID},
+		SelectTime:  history.SelectTime,
+		Status:      &internal_models.TicketStatus{ID: history.StatusID},
+		Duration:    history.Duration,
+	}
+}
+
+func (r *TicketRepo) toDbTicketStatusHistory(history *internal_models.TicketStatusHistory) dbTicketStatusHistory {
+	return dbTicketStatusHistory{
+		ID:            history.ID,
+		TicketId:      history.TicketId,
+		ChangedUserID: history.ChangedUser.ID,
+		SelectTime:    history.SelectTime,
+		StatusID:      history.Status.ID,
+		Duration:      history.Duration,
+	}
+}

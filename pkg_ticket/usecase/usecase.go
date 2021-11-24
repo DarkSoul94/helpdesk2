@@ -189,6 +189,28 @@ func (u *TicketUsecase) ticketStatusFilter(list []*internal_models.TicketStatus,
 	return filteredList
 }
 
+func (u *TicketUsecase) CreateTicketStatusHistory(ticketID, changedUserID uint64, newStatus *internal_models.TicketStatus) models.Err {
+	currentTime := time.Now().Truncate(time.Microsecond)
+
+	existHistory, err := u.repo.GetLastTicketStatusHistory(ticketID)
+	if err == nil {
+		existHistory.Duration = time.Duration(currentTime.Sub(existHistory.SelectTime).Seconds())
+		err = u.repo.UpdateTicketStatusHistory(existHistory)
+		if err != nil {
+			return models.InternalError(err.Error())
+		}
+	}
+
+	newHistory := new(internal_models.TicketStatusHistory)
+	newHistory.New(ticketID, changedUserID, newStatus, currentTime)
+	err = u.repo.CreateTicketStatusHistory(newHistory)
+	if err != nil {
+		return models.InternalError(err.Error())
+	}
+
+	return nil
+}
+
 func (u *TicketUsecase) CreateTicket(ticket *internal_models.Ticket) (uint64, models.Err) {
 	var (
 		hash, ticketHash string
@@ -225,6 +247,11 @@ func (u *TicketUsecase) CreateTicket(ticket *internal_models.Ticket) (uint64, mo
 	id, er := u.repo.CreateTicket(ticket)
 	if er != nil {
 		return 0, models.InternalError(er.Error())
+	}
+
+	err = u.CreateTicketStatusHistory(id, ticket.Author.ID, ticket.Status)
+	if err != nil {
+		return 0, err
 	}
 
 	u.store.Add(ticket.Author.Email, ticketHash, viper.GetInt64("app.ttl_cache.life_time"))
