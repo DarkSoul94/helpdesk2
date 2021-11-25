@@ -471,13 +471,13 @@ func (u *TicketUsecase) createCommentDispatcher(comment *internal_models.Comment
 	}
 	var nowDate, completeDate hDate
 
-	if u.permUC.CheckPermission(comment.Author.ID, actions.AdminTA) {
+	if u.permUC.CheckPermission(comment.Author.Group.ID, actions.AdminTA) {
 		return nil
 	}
 
 	ticket, _ := u.repo.GetTicket(comment.TicketId)
 
-	if u.permUC.CheckPermission(comment.Author.ID, actions.TicketTA_Resolve) {
+	if u.permUC.CheckPermission(comment.Author.Group.ID, actions.TicketTA_Resolve) {
 		switch ticket.Status.ID {
 		case internal_models.TSWaitForResolveID:
 			return nil
