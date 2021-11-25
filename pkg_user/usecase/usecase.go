@@ -123,6 +123,20 @@ func (u *Usecase) GetGroupList(askUser *models.User) ([]*models.Group, models.Er
 	return u.group.GetGroupList()
 }
 
+func (u *Usecase) GetGroupListForResolve() ([]*models.Group, models.Err) {
+	outGroups := make([]*models.Group, 0)
+	list, err := u.group.GetGroupList()
+	if err != nil {
+		return nil, err
+	}
+	for _, group := range list {
+		if u.perm.CheckPermission(group.ID, actions.TicketTA_Resolve) {
+			outGroups = append(outGroups, group)
+		}
+	}
+	return outGroups, nil
+}
+
 func (u *Usecase) GroupUpdate(askUser *models.User, group *models.Group) models.Err {
 	if !u.perm.CheckPermission(askUser.Group.ID, actions.AdminTA_GroupUpdate) {
 		return errPermissions_UpdateGroup
