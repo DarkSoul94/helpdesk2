@@ -14,6 +14,15 @@ const (
 	KeyTSPostponed      string = "postponed"
 	KeyTSRejected       string = "rejected"
 	KeyTSCompleted      string = "completed"
+
+	TSWaitID           uint64 = 2
+	TSWaitForResolveID uint64 = 3
+	TSInWorkID         uint64 = 4
+	TSImplementationID uint64 = 5
+	TSRevisionID       uint64 = 6
+	TSPostponedID      uint64 = 7
+	TSRejectedID       uint64 = 8
+	TSCompletedID      uint64 = 9
 )
 
 var TicketStatusMap map[string]TicketStatus = map[string]TicketStatus{

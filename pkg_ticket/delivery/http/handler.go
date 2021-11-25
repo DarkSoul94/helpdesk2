@@ -275,7 +275,7 @@ func (h *TicketHandler) GetTicketStatusHistory(c *gin.Context) {
 	ticketID, _ := strconv.ParseUint(c.Request.URL.Query().Get("ticket_id"), 10, 64)
 	user, _ := c.Get(global_const.CtxUserKey)
 
-	historyList, err := h.uc.GetAllTicketStatusHistory(ticketID, user.(*models.User).Group.ID)
+	historyList, err := h.uc.GetAllTicketStatusHistory(ticketID, user.(*models.User))
 	if err != nil {
 		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
 		return
@@ -337,7 +337,7 @@ func (h *TicketHandler) GetTicket(c *gin.Context) {
 	ticketID, _ := strconv.ParseUint(c.Request.URL.Query().Get("ticket_id"), 10, 64)
 	user, _ := c.Get(global_const.CtxUserKey)
 
-	ticket, err := h.uc.GetTicket(ticketID, user.(*models.User).Group.ID)
+	ticket, err := h.uc.GetTicket(ticketID, user.(*models.User))
 	if err != nil {
 		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
 		return

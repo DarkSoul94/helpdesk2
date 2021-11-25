@@ -215,16 +215,22 @@ func (u *TicketUsecase) CreateTicketStatusHistory(ticketID, changedUserID uint64
 	return nil
 }
 
-func (u *TicketUsecase) GetAllTicketStatusHistory(ticketID, groupID uint64) ([]*internal_models.TicketStatusHistory, models.Err) {
+func (u *TicketUsecase) GetAllTicketStatusHistory(ticketID uint64, user *models.User) ([]*internal_models.TicketStatusHistory, models.Err) {
 	historyList, err := u.repo.GetAllTicketStatusHistory(ticketID)
 	if err != nil {
 		return nil, models.InternalError(err.Error())
 	}
 
+	seeAdditionalInfo := u.permUC.CheckPermission(user.Group.ID, actions.TicketTA_SeeAdditionalInfo)
+	ticket, _ := u.repo.GetTicket(ticketID)
+
 	for _, history := range historyList {
-		history.ChangedUser, err = u.userUC.GetUserByID(history.ChangedUser.ID)
-		if err != nil {
-			return nil, models.InternalError(err.Error())
+		changedUser, _ := u.userUC.GetUserByID(history.ChangedUser.ID)
+
+		if !seeAdditionalInfo && history.ChangedUser.ID != ticket.Author.ID && history.ChangedUser.ID != user.ID {
+			history.ChangedUser.Name = changedUser.Group.Name
+		} else {
+			history.ChangedUser.Name = changedUser.Name
 		}
 	}
 
@@ -352,7 +358,9 @@ func (u *TicketUsecase) makeTagList(groupID uint64) []string {
 	return tags
 }
 
-func (u *TicketUsecase) GetTicket(ticketID, groupID uint64) (*internal_models.Ticket, models.Err) {
+func (u *TicketUsecase) GetTicket(ticketID uint64, user *models.User) (*internal_models.Ticket, models.Err) {
+	seeAdditionalInfo := u.permUC.CheckPermission(user.Group.ID, actions.TicketTA_SeeAdditionalInfo)
+
 	ticket, err := u.repo.GetTicket(ticketID)
 	if err != nil {
 		return nil, models.InternalError(err.Error())
@@ -371,10 +379,19 @@ func (u *TicketUsecase) GetTicket(ticketID, groupID uint64) (*internal_models.Ti
 	if comments, err := u.commentUC.GetTicketComments(ticket.ID); err != nil {
 		return nil, err
 	} else {
-		ticket.Comments = comments
+		for _, comment := range comments {
+			author, _ := u.userUC.GetUserByID(comment.Author.ID)
+
+			if !seeAdditionalInfo && comment.Author.ID != ticket.Author.ID && comment.Author.ID != user.ID {
+				comment.Author.Name = author.Group.Name
+			} else {
+				comment.Author.Name = author.Name
+			}
+			ticket.Comments = append(ticket.Comments, comment)
+		}
 	}
 
-	if u.permUC.CheckPermission(groupID, actions.TicketTA_SeeAdditionalInfo) {
+	if seeAdditionalInfo {
 		if ticket.Support != nil {
 			ticket.Support, err = u.userUC.GetUserByID(ticket.Support.ID)
 			if err != nil {
@@ -389,9 +406,9 @@ func (u *TicketUsecase) GetTicket(ticketID, groupID uint64) (*internal_models.Ti
 			}
 		}
 
-		if u.permUC.CheckPermission(groupID, actions.TicketTA_Resolve) &&
-			!(u.permUC.CheckPermission(groupID, actions.AdminTA) ||
-				u.permUC.CheckPermission(groupID, actions.TicketTA_Work)) {
+		if u.permUC.CheckPermission(user.Group.ID, actions.TicketTA_Resolve) &&
+			!(u.permUC.CheckPermission(user.Group.ID, actions.AdminTA) ||
+				u.permUC.CheckPermission(user.Group.ID, actions.TicketTA_Work)) {
 			ticket.ServiceComment = ""
 		}
 	}
@@ -434,7 +451,7 @@ func (u *TicketUsecase) GetApprovalTicketList(groupID uint64, limit, offset int)
 }
 
 func (u *TicketUsecase) CreateComment(comment *internal_models.Comment) (uint64, models.Err) {
-	if err := u.createCommentDispatcher(); err != nil {
+	if err := u.createCommentDispatcher(comment); err != nil {
 		return 0, err
 	}
 
@@ -446,6 +463,59 @@ func (u *TicketUsecase) CreateComment(comment *internal_models.Comment) (uint64,
 	return id, nil
 }
 
-func (u *TicketUsecase) createCommentDispatcher() models.Err {
-	return nil
+func (u *TicketUsecase) createCommentDispatcher(comment *internal_models.Comment) models.Err {
+	type hDate struct {
+		year  int
+		month time.Month
+		day   int
+	}
+	var nowDate, completeDate hDate
+
+	if u.permUC.CheckPermission(comment.Author.ID, actions.AdminTA) {
+		return nil
+	}
+
+	ticket, _ := u.repo.GetTicket(comment.TicketId)
+
+	if u.permUC.CheckPermission(comment.Author.ID, actions.TicketTA_Resolve) {
+		switch ticket.Status.ID {
+		case internal_models.TSWaitForResolveID:
+			return nil
+		default:
+			return ErrConnotUpdateTicket
+		}
+	}
+
+	if comment.Author.ID == ticket.Author.ID {
+		switch ticket.Status.ID {
+		case internal_models.TSCompletedID, internal_models.TSRejectedID:
+			history, _ := u.repo.GetLastTicketStatusHistory(comment.TicketId)
+
+			completeDate.year, completeDate.month, completeDate.day = history.SelectTime.Local().Date()
+			nowDate.year, nowDate.month, nowDate.day = time.Now().Local().Date()
+			if nowDate != completeDate {
+				return models.InternalError("Данный запрос нельзя комментировать")
+			}
+			return nil
+
+		case internal_models.TSRevisionID:
+			return nil
+
+		default:
+			return ErrConnotUpdateTicket
+		}
+	}
+
+	if comment.Author.ID == ticket.Support.ID {
+		switch ticket.Status.ID {
+		case internal_models.TSInWorkID,
+			internal_models.TSImplementationID,
+			internal_models.TSPostponedID:
+			return nil
+		default:
+			return ErrConnotUpdateTicket
+		}
+	}
+
+	return ErrConnotUpdateTicket
 }
