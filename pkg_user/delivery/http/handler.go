@@ -113,6 +113,10 @@ func (h *Handler) GetDepartmentsList(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, map[string]interface{}{"status": "ok", "departments": departments})
 }
 
+func (h *Handler) GetGroupsListForResolve(c *gin.Context) {
+
+}
+
 /*
 func (h *Handler) GetPermList(ctx *gin.Context) {
 	perm, err := h.ucUserManager.GetFullPermListInBytes()
