@@ -2,7 +2,7 @@ package docs
 
 /**
  *
- * @api {GET} /support/card 01. Получить карточку сотрудника тех.поддержки
+ * @api {GET} /support/card 12. Получить карточку сотрудника тех.поддержки
  * @apiName GetSupportCard
  * @apiGroup 05. Сотрудник ТП
  * @apiVersion  2.0.0
