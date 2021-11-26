@@ -1998,6 +1998,152 @@ define({ "api": [
     "groupTitle": "04._Пользователи"
   },
   {
+    "type": "GET",
+    "url": "/support/card",
+    "title": "Получить карточку сотрудника тех.поддержки",
+    "name": "GetSupportCard",
+    "group": "05._Сотрудник_ТП",
+    "version": "2.0.0",
+    "examples": [
+      {
+        "title": "Example usage:",
+        "content": "http://localhost:8888/helpdesk/support/card?id=13",
+        "type": "json"
+      }
+    ],
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "BearerToken",
+            "description": "<p>Авторизационный токен</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Uint64",
+            "optional": false,
+            "field": "id",
+            "description": "<p>ИД карточки супорта</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "CardUser",
+            "optional": false,
+            "field": "support",
+            "description": "<p>Объект содержащий данные суппорта</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Uint64",
+            "optional": false,
+            "field": "support.id",
+            "description": "<p>ИД суппорта</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "support.name",
+            "description": "<p>ФИО суппорта</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "internal_number",
+            "description": "<p>Внутренний номер телефонии</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "mobile_number",
+            "description": "<p>Мобильный номер телефона</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "birth_date",
+            "description": "<p>Дата рождения</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Bool",
+            "optional": false,
+            "field": "is_senior",
+            "description": "<p>Признак старшего группы саппортов</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "CardUser",
+            "optional": false,
+            "field": "senior",
+            "description": "<p>Объект содержащий данные о старшем суппорте в группу которого входит текущий сотрудник</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Uint64",
+            "optional": false,
+            "field": "senior.id",
+            "description": "<p>ИД суппорта</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "senior.name",
+            "description": "<p>ФИО суппорта</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Float64",
+            "optional": false,
+            "field": "wager",
+            "description": "<p>Ставка за смену</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "comment",
+            "description": "<p>Комментарий</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "color",
+            "description": "<p>Цвет отображения (в шестнадцатиричной системе)</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Карточка старшего смены:",
+          "content": "{\n  \"id\": 13,\n  \"support\": {\n    \"id\": 4,\n    \"name\": \"Вячеслав Викторович Тищенко\"\n  },\n  \"internal_number\": \"1484\",\n  \"mobile_number\": \"\",\n  \"birth_date\": \"\",\n  \"is_senior\": true,\n  \"senior\": null,\n  \"wager\": 500,\n  \"comment\": \"test\",\n  \"color\": \"0xFFFFF0\"\n}",
+          "type": "json"
+        },
+        {
+          "title": "Карточка обычного суппорта:",
+          "content": "{\n \"id\": 14,\n \"support\": {\n   \"id\": 5,\n   \"name\": \"Евгений Николаевич Табаков\"\n },\n \"internal_number\": \"1487\",\n \"mobile_number\": \"\",\n \"birth_date\": \"\",\n \"is_senior\": false,\n \"senior\": {\n   \"id\": 4,\n   \"name\": \"Вячеслав Викторович Тищенко\"\n },\n \"wager\": 500,\n \"comment\": \"test\",\n \"color\": \"0xFFFFF0\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "./docs/2.0.0/support/cards/GetSupportCard.go",
+    "groupTitle": "05._Сотрудник_ТП"
+  },
+  {
     "type": "POST",
     "url": "/helpdesk/filial/create",
     "title": "Добаление отделения в базу",
