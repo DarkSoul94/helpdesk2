@@ -279,3 +279,7 @@ func (u *SupportUsecase) UpdateCard(card *internal_models.Card) models.Err {
 
 	return u.repo.UpdateCard(card)
 }
+
+func (u *SupportUsecase) GetSeniors() ([]*internal_models.Support, models.Err) {
+	return u.repo.GetSeniors()
+}

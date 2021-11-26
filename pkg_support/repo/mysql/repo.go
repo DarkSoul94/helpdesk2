@@ -97,6 +97,32 @@ func (r *Repo) GetSupportList() ([]*internal_models.Support, models.Err) {
 	return mSupports, nil
 }
 
+func (r *Repo) GetSeniors() ([]*internal_models.Support, models.Err) {
+	dbSupp := make([]dbSupport, 0)
+	mSupports := make([]*internal_models.Support, 0)
+	query := `
+	SELECT 
+		support.*, 
+		users.user_name AS support_name 
+	FROM support AS S
+	LEFT JOIN users ON user_id = support_id
+		WHERE EXISTS (
+			SELECT * FROM supports_cards AS C
+			WHERE S.support_id = C.support_id
+				AND C.is_senior = true
+		)`
+	if err := r.db.Select(&dbSupp, query); err != nil {
+		logger.LogError("Failed get support list", "pkg_support/repo/mysql", "", err)
+		return nil, errSupportGet
+	}
+
+	for _, support := range dbSupp {
+		mSupports = append(mSupports, r.toModelSupport(&support))
+	}
+	return mSupports, nil
+
+}
+
 //GetActiveSupports получить список активных саппортов
 func (r *Repo) GetActiveSupports() ([]*internal_models.Support, models.Err) {
 	dbSupp := make([]dbSupport, 0)

@@ -11,27 +11,22 @@ import (
 
 type SupportCard struct {
 	ID             uint64    `json:"id"`
-	Support        *outShort `json:"support"`
+	Support        *OutShort `json:"support"`
 	InternalNumber string    `json:"internal_number"`
 	MobileNumber   string    `json:"mobile_number"`
 	BirthDate      string    `json:"birth_date"`
 	IsSenior       bool      `json:"is_senior"`
 	Wager          float64   `json:"wager"`
-	Senior         *outShort `json:"senior"`
+	Senior         *OutShort `json:"senior"`
 	Comment        string    `json:"comment"`
 	Color          string    `json:"color"`
-}
-
-type outShort struct {
-	ID   uint64 `json:"id"`
-	Name string `json:"name"`
 }
 
 func ToOutSupportCard(card *internal_models.Card) SupportCard {
 	wager, _ := card.Wager.Float64()
 	var outCard SupportCard = SupportCard{
 		ID: card.ID,
-		Support: &outShort{
+		Support: &OutShort{
 			ID:   card.Support.ID,
 			Name: card.Support.Name,
 		},
@@ -44,7 +39,7 @@ func ToOutSupportCard(card *internal_models.Card) SupportCard {
 		Color:          card.Color,
 	}
 	if card.Senior != nil {
-		outCard.Senior = &outShort{
+		outCard.Senior = &OutShort{
 			ID:   card.Senior.ID,
 			Name: card.Senior.Name,
 		}

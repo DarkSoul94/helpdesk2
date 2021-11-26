@@ -25,6 +25,7 @@ type ISupportUsecase interface {
 	//Получить информацию о текущем статусе саппортов
 	//(статус, состояние смены, количество запросов в разных статуса в разрезе саппортов)
 	GetCurrentStatuses() ([]*internal_models.SupportInfo, map[string]int, models.Err)
+	GetSeniors() ([]*internal_models.Support, models.Err)
 
 	//Получение карточки саппорта по ID карты
 	GetCard(cardID uint64) (*internal_models.Card, models.Err)

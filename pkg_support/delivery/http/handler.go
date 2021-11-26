@@ -184,3 +184,19 @@ func (h *Handler) UpdateCard(c *gin.Context) {
 	c.JSON(http.StatusOK, map[string]interface{}{"status": "ok"})
 
 }
+
+func (h *Handler) GetSeniors(c *gin.Context) {
+	outSeniors := make([]dto.OutShort, 0)
+	mSeniors, err := h.uc.GetSeniors()
+	if err != nil {
+		c.JSON(err.Code(), map[string]string{"status": "error", "error": err.Error()})
+		return
+	}
+	for _, val := range mSeniors {
+		outSeniors = append(outSeniors, dto.OutShort{
+			ID:   val.ID,
+			Name: val.Name,
+		})
+	}
+	c.JSON(http.StatusOK, outSeniors)
+}

@@ -11,6 +11,7 @@ type ISupportRepo interface {
 	UpdateSupport(support *internal_models.Support) models.Err
 	GetSupport(userID uint64) (*internal_models.Support, models.Err)
 	GetSupportList() ([]*internal_models.Support, models.Err)
+	GetSeniors() ([]*internal_models.Support, models.Err)
 	GetSupportListForToday() ([]*internal_models.Support, models.Err)
 	GetActiveSupports() ([]*internal_models.Support, models.Err)
 	GetRandomFreeSupport() (*internal_models.Support, models.Err)

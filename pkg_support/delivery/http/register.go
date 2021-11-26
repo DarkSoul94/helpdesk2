@@ -42,6 +42,9 @@ func RegisterHTTPEndpoints(router *gin.RouterGroup, uc pkg_support.ISupportUseca
 		//http://localhost:5555/helpdesk/support/card/update
 		cardEndpoints.POST("/update", h.UpdateCard)
 		//http://localhost:5555/helpdesk/support/card/seniors
+		cardEndpoints.GET("/seniors", h.GetSeniors)
 		//http://localhost:5555/helpdesk/support/card/list
+		//cardEndpoints.GET("/list", h.GetCardList)
+
 	}
 }

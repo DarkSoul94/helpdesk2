@@ -15,6 +15,11 @@ type OutGroupShort struct {
 	Name string `json:"group_name"`
 }
 
+type OutShort struct {
+	ID   uint64 `json:"id"`
+	Name string `json:"name"`
+}
+
 func ToOutShortUser(user *models.User) OutUserShort {
 	return OutUserShort{
 		ID:   user.ID,
