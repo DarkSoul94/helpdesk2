@@ -2,6 +2,7 @@ package http
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/DarkSoul94/helpdesk2/dto"
 	"github.com/DarkSoul94/helpdesk2/global_const"
@@ -47,7 +48,6 @@ func (h *Handler) GetActiveSupports(c *gin.Context) {
 		outSupports = append(outSupports, dto.ToOutShortSupport(support))
 	}
 	c.JSON(http.StatusOK, outSupports)
-
 }
 
 func (h *Handler) GetStatusesList(c *gin.Context) {
@@ -100,7 +100,6 @@ func (h *Handler) CloseShift(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, map[string]string{"status": "ok"})
-
 }
 
 func (h *Handler) GetShiftStatus(c *gin.Context) {
@@ -154,4 +153,14 @@ func (h *Handler) ChangeSupportStatus(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, map[string]string{"status": "ok"})
+}
+
+func (h *Handler) GetCard(c *gin.Context) {
+	cardID, _ := strconv.ParseUint(c.Request.URL.Query().Get("id"), 10, 64)
+	card, fullErr := h.uc.GetCard(cardID)
+	if fullErr != nil {
+		c.JSON(fullErr.Code(), map[string]string{"status": "error", "error": fullErr.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, dto.ToOutSupportCard(card))
 }

@@ -19,7 +19,7 @@ func RegisterHTTPEndpoints(router *gin.RouterGroup, uc pkg_support.ISupportUseca
 		//http://localhost:5555/helpdesk/support/open_shift
 		supportEndpoints.POST("/open_shift", h.OpenShift)
 		//http://localhost:5555/helpdesk/support/create_lateness
-		//supportEndpoints.POST("/create_lateness", h.CreateLateness)
+		//supportEndpoints.POST("/create_lateness", h.CreateLateness) //TODO Создание опоздания при открытии смены
 		//http://localhost:5555/helpdesk/support/close_shift
 		supportEndpoints.POST("/close_shift", h.CloseShift)
 		//http://localhost:5555/helpdesk/support/shift_status
@@ -38,6 +38,7 @@ func RegisterHTTPEndpoints(router *gin.RouterGroup, uc pkg_support.ISupportUseca
 	cardEndpoints.Use(middlewares...)
 	{
 		//http://localhost:5555/helpdesk/support/card?id=13
+		cardEndpoints.GET("", h.GetCard)
 		//http://localhost:5555/helpdesk/support/card/update
 		//http://localhost:5555/helpdesk/support/card/seniors
 		//http://localhost:5555/helpdesk/support/card/list
