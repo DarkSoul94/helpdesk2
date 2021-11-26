@@ -164,3 +164,23 @@ func (h *Handler) GetCard(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, dto.ToOutSupportCard(card))
 }
+
+func (h *Handler) UpdateCard(c *gin.Context) {
+	var (
+		card dto.SupportCard
+	)
+	if err := c.BindJSON(&card); err != nil {
+		c.JSON(http.StatusBadRequest, map[string]string{"status": "error", "error": err.Error()})
+		return
+	}
+	if err := card.ValidateCard(); err != nil {
+		c.JSON(err.Code(), map[string]string{"status": "error", "error": err.Error()})
+		return
+	}
+	if err := h.uc.UpdateCard(dto.ToModelSupportCard(&card)); err != nil {
+		c.JSON(err.Code(), map[string]string{"status": "error", "error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, map[string]interface{}{"status": "ok"})
+
+}
