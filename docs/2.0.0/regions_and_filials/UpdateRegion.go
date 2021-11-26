@@ -2,7 +2,7 @@ package docs
 
 /**
  *
- * @api {POST} /helpdesk/region/update Обновление региона в базе
+ * @api {POST} /helpdesk/region/update 02. Обновление региона в базе
  * @apiName UpdateRegion
  * @apiGroup 07. Настройка
  * @apiVersion  2.0.0

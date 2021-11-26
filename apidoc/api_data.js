@@ -2,7 +2,7 @@ define({ "api": [
   {
     "type": "POST",
     "url": "/helpdesk/category/create",
-    "title": "Создание категории",
+    "title": "01. Создание категории",
     "name": "CreateCategory",
     "group": "02._Категории_и_разделы_категорий",
     "version": "2.0.0",
@@ -112,7 +112,7 @@ define({ "api": [
   {
     "type": "POST",
     "url": "/helpdesk/section/create",
-    "title": "Создание раздела категории",
+    "title": "03. Создание раздела категории",
     "name": "CreateSection",
     "group": "02._Категории_и_разделы_категорий",
     "version": "2.0.0",
@@ -256,7 +256,7 @@ define({ "api": [
   {
     "type": "GET",
     "url": "/helpdesk/section/",
-    "title": "Получение списка разделов категорий без учета устаревших",
+    "title": "05. Получение списка разделов категорий без учета устаревших",
     "name": "GetCategorySection",
     "group": "02._Категории_и_разделы_категорий",
     "version": "2.0.0",
@@ -384,7 +384,7 @@ define({ "api": [
   {
     "type": "GET",
     "url": "/helpdesk/section/section_list",
-    "title": "Получение всего списка разделов категорий",
+    "title": "06. Получение всего списка разделов категорий",
     "name": "GetCategorySectionList",
     "group": "02._Категории_и_разделы_категорий",
     "version": "2.0.0",
@@ -519,7 +519,7 @@ define({ "api": [
   {
     "type": "POST",
     "url": "/helpdesk/category/update",
-    "title": "Обновление категории",
+    "title": "02. Обновление категории",
     "name": "UpdateCategory",
     "group": "02._Категории_и_разделы_категорий",
     "version": "2.0.0",
@@ -629,7 +629,7 @@ define({ "api": [
   {
     "type": "post",
     "url": "/helpdesk/section/update",
-    "title": "Обновление разделов категории",
+    "title": "04. Обновление разделов категории",
     "name": "UpdateCategorySection",
     "group": "02._Категории_и_разделы_категорий",
     "version": "2.0.0",
@@ -766,7 +766,7 @@ define({ "api": [
   {
     "type": "GET",
     "url": "/helpdesk/resolve_ticket/check_exist",
-    "title": "Проверка есть ли запросы ожидающие согласования",
+    "title": "05. Проверка есть ли запросы ожидающие согласования",
     "name": "CheckNeedResolveTicketExist",
     "group": "03._Запросы_в_тех._поддержку",
     "version": "2.0.0",
@@ -816,7 +816,7 @@ define({ "api": [
   {
     "type": "post",
     "url": "/helpdesk/comment/create",
-    "title": "Создание нового комментария в запросе",
+    "title": "10. Создание нового комментария в запросе",
     "name": "CreateCommentsHistory",
     "group": "03._Запросы_в_тех._поддержку",
     "version": "2.0.0",
@@ -905,7 +905,7 @@ define({ "api": [
   {
     "type": "post",
     "url": "/helpdesk/ticket/create",
-    "title": "Создание запроса в тех. поддержку",
+    "title": "01. Создание запроса в тех. поддержку",
     "name": "CreateTicket",
     "group": "03._Запросы_в_тех._поддержку",
     "version": "2.0.0",
@@ -1033,7 +1033,7 @@ define({ "api": [
   {
     "type": "GET",
     "url": "/helpdesk/resolve_ticket/resolve_tickets_list",
-    "title": "Получение списка запросов в тех. поддержку ожидающих согласования",
+    "title": "06. Получение списка запросов в тех. поддержку ожидающих согласования",
     "name": "GetResolveTicketsList",
     "group": "03._Запросы_в_тех._поддержку",
     "version": "2.0.0",
@@ -1166,7 +1166,7 @@ define({ "api": [
   {
     "type": "GET",
     "url": "/helpdesk/ticket/ticket",
-    "title": "Получение запроса",
+    "title": "03. Получение запроса",
     "name": "GetTicket",
     "group": "03._Запросы_в_тех._поддержку",
     "version": "2.0.0",
@@ -1550,7 +1550,7 @@ define({ "api": [
   {
     "type": "get",
     "url": "/helpdesk/ticket_status/",
-    "title": "Получение списка статусов запроса в ТП для выбора внутри запроса",
+    "title": "07. Получение списка статусов запроса в ТП для выбора внутри запроса",
     "name": "GetTicketStatus",
     "group": "03._Запросы_в_тех._поддержку",
     "version": "2.0.0",
@@ -1608,7 +1608,7 @@ define({ "api": [
   {
     "type": "get",
     "url": "/helpdesk/ticket_status/history",
-    "title": "Получение истории изменения статусов запроса",
+    "title": "09. Получение истории изменения статусов запроса",
     "name": "GetTicketStatusHistory",
     "group": "03._Запросы_в_тех._поддержку",
     "version": "2.0.0",
@@ -1711,7 +1711,7 @@ define({ "api": [
   {
     "type": "get",
     "url": "/helpdesk/ticket_status/list",
-    "title": "Получение всего списка статусов у запроса",
+    "title": "08. Получение всего списка статусов у запроса",
     "name": "GetTicketStatusList",
     "group": "03._Запросы_в_тех._поддержку",
     "version": "2.0.0",
@@ -1769,7 +1769,7 @@ define({ "api": [
   {
     "type": "GET",
     "url": "/helpdesk/ticket/tickets_list",
-    "title": "Получение списка запросов в тех. поддержку",
+    "title": "04. Получение списка запросов в тех. поддержку",
     "name": "GetTicketsList",
     "group": "03._Запросы_в_тех._поддержку",
     "version": "2.0.0",
@@ -1995,12 +1995,17 @@ define({ "api": [
       ]
     },
     "filename": "./docs/2.0.0/groups/GetGroupsListForResolve.go",
-    "groupTitle": "04._Пользователи"
+    "groupTitle": "04._Пользователи",
+    "sampleRequest": [
+      {
+        "url": "http://localhost:8888//helpdesk/group/for_resolve"
+      }
+    ]
   },
   {
     "type": "GET",
     "url": "/support/card",
-    "title": "Получить карточку сотрудника тех.поддержки",
+    "title": "01. Получить карточку сотрудника тех.поддержки",
     "name": "GetSupportCard",
     "group": "05._Сотрудник_ТП",
     "version": "2.0.0",
@@ -2146,7 +2151,7 @@ define({ "api": [
   {
     "type": "POST",
     "url": "/helpdesk/filial/create",
-    "title": "Добаление отделения в базу",
+    "title": "04. Добаление отделения в базу",
     "name": "CreateFilial",
     "group": "07._Настройка",
     "version": "2.0.0",
@@ -2242,7 +2247,7 @@ define({ "api": [
   {
     "type": "POST",
     "url": "/helpdesk/region/create",
-    "title": "Создание региона",
+    "title": "01. Создание региона",
     "name": "CreateRegion",
     "group": "07._Настройка",
     "version": "2.0.0",
@@ -2312,7 +2317,7 @@ define({ "api": [
   {
     "type": "DELETE",
     "url": "/helpdesk/filial/",
-    "title": "Удаление филиала из базы",
+    "title": "06. Удаление филиала из базы",
     "name": "DeleteFilial",
     "group": "07._Настройка",
     "version": "2.0.0",
@@ -2387,7 +2392,7 @@ define({ "api": [
   {
     "type": "DELETE",
     "url": "/helpdesk/region/",
-    "title": "Удаление региона из базы",
+    "title": "03. Удаление региона из базы",
     "name": "DeleteRegion",
     "group": "07._Настройка",
     "version": "2.0.0",
@@ -2451,7 +2456,7 @@ define({ "api": [
   {
     "type": "GET",
     "url": "/helpdesk/filial/filial_list",
-    "title": "Получение списка отделений из базы",
+    "title": "07. Получение списка отделений из базы",
     "name": "GetFilialList",
     "group": "07._Настройка",
     "version": "2.0.0",
@@ -2536,7 +2541,7 @@ define({ "api": [
   {
     "type": "POST",
     "url": "/helpdesk/filial/update",
-    "title": "Обновление отделения в базе",
+    "title": "05. Обновление отделения в базе",
     "name": "UpdateFilial",
     "group": "07._Настройка",
     "version": "2.0.0",
@@ -2627,7 +2632,7 @@ define({ "api": [
   {
     "type": "POST",
     "url": "/helpdesk/region/update",
-    "title": "Обновление региона в базе",
+    "title": "02. Обновление региона в базе",
     "name": "UpdateRegion",
     "group": "07._Настройка",
     "version": "2.0.0",

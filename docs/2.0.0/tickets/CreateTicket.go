@@ -2,7 +2,7 @@ package docs
 
 /**
 *
-* @api {post} /helpdesk/ticket/create Создание запроса в тех. поддержку
+* @api {post} /helpdesk/ticket/create 01. Создание запроса в тех. поддержку
 * @apiName CreateTicket
 * @apiGroup 03. Запросы в тех. поддержку
 * @apiVersion  2.0.0

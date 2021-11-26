@@ -2,7 +2,7 @@ package docs
 
 /**
  *
- * @api {DELETE} /helpdesk/region/ Удаление региона из базы
+ * @api {DELETE} /helpdesk/region/ 03. Удаление региона из базы
  * @apiName DeleteRegion
  * @apiGroup 07. Настройка
  * @apiVersion  2.0.0

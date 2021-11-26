@@ -2,7 +2,7 @@ package docs
 
 /**
  *
- * @api {POST} /helpdesk/filial/create Добаление отделения в базу
+ * @api {POST} /helpdesk/filial/create 04. Добаление отделения в базу
  * @apiName CreateFilial
  * @apiGroup 07. Настройка
  * @apiVersion  2.0.0

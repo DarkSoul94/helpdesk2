@@ -2,7 +2,7 @@ package docs
 
 /**
  *
- * @api {POST} /helpdesk/filial/update Обновление отделения в базе
+ * @api {POST} /helpdesk/filial/update 05. Обновление отделения в базе
  * @apiName UpdateFilial
  * @apiGroup 07. Настройка
  * @apiVersion  2.0.0

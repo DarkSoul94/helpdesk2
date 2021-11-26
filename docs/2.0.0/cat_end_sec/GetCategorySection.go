@@ -2,7 +2,7 @@ package cat_end_sec
 
 /**
  *
- * @api {GET} /helpdesk/section/ Получение списка разделов категорий без учета устаревших
+ * @api {GET} /helpdesk/section/ 05. Получение списка разделов категорий без учета устаревших
  * @apiSampleRequest off
  * @apiName GetCategorySection
  * @apiGroup 02. Категории и разделы категорий

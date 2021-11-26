@@ -2,7 +2,7 @@ package docs
 
 /**
  *
- * @api {DELETE} /helpdesk/filial/ Удаление филиала из базы
+ * @api {DELETE} /helpdesk/filial/ 06. Удаление филиала из базы
  * @apiName DeleteFilial
  * @apiGroup 07. Настройка
  * @apiVersion  2.0.0

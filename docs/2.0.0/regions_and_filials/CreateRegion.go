@@ -2,7 +2,7 @@ package docs
 
 /**
  *
- * @api {POST} /helpdesk/region/create Создание региона
+ * @api {POST} /helpdesk/region/create 01. Создание региона
  * @apiName CreateRegion
  * @apiGroup 07. Настройка
  * @apiVersion  2.0.0
