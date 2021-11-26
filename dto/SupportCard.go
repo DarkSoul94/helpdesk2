@@ -22,6 +22,33 @@ type SupportCard struct {
 	Color          string    `json:"color"`
 }
 
+type SupportCardShort struct {
+	ID       uint64    `json:"id"`
+	Support  *OutShort `json:"support"`
+	IsSenior bool      `json:"is_senior"`
+	Senior   *OutShort `json:"senior"`
+	Color    string    `json:"color"`
+}
+
+func ToOutSupportCardShort(card *internal_models.Card) SupportCardShort {
+	outCard := SupportCardShort{
+		ID: card.ID,
+		Support: &OutShort{
+			ID:   card.Support.ID,
+			Name: card.Support.Name,
+		},
+		IsSenior: card.IsSenior,
+		Color:    card.Color,
+	}
+	if card.Senior != nil {
+		outCard.Senior = &OutShort{
+			ID:   card.Senior.ID,
+			Name: card.Senior.Name,
+		}
+	}
+	return outCard
+}
+
 func ToOutSupportCard(card *internal_models.Card) SupportCard {
 	wager, _ := card.Wager.Float64()
 	var outCard SupportCard = SupportCard{

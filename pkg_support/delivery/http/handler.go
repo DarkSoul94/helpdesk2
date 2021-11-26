@@ -200,3 +200,17 @@ func (h *Handler) GetSeniors(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, outSeniors)
 }
+
+func (h *Handler) GetCardList(c *gin.Context) {
+	mCards, fullErr := h.uc.GetCardsList()
+	if fullErr != nil {
+		c.JSON(fullErr.Code(), map[string]string{"status": "error", "error": fullErr.Error()})
+		return
+	}
+	outCards := make([]dto.SupportCardShort, 0)
+	for _, card := range mCards {
+		outCards = append(outCards, dto.ToOutSupportCardShort(card))
+	}
+	c.JSON(http.StatusOK, outCards)
+
+}

@@ -44,7 +44,7 @@ func RegisterHTTPEndpoints(router *gin.RouterGroup, uc pkg_support.ISupportUseca
 		//http://localhost:5555/helpdesk/support/card/seniors
 		cardEndpoints.GET("/seniors", h.GetSeniors)
 		//http://localhost:5555/helpdesk/support/card/list
-		//cardEndpoints.GET("/list", h.GetCardList)
+		cardEndpoints.GET("/list", h.GetCardList)
 
 	}
 }

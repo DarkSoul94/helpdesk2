@@ -403,6 +403,19 @@ func (r *Repo) GetCard(cardID uint64) (*internal_models.Card, models.Err) {
 	return r.toModelSupportCard(card), nil
 }
 
+func (r *Repo) GetCardsList() ([]*internal_models.Card, models.Err) {
+	cards := make([]dbCard, 0)
+	mCards := make([]*internal_models.Card, 0)
+	if err := r.db.Select(&cards, "SELECT * FROM supports_cards"); err != nil {
+		logger.LogError("Failed get support list", "pkg_support/repo/mysql", "", err)
+		return nil, errCardGet
+	}
+	for _, val := range cards {
+		mCards = append(mCards, r.toModelSupportCard(&val))
+	}
+	return mCards, nil
+}
+
 func (r *Repo) UpdateCard(card *internal_models.Card) models.Err {
 	dbCard := r.toDbSupportCard(card)
 	query := `
