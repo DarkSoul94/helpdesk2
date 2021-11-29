@@ -132,7 +132,10 @@ func (u *SupportUsecase) RemoveSupportActivity(ticketID uint64) models.Err {
 }
 
 func (u *SupportUsecase) UpdateSupportActivity(supportID, ticketID uint64) models.Err {
-	return u.repo.UpdateSupportActivity(supportID, ticketID)
+	if u.repo.ExistActivityForTicket(ticketID) {
+		return u.repo.UpdateSupportActivity(supportID, ticketID)
+	}
+	return u.repo.CreateSupportActivity(supportID, ticketID)
 }
 
 func (u *SupportUsecase) SetSupportStatus(supportID, statusID uint64) models.Err {
