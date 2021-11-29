@@ -20,6 +20,7 @@ type ISupportRepo interface {
 	UpdateShift(shift *internal_models.Shift) (uint64, models.Err)
 
 	CheckForActivity(supportID uint64) bool
+	ExistActivityForTicket(ticketID uint64) bool
 	CheckForBusy(supportID uint64) bool
 	CreateSupportActivity(supportID, ticketID uint64) models.Err
 	RemoveSupportActivity(ticketID uint64) models.Err

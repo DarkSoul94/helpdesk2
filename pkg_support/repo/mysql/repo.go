@@ -243,6 +243,16 @@ func (r *Repo) UpdateSupportActivity(supportID, ticketID uint64) models.Err {
 	return nil
 }
 
+func (r *Repo) ExistActivityForTicket(ticketID uint64) bool {
+	var result bool
+	query := `
+	SELECT EXISTs (SELECT * FROM supports_activity WHERE ticket_id = ?)`
+	if err := r.db.Get(&result, query, ticketID); err != nil {
+		logger.LogError("Failed get support activity", "pkg_support/repo/mysql", fmt.Sprintf("ticket id id: %d", ticketID), err)
+	}
+	return result
+}
+
 //GetStatus получить статус саппорта по ID статуса
 func (r *Repo) GetStatus(statusID uint64) (*internal_models.Status, models.Err) {
 	status := new(dbStatus)
