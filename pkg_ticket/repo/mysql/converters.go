@@ -45,21 +45,21 @@ func (r *TicketRepo) toDbTicket(ticket *internal_models.Ticket) dbTicket {
 		dbTick.IP.Valid = false
 	}
 
-	if ticket.Author != nil {
+	if ticket.Author != nil && ticket.Author.ID != 0 {
 		dbTick.AuthorID.Int64 = int64(ticket.Author.ID)
 		dbTick.AuthorID.Valid = true
 	} else {
 		dbTick.AuthorID.Valid = false
 	}
 
-	if ticket.Support != nil {
+	if ticket.Support != nil && ticket.Support.ID != 0 {
 		dbTick.SupportID.Int64 = int64(ticket.Support.ID)
 		dbTick.SupportID.Valid = true
 	} else {
 		dbTick.SupportID.Valid = false
 	}
 
-	if ticket.ResolvedUser != nil {
+	if ticket.ResolvedUser != nil && ticket.ResolvedUser.ID != 0 {
 		dbTick.ResolvedUserID.Int64 = int64(ticket.ResolvedUser.ID)
 		dbTick.ResolvedUserID.Valid = true
 	} else {

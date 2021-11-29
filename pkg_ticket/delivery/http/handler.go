@@ -314,6 +314,25 @@ func (h *TicketHandler) CreateTicket(c *gin.Context) {
 	c.JSON(http.StatusOK, map[string]interface{}{"status": "ok", "ticket_id": id})
 }
 
+func (h *TicketHandler) UpdateTicket(c *gin.Context) {
+	var ticket dto.InpUpdateTicket
+
+	if err := c.BindJSON(&ticket); err != nil {
+		c.JSON(http.StatusBadRequest, map[string]string{"status": "error", "error": err.Error()})
+		return
+	}
+
+	user, _ := c.Get(global_const.CtxUserKey)
+
+	err := h.uc.UpdateTicket(dto.UpdateTicketToModel(ticket), user.(*models.User), true)
+	if err != nil {
+		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]string{"status": "ok"})
+}
+
 func (h *TicketHandler) GetTicketsList(c *gin.Context) {
 	count, _ := strconv.Atoi(c.Request.URL.Query().Get("count"))
 	offset, _ := strconv.Atoi(c.Request.URL.Query().Get("offset"))

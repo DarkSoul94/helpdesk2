@@ -11,6 +11,8 @@ type ITicketRepo interface {
 	GetAllTicketStatusHistory(ticketID uint64) ([]*internal_models.TicketStatusHistory, error)
 
 	CreateTicket(ticket *internal_models.Ticket) (uint64, error)
+	UpdateTicket(ticket *internal_models.Ticket) error
+	GetTicketsCount(supportID, statusID uint64) int
 	GetTicketListForAdmin(limit, offset int) ([]*internal_models.Ticket, error)
 	GetTicketListForSupport(supportID uint64, limit, offset int) ([]*internal_models.Ticket, error)
 	GetTicketListForUser(authorID uint64, limit, offset int) ([]*internal_models.Ticket, error)

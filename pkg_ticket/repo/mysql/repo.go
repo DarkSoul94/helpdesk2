@@ -111,6 +111,34 @@ func (r *TicketRepo) CreateTicket(ticket *internal_models.Ticket) (uint64, error
 	return uint64(id), nil
 }
 
+func (r *TicketRepo) UpdateTicket(ticket *internal_models.Ticket) error {
+	var (
+		query string
+		err   error
+	)
+
+	query = `UPDATE tickets SET
+				section_id = :section_id,
+				ticket_status_id = :ticket_status_id,
+				support_id = :support_id,
+				service_comment = :service_comment
+				WHERE ticket_id = :ticket_id`
+
+	_, err = r.db.NamedExec(query, r.toDbTicket(ticket))
+	if err != nil {
+		logger.LogError(
+			"Failed update ticket",
+			"pkg_ticket/repo/mysql",
+			fmt.Sprintf("ticket id: %d; section id: %d; status id: %d; support id: %d; service comment: %s", ticket.ID, ticket.CatSect.ID, ticket.Status.ID, ticket.Support.ID, ticket.ServiceComment),
+			err,
+		)
+
+		return err
+	}
+
+	return nil
+}
+
 func (r *TicketRepo) GetLastTicketStatusHistory(ticketID uint64) (*internal_models.TicketStatusHistory, error) {
 	var (
 		history dbTicketStatusHistory

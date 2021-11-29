@@ -19,11 +19,10 @@ func ToOutTicketStatusHistory(history *internal_models.TicketStatusHistory) OutT
 		Status:      history.Status.Name,
 		ChangedUser: history.ChangedUser.Name,
 	}
-
 	if history.Duration == 0 {
 		outHistory.Duration = uint64(time.Now().Local().Sub(history.SelectTime).Seconds())
 	} else {
-		outHistory.Duration = uint64(history.Duration.Seconds())
+		outHistory.Duration = uint64(history.Duration)
 	}
 
 	return outHistory

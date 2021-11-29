@@ -70,6 +70,8 @@ func RegisterHTTPEndpoints(router *gin.RouterGroup, uc pkg_ticket.ITicketUsecase
 	{
 		//http://localhost:8888/helpdesk/ticket/create
 		ticketEndpoints.POST("/create", h.CreateTicket)
+		//http://localhost:8888/helpdesk/ticket/update
+		ticketEndpoints.POST("/update", h.UpdateTicket)
 		//http://localhost:8888/helpdesk/ticket/tickets_list?count=5&offset=0
 		ticketEndpoints.GET("/tickets_list", h.GetTicketsList)
 		//http://localhost:8888/helpdesk/ticket/ticket?ticket_id=23
