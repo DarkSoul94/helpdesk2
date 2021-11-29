@@ -3,6 +3,7 @@ package dto
 import (
 	"time"
 
+	"github.com/DarkSoul94/helpdesk2/models"
 	"github.com/DarkSoul94/helpdesk2/pkg_ticket/internal_models"
 )
 
@@ -11,7 +12,7 @@ type NewTicket struct {
 	Text      string `json:"ticket_text"`
 	Author    OutUser
 	Ip        string
-	//Files        []*inpFile `json:"files"`
+	//TODO: Files        []*inpFile `json:"files"`
 }
 
 type OutTicketForList struct {
@@ -31,19 +32,28 @@ type OutTicketForList struct {
 }
 
 type OutTicket struct {
-	ID              uint64                  `json:"ticket_id"`
-	Date            time.Time               `json:"ticket_date"`
-	CategorySection *OutSectionWithCategory `json:"category_section"`
-	Text            string                  `json:"ticket_text"`
-	Status          *OutTicketStatus        `json:"ticket_status"`
-	Filial          string                  `json:"filial"`
-	IP              string                  `json:"ip"`
-	Author          *OutUserWithOutGroup    `json:"ticket_author"`
-	Support         *OutUserWithOutGroup    `json:"support"`
-	ResolvedUser    *OutUserWithOutGroup    `json:"resolved_user"`
-	ServiceComment  string                  `json:"service_comment"`
-	Comments        []*OutComment           `json:"comments"`
-	//Files           []*outFiles         `json:"files"`
+	ID             uint64                  `json:"ticket_id"`
+	Date           time.Time               `json:"ticket_date"`
+	Section        *OutSectionWithCategory `json:"category_section"`
+	Text           string                  `json:"ticket_text"`
+	Status         *OutTicketStatus        `json:"ticket_status"`
+	Filial         string                  `json:"filial"`
+	IP             string                  `json:"ip"`
+	Author         *OutUserWithOutGroup    `json:"ticket_author"`
+	Support        *OutUserWithOutGroup    `json:"support"`
+	ResolvedUser   *OutUserWithOutGroup    `json:"resolved_user"`
+	ServiceComment string                  `json:"service_comment"`
+	Comments       []*OutComment           `json:"comments"`
+	//TODO: Files           []*outFiles         `json:"files"`
+}
+
+type InpUpdateTicket struct {
+	ID             uint64 `json:"ticket_id"`
+	SectionID      uint64 `json:"section_id"`
+	StatusID       uint64 `json:"ticket_status_id"`
+	SupportID      uint64 `json:"support_id"`
+	ServiceComment string `json:"service_comment"`
+	//TODO: Files             []*inpFile `json:"files"`
 }
 
 func NewTicketToModelTicket(tick NewTicket) *internal_models.Ticket {
@@ -94,14 +104,14 @@ func ToOutTicket(ticket *internal_models.Ticket) OutTicket {
 	status := ToOutTicketStatus(ticket.Status)
 
 	outTicket := OutTicket{
-		ID:              ticket.ID,
-		Date:            ticket.Date,
-		CategorySection: &section,
-		Text:            ticket.Text,
-		Status:          &status,
-		Filial:          ticket.Filial,
-		IP:              ticket.IP,
-		ServiceComment:  ticket.ServiceComment,
+		ID:             ticket.ID,
+		Date:           ticket.Date,
+		Section:        &section,
+		Text:           ticket.Text,
+		Status:         &status,
+		Filial:         ticket.Filial,
+		IP:             ticket.IP,
+		ServiceComment: ticket.ServiceComment,
 	}
 
 	if ticket.Author != nil {
@@ -126,4 +136,14 @@ func ToOutTicket(ticket *internal_models.Ticket) OutTicket {
 	}
 
 	return outTicket
+}
+
+func UpdateTicketToModel(ticket InpUpdateTicket) *internal_models.Ticket {
+	return &internal_models.Ticket{
+		ID:             ticket.ID,
+		CatSect:        &internal_models.SectionWithCategory{ID: ticket.SectionID},
+		Status:         &internal_models.TicketStatus{ID: ticket.StatusID},
+		Support:        &models.User{ID: ticket.SupportID},
+		ServiceComment: ticket.ServiceComment,
+	}
 }

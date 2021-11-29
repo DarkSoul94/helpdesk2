@@ -7,6 +7,7 @@ import (
 	"github.com/DarkSoul94/helpdesk2/cachettl"
 	"github.com/DarkSoul94/helpdesk2/global_const/actions"
 	"github.com/DarkSoul94/helpdesk2/models"
+	"github.com/DarkSoul94/helpdesk2/pkg_support"
 	"github.com/DarkSoul94/helpdesk2/pkg_ticket"
 	"github.com/DarkSoul94/helpdesk2/pkg_ticket/cat_sec_manager"
 	"github.com/DarkSoul94/helpdesk2/pkg_ticket/comment_manager"
@@ -23,6 +24,7 @@ type TicketUsecase struct {
 	regFilUC  reg_fil_manager.IRegFilUsecase
 	permUC    group_manager.IPermManager
 	userUC    pkg_user.IUserUsecase
+	suppUC    pkg_support.ISuppForTicket
 	commentUC comment_manager.ICommentUsecase
 	store     cachettl.ObjectStore
 }
@@ -33,6 +35,7 @@ func NewTicketUsecase(
 	regFilUC reg_fil_manager.IRegFilUsecase,
 	permUC group_manager.IPermManager,
 	userUC pkg_user.IUserUsecase,
+	suppUC pkg_support.ISuppForTicket,
 	commentUC comment_manager.ICommentUsecase,
 ) *TicketUsecase {
 	return &TicketUsecase{
@@ -41,6 +44,7 @@ func NewTicketUsecase(
 		regFilUC:  regFilUC,
 		permUC:    permUC,
 		userUC:    userUC,
+		suppUC:    suppUC,
 		commentUC: commentUC,
 		store:     *cachettl.NewObjectStore(viper.GetDuration("app.ttl_cache.clear_period") * time.Second),
 	}
@@ -285,6 +289,29 @@ func (u *TicketUsecase) CreateTicket(ticket *internal_models.Ticket) (uint64, mo
 	return id, nil
 }
 
+func (u *TicketUsecase) UpdateTicket(ticket *internal_models.Ticket, user *models.User, checkControls bool) models.Err {
+	if checkControls {
+		existTicket, _ := u.repo.GetTicket(ticket.ID)
+		existTicket.CatSect, _ = u.catSecUC.GetSectionWithCategoryByID(existTicket.CatSect.ID)
+		err := u.prepareBeforeUpdate(ticket, existTicket, user)
+		if err != nil {
+			return err
+		}
+	}
+
+	err := u.repo.UpdateTicket(ticket)
+	if err != nil {
+		return models.InternalError(err.Error())
+	}
+
+	err = u.CreateTicketStatusHistory(ticket.ID, user.ID, ticket.Status)
+	if err != nil {
+		return models.InternalError(err.Error())
+	}
+
+	return nil
+}
+
 func (u *TicketUsecase) GetTicketList(user *models.User, limit, offset int) ([]*internal_models.Ticket, []string, map[uint]uint, models.Err) {
 	var (
 		list     []*internal_models.Ticket
@@ -482,7 +509,7 @@ func (u *TicketUsecase) createCommentDispatcher(comment *internal_models.Comment
 		case internal_models.TSWaitForResolveID:
 			return nil
 		default:
-			return ErrConnotUpdateTicket
+			return errCannotUpdateTicket
 		}
 	}
 
@@ -502,7 +529,7 @@ func (u *TicketUsecase) createCommentDispatcher(comment *internal_models.Comment
 			return nil
 
 		default:
-			return ErrConnotUpdateTicket
+			return errCannotUpdateTicket
 		}
 	}
 
@@ -513,9 +540,9 @@ func (u *TicketUsecase) createCommentDispatcher(comment *internal_models.Comment
 			internal_models.TSPostponedID:
 			return nil
 		default:
-			return ErrConnotUpdateTicket
+			return errCannotUpdateTicket
 		}
 	}
 
-	return ErrConnotUpdateTicket
+	return errCannotUpdateTicket
 }

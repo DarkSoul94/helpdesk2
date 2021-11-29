@@ -113,7 +113,7 @@ func NewApp() *App {
 	catsecUC := catsecusecase.NewCatSecUsecase(catsecRepo)
 	regfilUC := regfilusecase.NewRegFilUsecase(regfilRepo)
 	commentUC := commentusecase.NewCommentUsecase(commentRepo)
-	ticketUC := ticketusecase.NewTicketUsecase(ticketRepo, catsecUC, regfilUC, permUC, userUC, commentUC)
+	ticketUC := ticketusecase.NewTicketUsecase(ticketRepo, catsecUC, regfilUC, permUC, userUC, suppUC, commentUC)
 
 	return &App{
 		groupRepo: grpRepo,
