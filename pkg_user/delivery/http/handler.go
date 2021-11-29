@@ -113,6 +113,18 @@ func (h *Handler) GetDepartmentsList(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, map[string]interface{}{"status": "ok", "departments": departments})
 }
 
+func (h *Handler) GetGroupsListForResolve(ctx *gin.Context) {
+	outGroups := make([]dto.OutGroupShort, 0)
+	groups, err := h.ucUserManager.GetGroupListForResolve()
+	if err != nil {
+		ctx.JSON(err.Code(), map[string]string{"status": "error", "error": err.Error()})
+	}
+	for _, group := range groups {
+		outGroups = append(outGroups, dto.ToOutShortGroup(group))
+	}
+	ctx.JSON(http.StatusOK, map[string]interface{}{"status": "ok", "groups": outGroups})
+}
+
 /*
 func (h *Handler) GetPermList(ctx *gin.Context) {
 	perm, err := h.ucUserManager.GetFullPermListInBytes()

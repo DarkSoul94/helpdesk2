@@ -2,6 +2,7 @@ package http
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/DarkSoul94/helpdesk2/dto"
 	"github.com/DarkSoul94/helpdesk2/global_const"
@@ -47,7 +48,6 @@ func (h *Handler) GetActiveSupports(c *gin.Context) {
 		outSupports = append(outSupports, dto.ToOutShortSupport(support))
 	}
 	c.JSON(http.StatusOK, outSupports)
-
 }
 
 func (h *Handler) GetStatusesList(c *gin.Context) {
@@ -100,7 +100,6 @@ func (h *Handler) CloseShift(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, map[string]string{"status": "ok"})
-
 }
 
 func (h *Handler) GetShiftStatus(c *gin.Context) {
@@ -154,4 +153,64 @@ func (h *Handler) ChangeSupportStatus(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, map[string]string{"status": "ok"})
+}
+
+func (h *Handler) GetCard(c *gin.Context) {
+	cardID, _ := strconv.ParseUint(c.Request.URL.Query().Get("id"), 10, 64)
+	card, fullErr := h.uc.GetCard(cardID)
+	if fullErr != nil {
+		c.JSON(fullErr.Code(), map[string]string{"status": "error", "error": fullErr.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, dto.ToOutSupportCard(card))
+}
+
+func (h *Handler) UpdateCard(c *gin.Context) {
+	var (
+		card dto.SupportCard
+	)
+	if err := c.BindJSON(&card); err != nil {
+		c.JSON(http.StatusBadRequest, map[string]string{"status": "error", "error": err.Error()})
+		return
+	}
+	if err := card.ValidateCard(); err != nil {
+		c.JSON(err.Code(), map[string]string{"status": "error", "error": err.Error()})
+		return
+	}
+	if err := h.uc.UpdateCard(dto.ToModelSupportCard(&card)); err != nil {
+		c.JSON(err.Code(), map[string]string{"status": "error", "error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, map[string]interface{}{"status": "ok"})
+
+}
+
+func (h *Handler) GetSeniors(c *gin.Context) {
+	outSeniors := make([]dto.OutShort, 0)
+	mSeniors, err := h.uc.GetSeniors()
+	if err != nil {
+		c.JSON(err.Code(), map[string]string{"status": "error", "error": err.Error()})
+		return
+	}
+	for _, val := range mSeniors {
+		outSeniors = append(outSeniors, dto.OutShort{
+			ID:   val.ID,
+			Name: val.Name,
+		})
+	}
+	c.JSON(http.StatusOK, outSeniors)
+}
+
+func (h *Handler) GetCardList(c *gin.Context) {
+	mCards, fullErr := h.uc.GetCardsList()
+	if fullErr != nil {
+		c.JSON(fullErr.Code(), map[string]string{"status": "error", "error": fullErr.Error()})
+		return
+	}
+	outCards := make([]dto.SupportCardShort, 0)
+	for _, card := range mCards {
+		outCards = append(outCards, dto.ToOutSupportCardShort(card))
+	}
+	c.JSON(http.StatusOK, outCards)
+
 }

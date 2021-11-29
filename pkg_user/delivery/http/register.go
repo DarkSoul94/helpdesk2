@@ -29,6 +29,8 @@ func RegisterHTTPEndpoints(router *gin.RouterGroup, uc pkg_user.IUserUsecase, mi
 		groupsEndpoints.POST("/update", h.UpdateGroup)
 		//http://localhost:5555/helpdesk/group/
 		groupsEndpoints.GET("/", h.GetGroupsList)
+		//http://localhost:5555/helpdesk/group/for_resolve
+		groupsEndpoints.GET("/for_resolve", h.GetGroupsListForResolve)
 	}
 	/*
 		permissionsEndpoints := router.Group("/permissions")

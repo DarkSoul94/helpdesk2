@@ -28,6 +28,7 @@ func (p *PermissionMiddleware) CheckPermissions(c *gin.Context) {
 		"/helpdesk/user/departments_list",
 		"/helpdesk/group/create",
 		"/helpdesk/group/update",
+		"/helpdesk/group/for_resolve",
 		"/helpdesk/group/":
 		if !p.usecase.CheckPermission(user.(*models.User).Group.ID, actions.AdminTA) {
 			c.AbortWithStatus(http.StatusForbidden)

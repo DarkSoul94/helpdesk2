@@ -25,7 +25,11 @@ func (p *PermissionMiddleware) CheckPermissions(c *gin.Context) {
 
 	switch c.FullPath() {
 	case "/helpdesk/support/support_list",
-		"/helpdesk/support/active_support_list":
+		"/helpdesk/support/active_support_list",
+		"/helpdesk/support/card/update",
+		"/helpdesk/support/card/seniors",
+		"/helpdesk/support/card/list",
+		"/helpdesk/support/card":
 		if !p.usecase.CheckPermission(user.(*models.User).Group.ID, actions.AdminTA) {
 			c.AbortWithStatus(http.StatusForbidden)
 		}

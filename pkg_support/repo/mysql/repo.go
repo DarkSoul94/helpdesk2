@@ -97,6 +97,32 @@ func (r *Repo) GetSupportList() ([]*internal_models.Support, models.Err) {
 	return mSupports, nil
 }
 
+func (r *Repo) GetSeniors() ([]*internal_models.Support, models.Err) {
+	dbSupp := make([]dbSupport, 0)
+	mSupports := make([]*internal_models.Support, 0)
+	query := `
+	SELECT 
+		support.*, 
+		users.user_name AS support_name 
+	FROM support AS S
+	LEFT JOIN users ON user_id = support_id
+		WHERE EXISTS (
+			SELECT * FROM supports_cards AS C
+			WHERE S.support_id = C.support_id
+				AND C.is_senior = true
+		)`
+	if err := r.db.Select(&dbSupp, query); err != nil {
+		logger.LogError("Failed get support list", "pkg_support/repo/mysql", "", err)
+		return nil, errSupportGet
+	}
+
+	for _, support := range dbSupp {
+		mSupports = append(mSupports, r.toModelSupport(&support))
+	}
+	return mSupports, nil
+
+}
+
 //GetActiveSupports получить список активных саппортов
 func (r *Repo) GetActiveSupports() ([]*internal_models.Support, models.Err) {
 	dbSupp := make([]dbSupport, 0)
@@ -375,6 +401,19 @@ func (r *Repo) GetCard(cardID uint64) (*internal_models.Card, models.Err) {
 		return nil, errCardGet
 	}
 	return r.toModelSupportCard(card), nil
+}
+
+func (r *Repo) GetCardsList() ([]*internal_models.Card, models.Err) {
+	cards := make([]dbCard, 0)
+	mCards := make([]*internal_models.Card, 0)
+	if err := r.db.Select(&cards, "SELECT * FROM supports_cards"); err != nil {
+		logger.LogError("Failed get support list", "pkg_support/repo/mysql", "", err)
+		return nil, errCardGet
+	}
+	for _, val := range cards {
+		mCards = append(mCards, r.toModelSupportCard(&val))
+	}
+	return mCards, nil
 }
 
 func (r *Repo) UpdateCard(card *internal_models.Card) models.Err {

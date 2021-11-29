@@ -12,6 +12,7 @@ type IUserUsecase interface {
 	GetUsersList(askUser *models.User) ([]*models.User, models.Err)
 
 	GetGroupList(askUser *models.User) ([]*models.Group, models.Err)
+	GetGroupListForResolve() ([]*models.Group, models.Err)
 	CreateGroup(askUser *models.User, group *models.Group) (uint64, models.Err)
 	GroupUpdate(askUser *models.User, group *models.Group) models.Err
 
