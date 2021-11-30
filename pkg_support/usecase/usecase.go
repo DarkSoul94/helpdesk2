@@ -51,7 +51,7 @@ func (u *SupportUsecase) CreateSupport(usersID ...uint64) models.Err {
 }
 
 //DeleteSupport - удаление саппорта из базы
-func (u *SupportUsecase) DeleteSupport(usersID ...uint64) models.Err {
+func (u *SupportUsecase) DeleteSupport(askUser *models.User, usersID ...uint64) models.Err {
 	for _, userID := range usersID {
 
 		if card, err := u.repo.GetCardBySupportID(userID); err == nil {
@@ -64,6 +64,9 @@ func (u *SupportUsecase) DeleteSupport(usersID ...uint64) models.Err {
 
 		//проверка что суппорт с таким ID есть в списке, если нет - переходим к следующему
 		if _, err := u.repo.GetSupport(userID); err == nil {
+			if err := u.CloseShift(userID, askUser); err != nil {
+				return err
+			}
 			if err := u.repo.DeleteSupport(userID); err != nil {
 				return err
 			}
@@ -118,7 +121,7 @@ func (u *SupportUsecase) AddSupportActivity(support *internal_models.Support, ti
 			}
 		}
 	}
-	return u.repo.CreateSupportActivity(support.ID, ticketID)
+	return u.repo.UpdateSupportActivity(support.ID, ticketID)
 }
 
 func (u *SupportUsecase) RemoveSupportActivity(ticketID uint64) models.Err {
@@ -126,10 +129,7 @@ func (u *SupportUsecase) RemoveSupportActivity(ticketID uint64) models.Err {
 }
 
 func (u *SupportUsecase) UpdateSupportActivity(supportID, ticketID uint64) models.Err {
-	if u.repo.ExistActivityForTicket(ticketID) {
-		return u.repo.UpdateSupportActivity(supportID, ticketID)
-	}
-	return u.repo.CreateSupportActivity(supportID, ticketID)
+	return u.repo.UpdateSupportActivity(supportID, ticketID)
 }
 
 func (u *SupportUsecase) SetSupportStatus(supportID, statusID uint64) models.Err {
@@ -183,10 +183,10 @@ func (u *SupportUsecase) CloseShift(supportID uint64, user *models.User) models.
 	}
 	if !shift.ClosingStatus {
 		if u.repo.CheckForBusy(supportID) {
-			if !u.perm.CheckPermission(user.Group.ID, actions.AdminTA) {
+			if !u.perm.CheckPermission(user.Group.ID, actions.AdminTA) || supportID == user.ID {
 				return supportErr_Busy
 			}
-			//TODO добавить возврат запросов на распределение если смену закрывает админ
+			u.repo.SetReassignmentBySupport(supportID)
 		}
 		shift.Close()
 		return u.updateShift(shift)

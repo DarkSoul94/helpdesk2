@@ -208,12 +208,14 @@ func (r *Repo) CheckForBusy(supportID uint64) bool {
 	return active
 }
 
-func (r *Repo) CreateSupportActivity(supportID, ticketID uint64) models.Err {
+func (r *Repo) UpdateSupportActivity(supportID, ticketID uint64) models.Err {
 	query := `
 	INSERT INTO supports_activity SET
 		support_id = ?,
-		ticket_id = ?`
-	if _, err := r.db.Exec(query, supportID, ticketID); err != nil {
+		ticket_id = ?
+	ON DUPLICATE KEY UPDATE
+		support_id = ?`
+	if _, err := r.db.Exec(query, supportID, ticketID, supportID); err != nil {
 		logger.LogError("Failed create support activity", "pkg_support/repo/mysql", fmt.Sprintf("support id: %d, ticket id: %d", supportID, ticketID), err)
 		return errSupportModifyActivity
 	}
@@ -231,26 +233,16 @@ func (r *Repo) RemoveSupportActivity(ticketID uint64) models.Err {
 	return nil
 }
 
-func (r *Repo) UpdateSupportActivity(supportID, ticketID uint64) models.Err {
+func (r *Repo) SetReassignmentBySupport(supportID uint64) models.Err {
 	query := `
 	UPDATE supports_activity SET
-		support_id = ?
-	WHERE ticket_id = ?`
-	if _, err := r.db.Exec(query, supportID, ticketID); err != nil {
-		logger.LogError("Failed update support activity", "pkg_support/repo/mysql", fmt.Sprintf("support id: %d, ticket id: %d", supportID, ticketID), err)
+		reassignment = true
+	WHERE support_id = ?`
+	if _, err := r.db.Exec(query, supportID); err != nil {
+		logger.LogError("Failed update reassignment", "pkg_support/repo/mysql", fmt.Sprintf("support id: %d", supportID), err)
 		return errSupportModifyActivity
 	}
 	return nil
-}
-
-func (r *Repo) ExistActivityForTicket(ticketID uint64) bool {
-	var result bool
-	query := `
-	SELECT EXISTs (SELECT * FROM supports_activity WHERE ticket_id = ?)`
-	if err := r.db.Get(&result, query, ticketID); err != nil {
-		logger.LogError("Failed get support activity", "pkg_support/repo/mysql", fmt.Sprintf("ticket id id: %d", ticketID), err)
-	}
-	return result
 }
 
 //GetStatus получить статус саппорта по ID статуса

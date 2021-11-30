@@ -50,7 +50,7 @@ func (u *Usecase) UserUpdate(askUser *models.User, userID, groupID uint64) model
 	//если же у текущей группы есть права на обработку запроса,
 	//а у новой - нет, то удаляем пользователя из саппортов
 	if forCurrent && !forNew {
-		if err := u.support.DeleteSupport(userID); err != nil {
+		if err := u.support.DeleteSupport(askUser, userID); err != nil {
 			return err
 		}
 	}
@@ -161,7 +161,7 @@ func (u *Usecase) GroupUpdate(askUser *models.User, group *models.Group) models.
 		if err != nil {
 			return err
 		}
-		if err = u.support.DeleteSupport(users...); err != nil {
+		if err = u.support.DeleteSupport(askUser, users...); err != nil {
 			return err
 		}
 	}

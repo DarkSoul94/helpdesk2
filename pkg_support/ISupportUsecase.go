@@ -40,7 +40,7 @@ type ISuppForUser interface {
 	//Создание саппортов по ID пользователей
 	CreateSupport(usersID ...uint64) models.Err
 	//Удаление саппортов по ID пользователей
-	DeleteSupport(usersID ...uint64) models.Err
+	DeleteSupport(askUser *models.User, usersID ...uint64) models.Err
 }
 
 type ISuppForTicket interface {
