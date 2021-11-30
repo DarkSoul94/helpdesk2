@@ -22,12 +22,11 @@ func (u *SupportUsecase) changePriority(support *internal_models.Support) models
 				u.repo.UpdateSupport(nextPrior)
 			}
 			support.Priority = false
-			return u.repo.UpdateSupport(support)
+			break
 		}
 
 		if !support.Status.AcceptTicket {
 			support.Priority = false
-			return u.repo.UpdateSupport(support)
 		}
 	}
 
