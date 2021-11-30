@@ -233,12 +233,12 @@ func (r *Repo) RemoveSupportActivity(ticketID uint64) models.Err {
 	return nil
 }
 
-func (r *Repo) SetReassignmentBySupport(supportID uint64) models.Err {
+func (r *Repo) SetReassignmentBySupport(supportID uint64, reassignment bool) models.Err {
 	query := `
 	UPDATE supports_activity SET
-		reassignment = true
+		reassignment = ?
 	WHERE support_id = ?`
-	if _, err := r.db.Exec(query, supportID); err != nil {
+	if _, err := r.db.Exec(query, supportID, reassignment); err != nil {
 		logger.LogError("Failed update reassignment", "pkg_support/repo/mysql", fmt.Sprintf("support id: %d", supportID), err)
 		return errSupportModifyActivity
 	}

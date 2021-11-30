@@ -167,6 +167,7 @@ func (u *SupportUsecase) OpenShift(supportID uint64, user *models.User) models.E
 				return supportErr_CannotReopen
 			}
 			shift.Reopen()
+			u.repo.SetReassignmentBySupport(supportID, true)
 			return u.updateShift(shift)
 		}
 		//TODO добавить проверку на опоздание по графику и можно ли вообще открывать смену
