@@ -46,9 +46,9 @@ type ISuppForUser interface {
 type ISuppForTicket interface {
 	//Возвращает саппорта на которого нужно распределить запрос.
 	//Если свободные саппорты не были найдены возвращает nill
-	GetSupportForDistribution(supportID uint64) *internal_models.Support
+	GetSupportForDistribution(supportID uint64) uint64
 	//Создает запись о работе саппорта над запросом
-	AddSupportActivity(support *internal_models.Support, ticketID uint64) models.Err
+	AddSupportActivity(supportID, ticketID uint64) models.Err
 	//Удаляет запись о работе саппорта над запросом
 	RemoveSupportActivity(ticketID uint64) models.Err
 	//Модифицирует запись о работе саппорта над запросом (в случае когда запрос переходит к другому саппорту)

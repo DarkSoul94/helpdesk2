@@ -35,23 +35,23 @@ func (u *TicketUsecase) distributor() {
 	}
 
 	for _, ticket := range tickets {
-		support := u.suppUC.GetSupportForDistribution(ticket.Support.ID)
-		if support == nil || support.ID == 0 {
+		supportID := u.suppUC.GetSupportForDistribution(ticket.Support.ID)
+		if supportID == 0 {
 			break
 		}
-		if ticket.Support.ID == support.ID {
-			err := u.suppUC.UpdateSupportActivity(support.ID, ticket.ID)
+		if ticket.Support.ID == supportID {
+			err := u.suppUC.UpdateSupportActivity(supportID, ticket.ID)
 			if err != nil {
 				continue
 			}
 		} else {
-			err := u.suppUC.AddSupportActivity(support, ticket.ID)
+			err := u.suppUC.AddSupportActivity(supportID, ticket.ID)
 			if err != nil {
 				continue
 			}
 		}
 
-		ticket.Support = &models.User{ID: support.ID}
+		ticket.Support = &models.User{ID: supportID}
 		ticket.Status.Set(internal_models.KeyTSInWork)
 		err := u.UpdateTicket(ticket, &models.User{ID: 1}, false)
 		if err != nil {

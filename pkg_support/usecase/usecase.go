@@ -95,12 +95,12 @@ func (u *SupportUsecase) GetActiveSupports() ([]*internal_models.Support, models
 	return u.repo.GetActiveSupports()
 }
 
-func (u *SupportUsecase) GetSupportForDistribution(supportID uint64) *internal_models.Support {
+func (u *SupportUsecase) GetSupportForDistribution(supportID uint64) uint64 {
 	var support = new(internal_models.Support)
 	if supportID != 0 {
 		if u.repo.CheckForActivity(supportID) {
 			support, _ = u.repo.GetSupport(supportID)
-			return support
+			return support.ID
 		}
 	}
 
@@ -110,16 +110,16 @@ func (u *SupportUsecase) GetSupportForDistribution(supportID uint64) *internal_m
 	} else {
 		support, _ = u.repo.GetSupport(prioritized)
 	}
-	return support
+	return support.ID
 }
 
-func (u *SupportUsecase) AddSupportActivity(support *internal_models.Support, ticketID uint64) models.Err {
-	if support.Priority {
-		for _, val := range u.priorityHelper(support) {
-			if err := u.repo.UpdateSupport(val); err != nil {
-				return err
-			}
-		}
+func (u *SupportUsecase) AddSupportActivity(supportID, ticketID uint64) models.Err {
+	support, err := u.repo.GetSupport(supportID)
+	if err != nil {
+		return err
+	}
+	if err := u.changePriority(support); err != nil {
+		return err
 	}
 	return u.repo.UpdateSupportActivity(support.ID, ticketID)
 }
@@ -147,10 +147,9 @@ func (u *SupportUsecase) SetSupportStatus(supportID, statusID uint64) models.Err
 	if support.Status, err = u.repo.GetStatus(statusID); err != nil {
 		return err
 	}
-	for _, val := range u.priorityHelper(&support) {
-		if err := u.repo.UpdateSupport(val); err != nil {
-			return err
-		}
+
+	if err := u.changePriority(&support); err != nil {
+		return err
 	}
 	return u.statusHistoryHelper(&support, shift.ID)
 }
@@ -212,12 +211,17 @@ func (u *SupportUsecase) updateShift(shift *internal_models.Shift) models.Err {
 		if err != nil {
 			return err
 		}
-		forUpdate := u.priorityHelper(shift.Support)
-		for _, support := range forUpdate {
-			if err := u.repo.UpdateSupport(support); err != nil {
-				return err
-			}
+
+		if err := u.changePriority(shift.Support); err != nil {
+			return err
 		}
+		/*
+			forUpdate := u.priorityHelper(shift.Support)
+			for _, support := range forUpdate {
+				if err := u.repo.UpdateSupport(support); err != nil {
+					return err
+				}
+			}*/
 		if err := u.statusHistoryHelper(shift.Support, shift.ID); err != nil {
 			return err
 		}
