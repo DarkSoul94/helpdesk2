@@ -766,7 +766,7 @@
   {
     "type": "GET",
     "url": "/helpdesk/resolve_ticket/check_exist",
-    "title": "05. Проверка есть ли запросы ожидающие согласования",
+    "title": "06. Проверка есть ли запросы ожидающие согласования",
     "name": "CheckNeedResolveTicketExist",
     "group": "03._Запросы_в_тех._поддержку",
     "version": "2.0.0",
@@ -810,13 +810,13 @@
         }
       ]
     },
-    "filename": "./docs/2.0.0/tickets/05_CheckNeedResolveTicketExist.go",
+    "filename": "./docs/2.0.0/tickets/06_CheckNeedResolveTicketExist.go",
     "groupTitle": "03._Запросы_в_тех._поддержку"
   },
   {
     "type": "post",
     "url": "/helpdesk/comment/create",
-    "title": "10. Создание нового комментария в запросе",
+    "title": "12. Создание нового комментария в запросе",
     "name": "CreateCommentsHistory",
     "group": "03._Запросы_в_тех._поддержку",
     "version": "2.0.0",
@@ -899,7 +899,7 @@
         ]
       }
     },
-    "filename": "./docs/2.0.0/tickets/comments/10_CreateCommentsHistory.go",
+    "filename": "./docs/2.0.0/tickets/comments/12_CreateCommentsHistory.go",
     "groupTitle": "03._Запросы_в_тех._поддержку"
   },
   {
@@ -1031,9 +1031,202 @@
     "groupTitle": "03._Запросы_в_тех._поддержку"
   },
   {
+    "type": "POST",
+    "url": "/helpdesk/ticket/generate_tickets",
+    "title": "02. Создание большого количества запросов",
+    "name": "CreateTicket",
+    "group": "03._Запросы_в_тех._поддержку",
+    "version": "2.0.0",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "BearerToken",
+            "description": "<p>Авторизационный токен</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "text",
+            "description": "<p>Текст запроса</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Int",
+            "optional": false,
+            "field": "section_id",
+            "description": "<p>ИД раздела категории</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "User[]",
+            "optional": false,
+            "field": "users",
+            "description": "<p>Массив обектов &quot;пользователь&quot;</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Int",
+            "optional": false,
+            "field": "users.user_id",
+            "description": "<p>ИД пользователя которому создать запрос</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Int",
+            "optional": false,
+            "field": "users.count",
+            "description": "<p>Количество запросов которые необходимо создать</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Request-Example:",
+          "content": "{\n  \"text\":\"тест много запросов3\",\n  \"section_id\":1,\n  \"users\":[\n      \t{\n          \"user_id\": 6,\n          \"count\": 1\n      \t}\n      ]\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "status",
+            "description": "<p>Статус ответа на запрос</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Запросы успешно созданы:",
+          "content": "{\n    \"status\": \"ok\"\n}",
+          "type": "json"
+        },
+        {
+          "title": "Пустой текст запроса:",
+          "content": "{\n \"error\": \"Ticket text is blank\",\n \"status\": \"error\"\n}",
+          "type": "json"
+        },
+        {
+          "title": "ИД не существующей категории:",
+          "content": "{\n \"error\": \"Such category section doesn't exist\",\n \"status\": \"error\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "./docs/2.0.0/tickets/02_GenerateTickets.go",
+    "groupTitle": "03._Запросы_в_тех._поддержку"
+  },
+  {
+    "type": "get",
+    "url": "/file/",
+    "title": "13. Получение файла по его ид",
+    "name": "GetFile",
+    "group": "03._Запросы_в_тех._поддержку",
+    "version": "2.0.0",
+    "description": "<p>В запросе указывается ид файла который необходимо получить, в ответ возвращается файл в виде json объекта или ошибка.</p>",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "BearerToken",
+            "description": "<p>Авторизационный токен</p>"
+          }
+        ]
+      }
+    },
+    "examples": [
+      {
+        "title": "Example usage:",
+        "content": "http://localhost:8888/helpdesk/file/?file_id=23",
+        "type": "json"
+      }
+    ],
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "Uint64",
+            "optional": false,
+            "field": "file_id",
+            "description": "<p>ID получаемого файла</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Uint64",
+            "optional": false,
+            "field": "file_id",
+            "description": "<p>ID файла</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "file_name",
+            "description": "<p>Имя файла</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Uint64",
+            "optional": false,
+            "field": "ticket_id",
+            "description": "<p>ID запроса к которому относится файл</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "file_data",
+            "description": "<p>Данные файлы</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "file_date",
+            "description": "<p>Дата добавления файла</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success-Response:",
+          "content": "{\n  \"file_id\": 48,\n  \"file_name\": \"скрин1.новый_клиент.jpg\",\n  \"file_data\": \"a few byte count\",\n  \"file_date\": \"2021-04-12T13:33:20Z\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "./docs/2.0.0/tickets/files/13_GetFile.go",
+    "groupTitle": "03._Запросы_в_тех._поддержку"
+  },
+  {
     "type": "GET",
     "url": "/helpdesk/resolve_ticket/resolve_tickets_list",
-    "title": "06. Получение списка запросов в тех. поддержку ожидающих согласования",
+    "title": "07. Получение списка запросов в тех. поддержку ожидающих согласования",
     "name": "GetResolveTicketsList",
     "group": "03._Запросы_в_тех._поддержку",
     "version": "2.0.0",
@@ -1160,13 +1353,13 @@
         }
       ]
     },
-    "filename": "./docs/2.0.0/tickets/06_GetResolveTicketsList.go",
+    "filename": "./docs/2.0.0/tickets/07_GetResolveTicketsList.go",
     "groupTitle": "03._Запросы_в_тех._поддержку"
   },
   {
     "type": "GET",
     "url": "/helpdesk/ticket/ticket",
-    "title": "03. Получение запроса",
+    "title": "04. Получение запроса",
     "name": "GetTicket",
     "group": "03._Запросы_в_тех._поддержку",
     "version": "2.0.0",
@@ -1544,13 +1737,13 @@
         }
       ]
     },
-    "filename": "./docs/2.0.0/tickets/03_GetTicket.go",
+    "filename": "./docs/2.0.0/tickets/04_GetTicket.go",
     "groupTitle": "03._Запросы_в_тех._поддержку"
   },
   {
     "type": "get",
     "url": "/helpdesk/ticket_status/",
-    "title": "07. Получение списка статусов запроса в ТП для выбора внутри запроса",
+    "title": "08. Получение списка статусов запроса в ТП для выбора внутри запроса",
     "name": "GetTicketStatus",
     "group": "03._Запросы_в_тех._поддержку",
     "version": "2.0.0",
@@ -1602,13 +1795,13 @@
         }
       ]
     },
-    "filename": "./docs/2.0.0/tickets/07_GetTicketStatusListAll.go",
+    "filename": "./docs/2.0.0/tickets/08_GetTicketStatusListAll.go",
     "groupTitle": "03._Запросы_в_тех._поддержку"
   },
   {
     "type": "get",
     "url": "/helpdesk/ticket_status/history",
-    "title": "09. Получение истории изменения статусов запроса",
+    "title": "10. Получение истории изменения статусов запроса",
     "name": "GetTicketStatusHistory",
     "group": "03._Запросы_в_тех._поддержку",
     "version": "2.0.0",
@@ -1705,13 +1898,13 @@
         ]
       }
     },
-    "filename": "./docs/2.0.0/tickets/09_GetTicketStatusHistory.go",
+    "filename": "./docs/2.0.0/tickets/10_GetTicketStatusHistory.go",
     "groupTitle": "03._Запросы_в_тех._поддержку"
   },
   {
     "type": "get",
     "url": "/helpdesk/ticket_status/list",
-    "title": "08. Получение всего списка статусов у запроса",
+    "title": "09. Получение всего списка статусов у запроса",
     "name": "GetTicketStatusList",
     "group": "03._Запросы_в_тех._поддержку",
     "version": "2.0.0",
@@ -1763,13 +1956,13 @@
         }
       ]
     },
-    "filename": "./docs/2.0.0/tickets/08_GetTicketStatusList.go",
+    "filename": "./docs/2.0.0/tickets/09_GetTicketStatusList.go",
     "groupTitle": "03._Запросы_в_тех._поддержку"
   },
   {
     "type": "GET",
     "url": "/helpdesk/ticket/tickets_list",
-    "title": "04. Получение списка запросов в тех. поддержку",
+    "title": "05. Получение списка запросов в тех. поддержку",
     "name": "GetTicketsList",
     "group": "03._Запросы_в_тех._поддержку",
     "version": "2.0.0",
@@ -1930,13 +2123,99 @@
         }
       ]
     },
-    "filename": "./docs/2.0.0/tickets/04_GetTicketsList.go",
+    "filename": "./docs/2.0.0/tickets/05_GetTicketsList.go",
+    "groupTitle": "03._Запросы_в_тех._поддержку"
+  },
+  {
+    "type": "POST",
+    "url": "/helpdesk/ticket/steal",
+    "title": "11. Взять чужой запрос себе в работу.",
+    "name": "StealTicket",
+    "group": "03._Запросы_в_тех._поддержку",
+    "version": "2.0.0",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "BearerToken",
+            "description": "<p>Авторизационный токен</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "Uint64",
+            "optional": false,
+            "field": "ticket_id",
+            "description": "<p>ID запроса</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Request-Example:",
+          "content": "{\n  \"ticket_id\":5\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "status",
+            "description": "<p>Статус ответа на запрос</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success-Response:",
+          "content": "{\n    \"status\": \"ok\"\n}",
+          "type": "json"
+        },
+        {
+          "title": "Error-Response:",
+          "content": "{\n     \"status\": \"error\",\n\t\t\"error\":\"Ticket is complete\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "error": {
+      "fields": {
+        "Error 4xx": [
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "ErrTicketIsComplete",
+            "description": "<p>Ticket is complete</p>"
+          },
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "ErrTicketDoesNotExist",
+            "description": "<p>Ticket with this id not exist</p>"
+          }
+        ]
+      }
+    },
+    "filename": "./docs/2.0.0/tickets/11_StealTicket.go",
     "groupTitle": "03._Запросы_в_тех._поддержку"
   },
   {
     "type": "post",
     "url": "/helpdesk/ticket/update",
-    "title": "02. Обновление запроса в ТП",
+    "title": "03. Обновление запроса в ТП",
     "name": "UpdateTicket",
     "group": "03._Запросы_в_тех._поддержку",
     "version": "2.0.0",
@@ -2073,7 +2352,7 @@
         ]
       }
     },
-    "filename": "./docs/2.0.0/tickets/02_UpdateTicket.go",
+    "filename": "./docs/2.0.0/tickets/03_UpdateTicket.go",
     "groupTitle": "03._Запросы_в_тех._поддержку"
   },
   {

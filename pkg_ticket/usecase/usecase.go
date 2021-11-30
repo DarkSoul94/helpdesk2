@@ -11,6 +11,7 @@ import (
 	"github.com/DarkSoul94/helpdesk2/pkg_ticket"
 	"github.com/DarkSoul94/helpdesk2/pkg_ticket/cat_sec_manager"
 	"github.com/DarkSoul94/helpdesk2/pkg_ticket/comment_manager"
+	"github.com/DarkSoul94/helpdesk2/pkg_ticket/file_manager"
 	"github.com/DarkSoul94/helpdesk2/pkg_ticket/internal_models"
 	"github.com/DarkSoul94/helpdesk2/pkg_ticket/reg_fil_manager"
 	"github.com/DarkSoul94/helpdesk2/pkg_user"
@@ -22,6 +23,7 @@ type TicketUsecase struct {
 	repo      pkg_ticket.ITicketRepo
 	catSecUC  cat_sec_manager.ICatSecUsecase
 	regFilUC  reg_fil_manager.IRegFilUsecase
+	fileUC    file_manager.IFileUsecase
 	permUC    group_manager.IPermManager
 	userUC    pkg_user.IUserUsecase
 	suppUC    pkg_support.ISuppForTicket
@@ -33,6 +35,7 @@ func NewTicketUsecase(
 	tRepo pkg_ticket.ITicketRepo,
 	catSecUC cat_sec_manager.ICatSecUsecase,
 	regFilUC reg_fil_manager.IRegFilUsecase,
+	fileUC file_manager.IFileUsecase,
 	permUC group_manager.IPermManager,
 	userUC pkg_user.IUserUsecase,
 	suppUC pkg_support.ISuppForTicket,
@@ -42,6 +45,7 @@ func NewTicketUsecase(
 		repo:      tRepo,
 		catSecUC:  catSecUC,
 		regFilUC:  regFilUC,
+		fileUC:    fileUC,
 		permUC:    permUC,
 		userUC:    userUC,
 		suppUC:    suppUC,
@@ -284,6 +288,11 @@ func (u *TicketUsecase) CreateTicket(ticket *internal_models.Ticket) (uint64, mo
 		return 0, err
 	}
 
+	err = u.fileUC.CreateFiles(ticket.Files, id)
+	if err != nil {
+		return 0, err
+	}
+
 	u.store.Add(ticket.Author.Email, ticketHash, viper.GetInt64("app.ttl_cache.life_time"))
 
 	return id, nil
@@ -333,14 +342,16 @@ func (u *TicketUsecase) UpdateTicket(ticket *internal_models.Ticket, user *model
 		}
 	}
 
-	err := u.repo.UpdateTicket(ticket)
-	if err != nil {
+	if err := u.repo.UpdateTicket(ticket); err != nil {
 		return models.InternalError(err.Error())
 	}
 
-	err = u.CreateTicketStatusHistory(ticket.ID, user.ID, ticket.Status)
-	if err != nil {
+	if err := u.CreateTicketStatusHistory(ticket.ID, user.ID, ticket.Status); err != nil {
 		return models.InternalError(err.Error())
+	}
+
+	if err := u.fileUC.CreateFiles(ticket.Files, ticket.ID); err != nil {
+		return err
 	}
 
 	return nil
@@ -433,6 +444,11 @@ func (u *TicketUsecase) GetTicket(ticketID uint64, user *models.User) (*internal
 	}
 
 	ticket.Author, err = u.userUC.GetUserByID(ticket.Author.ID)
+	if err != nil {
+		return nil, models.InternalError(err.Error())
+	}
+
+	ticket.Files, err = u.fileUC.GetTicketFiles(ticketID)
 	if err != nil {
 		return nil, models.InternalError(err.Error())
 	}
@@ -619,4 +635,8 @@ func (u *TicketUsecase) createCommentDispatcher(comment *internal_models.Comment
 	}
 
 	return errCannotUpdateTicket
+}
+
+func (u *TicketUsecase) GetFile(fileID uint64) (*internal_models.File, models.Err) {
+	return u.fileUC.GetFile(fileID)
 }

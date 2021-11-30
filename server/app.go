@@ -3,19 +3,23 @@ package server
 import (
 	"context"
 	"database/sql"
+	"encoding/base64"
 	"fmt"
 	"log"
 	"net"
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 
+	"github.com/DarkSoul94/helpdesk2/pkg/logger"
 	"github.com/DarkSoul94/helpdesk2/pkg_support"
 	"github.com/DarkSoul94/helpdesk2/pkg_user"
 	userhttp "github.com/DarkSoul94/helpdesk2/pkg_user/delivery/http"
 	userrepo "github.com/DarkSoul94/helpdesk2/pkg_user/repo/mysql"
 	userusecase "github.com/DarkSoul94/helpdesk2/pkg_user/usecase"
+	"github.com/jmoiron/sqlx"
 
 	"github.com/DarkSoul94/helpdesk2/pkg_ticket"
 	tickethttp "github.com/DarkSoul94/helpdesk2/pkg_ticket/delivery/http"
@@ -34,6 +38,10 @@ import (
 	"github.com/DarkSoul94/helpdesk2/pkg_ticket/reg_fil_manager"
 	regfilrepo "github.com/DarkSoul94/helpdesk2/pkg_ticket/reg_fil_manager/repo/mysql"
 	regfilusecase "github.com/DarkSoul94/helpdesk2/pkg_ticket/reg_fil_manager/usecase"
+
+	"github.com/DarkSoul94/helpdesk2/pkg_ticket/file_manager"
+	filerepo "github.com/DarkSoul94/helpdesk2/pkg_ticket/file_manager/repo/mysql"
+	fileusecase "github.com/DarkSoul94/helpdesk2/pkg_ticket/file_manager/usecase"
 
 	"github.com/DarkSoul94/helpdesk2/pkg_user/group_manager"
 	grouprepo "github.com/DarkSoul94/helpdesk2/pkg_user/group_manager/standart/repo/mysql"
@@ -59,6 +67,8 @@ import (
 
 // App ...
 type App struct {
+	dbConnect *sql.DB
+
 	groupRepo group_manager.IGroupRepo
 	groupUC   group_manager.IGroupUsecase
 
@@ -79,6 +89,9 @@ type App struct {
 	regFilRepo reg_fil_manager.IRegFilRepo
 	regFilUC   reg_fil_manager.IRegFilUsecase
 
+	fileRepo file_manager.IFileRepo
+	fileUC   file_manager.IFileUsecase
+
 	commentRepo comment_manager.ICommentRepo
 	commentUC   comment_manager.ICommentUsecase
 
@@ -97,6 +110,7 @@ func NewApp() *App {
 	userRepo := userrepo.NewRepo(db)
 	catsecRepo := catsecrepo.NewCatSecRepo(db)
 	regfilRepo := regfilrepo.NewRegFilRepo(db)
+	fileRepo := filerepo.NewFileRepo(db)
 	commentRepo := commentrepo.NewCommentRepo(db)
 	ticketRepo := ticketrepo.NewTicketRepo(db)
 
@@ -112,10 +126,13 @@ func NewApp() *App {
 
 	catsecUC := catsecusecase.NewCatSecUsecase(catsecRepo)
 	regfilUC := regfilusecase.NewRegFilUsecase(regfilRepo)
+	fileUC := fileusecase.NewFileUsecase(fileRepo)
 	commentUC := commentusecase.NewCommentUsecase(commentRepo)
-	ticketUC := ticketusecase.NewTicketUsecase(ticketRepo, catsecUC, regfilUC, permUC, userUC, suppUC, commentUC)
+	ticketUC := ticketusecase.NewTicketUsecase(ticketRepo, catsecUC, regfilUC, fileUC, permUC, userUC, suppUC, commentUC)
 
 	return &App{
+		dbConnect: db,
+
 		groupRepo: grpRepo,
 		groupUC:   grpUC,
 
@@ -133,6 +150,15 @@ func NewApp() *App {
 		catSecRepo: catsecRepo,
 		catSecUC:   catsecUC,
 
+		regFilRepo: regfilRepo,
+		regFilUC:   regfilUC,
+
+		fileRepo: fileRepo,
+		fileUC:   fileUC,
+
+		commentRepo: commentRepo,
+		commentUC:   commentUC,
+
 		ticketRepo: ticketRepo,
 		ticketUC:   ticketUC,
 	}
@@ -140,6 +166,10 @@ func NewApp() *App {
 
 // Run run helpdesklication
 func (a *App) Run(port string) error {
+	if _, err := os.Stat(viper.GetString("app.store.path")); os.IsNotExist(err) {
+		os.Mkdir(viper.GetString("app.store.path"), 0777)
+	}
+
 	defer a.close()
 
 	router := gin.New()
@@ -197,6 +227,8 @@ func (a *App) Run(port string) error {
 			log.Fatalf("Failed to listen and serve: %+v", err)
 		}
 	}(l)
+
+	go moveFileFromDBtoFolder(a.dbConnect)
 
 	ctx1, shutdown1 := context.WithCancel(context.Background())
 	defer shutdown1()
@@ -279,6 +311,65 @@ func (a *App) close() {
 	a.suppRepo.Close()
 	a.catSecRepo.Close()
 	a.regFilRepo.Close()
+	a.fileRepo.Close()
 	a.commentRepo.Close()
 	a.ticketRepo.Close()
+}
+
+func moveFileFromDBtoFolder(db *sql.DB) {
+	type dbFile struct {
+		FileID        uint64         `db:"file_id"`
+		FileName      string         `db:"file_name"`
+		FileExtension string         `db:"file_extension"`
+		TicketId      uint64         `db:"ticket_id"`
+		FileData      sql.NullString `db:"file_data"`
+		FileDate      time.Time      `db:"file_date"`
+		Path          sql.NullString `db:"path"`
+	}
+
+	var (
+		files []dbFile
+		query string
+	)
+
+	dbx := sqlx.NewDb(db, "mysql")
+	defaultPath := viper.GetString("app.store.path")
+
+	query = `SELECT * FROM files 
+				WHERE path IS NULL`
+	dbx.Select(&files, query)
+
+	for _, f := range files {
+		year, month, day := f.FileDate.Date()
+		pathToFolder := fmt.Sprintf("%s/%d-%d-%d", defaultPath, day, month, year)
+		if _, err := os.Stat(pathToFolder); os.IsNotExist(err) {
+			os.Mkdir(pathToFolder, 0777)
+		}
+
+		f.Path.String = fmt.Sprintf("%s/%s", pathToFolder, f.FileName)
+		f.Path.Valid = true
+
+		newFile, err := os.Create(f.Path.String)
+		if err != nil {
+			logger.LogError("Failed create file", "server/app", f.FileName, err)
+			continue
+		}
+		defer newFile.Close()
+		split := strings.Split(f.FileData.String, ",")
+		data, err := base64.StdEncoding.DecodeString(split[1])
+
+		newFile.Write(data)
+
+		f.FileData.String = split[0]
+
+		query = `UPDATE files SET 
+					file_data = :file_data,
+					path = :path
+					WHERE file_id = :file_id`
+		_, err = dbx.NamedExec(query, f)
+		if err != nil {
+			logger.LogError("Failed update file", "server/app", f.FileName, err)
+			continue
+		}
+	}
 }

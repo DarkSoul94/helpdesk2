@@ -12,7 +12,7 @@ type NewTicket struct {
 	Text      string `json:"ticket_text"`
 	Author    OutUser
 	Ip        string
-	//TODO: Files        []*inpFile `json:"files"`
+	Files     []OutFile `json:"files"`
 }
 
 type OutTicketForList struct {
@@ -44,16 +44,16 @@ type OutTicket struct {
 	ResolvedUser   *OutUserWithOutGroup    `json:"resolved_user"`
 	ServiceComment string                  `json:"service_comment"`
 	Comments       []*OutComment           `json:"comments"`
-	//TODO: Files           []*outFiles         `json:"files"`
+	Files          []OutFile               `json:"files"`
 }
 
 type InpUpdateTicket struct {
-	ID             uint64 `json:"ticket_id"`
-	SectionID      uint64 `json:"section_id"`
-	StatusID       uint64 `json:"ticket_status_id"`
-	SupportID      uint64 `json:"support_id"`
-	ServiceComment string `json:"service_comment"`
-	//TODO: Files             []*inpFile `json:"files"`
+	ID             uint64    `json:"ticket_id"`
+	SectionID      uint64    `json:"section_id"`
+	StatusID       uint64    `json:"ticket_status_id"`
+	SupportID      uint64    `json:"support_id"`
+	ServiceComment string    `json:"service_comment"`
+	Files          []OutFile `json:"files"`
 }
 
 type InpGenerateTicket struct {
@@ -63,13 +63,19 @@ type InpGenerateTicket struct {
 }
 
 func NewTicketToModelTicket(tick NewTicket) *internal_models.Ticket {
-	return &internal_models.Ticket{
+	mTicket := &internal_models.Ticket{
 		CatSect: &internal_models.SectionWithCategory{ID: tick.SectionID},
 		Text:    tick.Text,
 		Author:  ToModelUser(tick.Author),
 		Status:  &internal_models.TicketStatus{},
 		IP:      tick.Ip,
 	}
+
+	for _, file := range tick.Files {
+		mTicket.Files = append(mTicket.Files, ToModelFile(file))
+	}
+
+	return mTicket
 }
 
 func ToOutTicketForList(tick *internal_models.Ticket, priority map[uint]uint) OutTicketForList {
@@ -141,17 +147,26 @@ func ToOutTicket(ticket *internal_models.Ticket) OutTicket {
 		}
 	}
 
+	for _, file := range ticket.Files {
+		outTicket.Files = append(outTicket.Files, ToOutFile(file))
+	}
 	return outTicket
 }
 
 func UpdateTicketToModel(ticket InpUpdateTicket) *internal_models.Ticket {
-	return &internal_models.Ticket{
+	mTicket := &internal_models.Ticket{
 		ID:             ticket.ID,
 		CatSect:        &internal_models.SectionWithCategory{ID: ticket.SectionID},
 		Status:         &internal_models.TicketStatus{ID: ticket.StatusID},
 		Support:        &models.User{ID: ticket.SupportID},
 		ServiceComment: ticket.ServiceComment,
 	}
+
+	for _, file := range ticket.Files {
+		mTicket.Files = append(mTicket.Files, ToModelFile(file))
+	}
+
+	return mTicket
 }
 
 func ToModelGenerateTicekt(ticket InpGenerateTicket) internal_models.TicketGenerate {

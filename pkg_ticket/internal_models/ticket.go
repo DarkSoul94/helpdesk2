@@ -25,7 +25,7 @@ type Ticket struct {
 	ServiceComment string
 	Comments       []*Comment
 	Grade          uint
-	//Files          []*File
+	Files          []*File
 }
 
 //HashСalculation расчитывает хэш над текстом тикета, email-ом автора и разделом категории.

@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/DarkSoul94/helpdesk2/models"
@@ -11,7 +10,6 @@ import (
 )
 
 func (u *TicketUsecase) DistributeTicket(ctx context.Context) {
-	fmt.Println("distributor started")
 loop:
 
 	for {

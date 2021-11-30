@@ -454,3 +454,15 @@ func (h *TicketHandler) GetApprovalTicketList(c *gin.Context) {
 
 	c.JSON(http.StatusOK, map[string]interface{}{"fields": tags, "tickets": outList})
 }
+
+func (h *TicketHandler) GetFile(c *gin.Context) {
+	id, _ := strconv.ParseUint(c.Request.URL.Query().Get("file_id"), 10, 64)
+
+	file, err := h.uc.GetFile(id)
+	if err != nil {
+		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.ToOutFile(file))
+}

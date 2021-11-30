@@ -2,7 +2,7 @@ package docs
 
 /**
 *
-* @api {post} /helpdesk/comment/create 10. Создание нового комментария в запросе
+* @api {post} /helpdesk/comment/create 12. Создание нового комментария в запросе
 * @apiName CreateCommentsHistory
 * @apiGroup 03. Запросы в тех. поддержку
 * @apiVersion  2.0.0

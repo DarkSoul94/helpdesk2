@@ -97,4 +97,12 @@ func RegisterHTTPEndpoints(router *gin.RouterGroup, uc pkg_ticket.ITicketUsecase
 		//http://localhost:8888/helpdesk/resolve_ticket/resolve_tickets_list?count=5&offset=0
 		resolveTicketEndpoints.GET("/resolve_tickets_list", h.GetApprovalTicketList)
 	}
+
+	fileEndpoints := router.Group("/file")
+	fileEndpoints.Use(middlewares...)
+	{
+		//http://localhost:8888/helpdesk/file/?file_id=23
+		fileEndpoints.GET("/", h.GetFile)
+	}
+
 }
