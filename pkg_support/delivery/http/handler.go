@@ -134,7 +134,7 @@ func (h *Handler) GetSupportStatus(c *gin.Context) {
 //ChangeSupportStatus ...
 func (h *Handler) ChangeSupportStatus(c *gin.Context) {
 	type inpSupport struct {
-		SupportID uint64 `json:"support_id"`
+		SupportID uint64 `json:"support_id, omitempty"`
 		StatusID  uint64 `json:"support_status_id"`
 	}
 	var support inpSupport

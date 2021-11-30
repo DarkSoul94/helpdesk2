@@ -102,7 +102,7 @@ func (u *SupportUsecase) GetSupportForDistribution(supportID uint64) *internal_m
 	}
 
 	prioritized := u.repo.GetPrioritizedSupportID()
-	if u.repo.CheckForBusy(prioritized) {
+	if prioritized == 0 || u.repo.CheckForBusy(prioritized) {
 		support, _ = u.repo.GetRandomFreeSupport()
 	} else {
 		support, _ = u.repo.GetSupport(prioritized)
@@ -140,14 +140,13 @@ func (u *SupportUsecase) SetSupportStatus(supportID, statusID uint64) models.Err
 		}
 	)
 	shift, err := u.repo.GetLastShift(supportID)
-	if shift.ClosingStatus || err != nil {
+	if err != nil || shift.ClosingStatus {
 		return supportErr_ClosedShift
 	}
 
 	if support.Status, err = u.repo.GetStatus(statusID); err != nil {
 		return err
 	}
-
 	for _, val := range u.priorityHelper(&support) {
 		if err := u.repo.UpdateSupport(val); err != nil {
 			return err
