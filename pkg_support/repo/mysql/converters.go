@@ -123,7 +123,7 @@ func (r *Repo) toDbSupportCard(card *internal_models.Card) dbCard {
 	if card.Support != nil {
 		outCard.SupportID = card.Support.ID
 	}
-	if card.Senior != nil || card.Senior.ID == 0 {
+	if card.Senior != nil {
 		outCard.SeniorID = sql.NullInt64{
 			Valid: true,
 			Int64: int64(card.Senior.ID),
