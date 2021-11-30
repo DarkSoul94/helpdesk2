@@ -140,14 +140,13 @@ func (u *SupportUsecase) SetSupportStatus(supportID, statusID uint64) models.Err
 		}
 	)
 	shift, err := u.repo.GetLastShift(supportID)
-	if shift.ClosingStatus || err != nil {
+	if err != nil || shift.ClosingStatus {
 		return supportErr_ClosedShift
 	}
 
 	if support.Status, err = u.repo.GetStatus(statusID); err != nil {
 		return err
 	}
-
 	for _, val := range u.priorityHelper(&support) {
 		if err := u.repo.UpdateSupport(val); err != nil {
 			return err
