@@ -428,6 +428,24 @@ func (r *TicketRepo) GetTicketListForDistribute() ([]*internal_models.Ticket, er
 	return r.convertTicketList(dbList), nil
 }
 
+func (r *TicketRepo) GetTicketListForReturnToDistribute() ([]*internal_models.Ticket, error) {
+	var (
+		dbList []dbTicket
+		query  string
+		err    error
+	)
+
+	query = `SELECT T.* FROM tickets AS T
+				WHERE EXISTS (SELECT * FROM supports_activity AS SA WHERE T.ticket_id = SA.ticket_id AND SA.reassignment = true)`
+
+	err = r.db.Select(&dbList, query)
+	if err != nil {
+		return nil, err
+	}
+
+	return r.convertTicketList(dbList), nil
+}
+
 func (r *TicketRepo) convertTicketList(dbList []dbTicket) []*internal_models.Ticket {
 	var (
 		mList []*internal_models.Ticket

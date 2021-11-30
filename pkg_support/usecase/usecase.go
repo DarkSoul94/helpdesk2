@@ -183,10 +183,11 @@ func (u *SupportUsecase) CloseShift(supportID uint64, user *models.User) models.
 	}
 	if !shift.ClosingStatus {
 		if u.repo.CheckForBusy(supportID) {
-			if !u.perm.CheckPermission(user.Group.ID, actions.AdminTA) || supportID == user.ID {
+			if u.perm.CheckPermission(user.Group.ID, actions.AdminTA) {
+				u.repo.SetReassignmentBySupport(supportID)
+			} else {
 				return supportErr_Busy
 			}
-			u.repo.SetReassignmentBySupport(supportID)
 		}
 		shift.Close()
 		return u.updateShift(shift)

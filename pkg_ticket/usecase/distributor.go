@@ -19,6 +19,7 @@ loop:
 		case <-ctx.Done():
 			break loop
 		default:
+			go u.removeOldActivity()
 			u.distributor()
 		}
 
@@ -27,29 +28,27 @@ loop:
 }
 
 func (u *TicketUsecase) distributor() {
-	u.removeOldActivity()
 
 	tickets, err := u.repo.GetTicketListForDistribute()
 	if err != nil || len(tickets) == 0 {
 		return
 	}
-	fmt.Println(len(tickets))
 
 	for _, ticket := range tickets {
 		support := u.suppUC.GetSupportForDistribution(ticket.Support.ID)
-		fmt.Println(support)
+
 		if support == nil {
 			break
 		}
 		if ticket.Support.ID == support.ID {
 			err := u.suppUC.UpdateSupportActivity(support.ID, ticket.ID)
 			if err != nil {
-				return
+				continue
 			}
 		} else {
 			err := u.suppUC.AddSupportActivity(support, ticket.ID)
 			if err != nil {
-				return
+				continue
 			}
 		}
 
@@ -57,11 +56,27 @@ func (u *TicketUsecase) distributor() {
 		ticket.Status.Set(internal_models.KeyTSInWork)
 		err := u.UpdateTicket(ticket, &models.User{ID: 1}, false)
 		if err != nil {
-			return
+			continue
 		}
 	}
 }
 
 func (u *TicketUsecase) removeOldActivity() {
+	tickets, err := u.repo.GetTicketListForReturnToDistribute()
+	if err != nil || len(tickets) == 0 {
+		return
+	}
 
+	for _, ticket := range tickets {
+		ticket.Status.Set(internal_models.KeyTSWait)
+		ticket.Support = nil
+
+		if err := u.UpdateTicket(ticket, &models.User{ID: 1}, false); err != nil {
+			continue
+		}
+
+		if err := u.suppUC.RemoveSupportActivity(ticket.ID); err != nil {
+			continue
+		}
+	}
 }
