@@ -20,7 +20,7 @@ type ISupportRepo interface {
 	UpdateShift(shift *internal_models.Shift) (uint64, models.Err)
 
 	CheckForActivity(supportID uint64) bool
-	SetReassignmentBySupport(supportID uint64) models.Err
+	SetReassignmentBySupport(supportID uint64, reassignment bool) models.Err
 	CheckForBusy(supportID uint64) bool
 	RemoveSupportActivity(ticketID uint64) models.Err
 	UpdateSupportActivity(supportID, ticketID uint64) models.Err
