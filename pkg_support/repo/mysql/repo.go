@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/DarkSoul94/helpdesk2/models"
 	"github.com/DarkSoul94/helpdesk2/pkg/logger"
@@ -158,12 +159,12 @@ func (r *Repo) GetRandomFreeSupport() (*internal_models.Support, models.Err) {
 			SELECT * FROM support_status
 			WHERE support_status_id = status_id
 				AND accept_ticket = true
-		) AND NOT EXIST (
+		) AND NOT EXISTS (
 			SELECT * FROM supports_activity
 			WHERE supports_activity.support_id = support.support_id
 		) ORDER BY RAND() LIMIT 1`
-	if err := r.db.Get(dbSupp, query); err != nil {
-		logger.LogError("Failed get support status", "pkg_support/repo/mysql", "", err)
+	if err := r.db.Get(dbSupp, query); err != nil && !strings.Contains(err.Error(), "sql: no rows in result set") {
+		logger.LogError("Failed get random support", "pkg_support/repo/mysql", "", err)
 		return nil, errSupportGetRandom
 	}
 	return r.toModelSupport(dbSupp), nil

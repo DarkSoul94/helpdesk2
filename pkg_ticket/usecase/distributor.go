@@ -36,8 +36,7 @@ func (u *TicketUsecase) distributor() {
 
 	for _, ticket := range tickets {
 		support := u.suppUC.GetSupportForDistribution(ticket.Support.ID)
-
-		if support == nil {
+		if support == nil || support.ID == 0 {
 			break
 		}
 		if ticket.Support.ID == support.ID {
