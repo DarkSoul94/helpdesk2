@@ -2,6 +2,7 @@ package dto
 
 import (
 	"github.com/DarkSoul94/helpdesk2/models"
+	"github.com/DarkSoul94/helpdesk2/pkg_ticket/internal_models"
 )
 
 type OutUser struct {
@@ -18,6 +19,11 @@ type OutUserWithOutGroup struct {
 	Email      string `json:"email"`
 	Department string `json:"department,omitempty"`
 	GroupID    uint64 `json:"group_id"`
+}
+
+type inpUserForGenerate struct {
+	UserID uint64 `json:"user_id"`
+	Count  int    `json:"count"`
 }
 
 func ToOutUser(user *models.User) OutUser {
@@ -66,5 +72,12 @@ func ToOutUserWithOutGroup(user *models.User) OutUserWithOutGroup {
 		Email:      user.Email,
 		Department: user.Department,
 		GroupID:    user.Group.ID,
+	}
+}
+
+func ToModelUserForGenerate(user inpUserForGenerate) internal_models.UserForGenerate {
+	return internal_models.UserForGenerate{
+		UserID: user.UserID,
+		Count:  user.Count,
 	}
 }

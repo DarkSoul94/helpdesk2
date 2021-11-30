@@ -56,6 +56,12 @@ type InpUpdateTicket struct {
 	//TODO: Files             []*inpFile `json:"files"`
 }
 
+type InpGenerateTicket struct {
+	Text      string               `json:"text,omitempty"`
+	SectionID uint64               `json:"section_id,omitempty"`
+	Users     []inpUserForGenerate `json:"users,omitempty"`
+}
+
 func NewTicketToModelTicket(tick NewTicket) *internal_models.Ticket {
 	return &internal_models.Ticket{
 		CatSect: &internal_models.SectionWithCategory{ID: tick.SectionID},
@@ -146,4 +152,17 @@ func UpdateTicketToModel(ticket InpUpdateTicket) *internal_models.Ticket {
 		Support:        &models.User{ID: ticket.SupportID},
 		ServiceComment: ticket.ServiceComment,
 	}
+}
+
+func ToModelGenerateTicekt(ticket InpGenerateTicket) internal_models.TicketGenerate {
+	mTicket := internal_models.TicketGenerate{
+		Text:      ticket.Text,
+		SectionID: ticket.SectionID,
+	}
+
+	for _, user := range ticket.Users {
+		mTicket.Users = append(mTicket.Users, ToModelUserForGenerate(user))
+	}
+
+	return mTicket
 }

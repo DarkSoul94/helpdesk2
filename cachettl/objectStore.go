@@ -39,7 +39,7 @@ func (s *ObjectStore) Add(key string, data interface{}, ttl int64) error {
 		Data:       reflect.ValueOf(data),
 		Type:       reflect.TypeOf(data),
 		Ttl:        ttl,
-		CreateTime: time.Now().Truncate(time.Millisecond),
+		CreateTime: time.Now().Truncate(time.Second),
 	}
 
 	s.mutex.Lock()

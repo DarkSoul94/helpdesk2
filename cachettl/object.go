@@ -13,5 +13,5 @@ type objectWithTTL struct {
 }
 
 func (o *objectWithTTL) checkValid() bool {
-	return time.Now().Truncate(time.Millisecond).Sub(o.CreateTime) < time.Duration(o.Ttl)*time.Second
+	return time.Now().Truncate(time.Second).Sub(o.CreateTime) < time.Duration(o.Ttl)*time.Second
 }

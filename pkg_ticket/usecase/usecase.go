@@ -198,7 +198,7 @@ func (u *TicketUsecase) ticketStatusFilter(list []*internal_models.TicketStatus,
 }
 
 func (u *TicketUsecase) CreateTicketStatusHistory(ticketID, changedUserID uint64, newStatus *internal_models.TicketStatus) models.Err {
-	currentTime := time.Now().Truncate(time.Microsecond)
+	currentTime := time.Now().Truncate(time.Second)
 
 	existHistory, err := u.repo.GetLastTicketStatusHistory(ticketID)
 	if err == nil {
@@ -262,7 +262,7 @@ func (u *TicketUsecase) CreateTicket(ticket *internal_models.Ticket) (uint64, mo
 		ticket.Status.Set(internal_models.KeyTSWait)
 	}
 
-	ticket.Date = time.Now().Truncate(time.Millisecond)
+	ticket.Date = time.Now().Truncate(time.Second)
 
 	if mask, err := ticket.IpMask(); err != nil {
 		ticket.Filial = "not found"
@@ -287,6 +287,40 @@ func (u *TicketUsecase) CreateTicket(ticket *internal_models.Ticket) (uint64, mo
 	u.store.Add(ticket.Author.Email, ticketHash, viper.GetInt64("app.ttl_cache.life_time"))
 
 	return id, nil
+}
+
+func (u *TicketUsecase) GenerateTicket(ticketGenerate internal_models.TicketGenerate, author *models.User) models.Err {
+	if len(ticketGenerate.Text) == 0 {
+		return models.BadRequest("Тест запроса не должен быть пустым")
+	}
+
+	if _, err := u.catSecUC.GetCategorySectionByID(ticketGenerate.SectionID); err != nil {
+		return models.BadRequest("Указанного раздела категории не существует")
+	}
+
+	go func() {
+		for _, user := range ticketGenerate.Users {
+			ticket := &internal_models.Ticket{
+				Date:    time.Now().Truncate(time.Second),
+				CatSect: &internal_models.SectionWithCategory{ID: ticketGenerate.SectionID},
+				Text:    ticketGenerate.Text,
+				Status:  &internal_models.TicketStatus{ID: internal_models.TSCompletedID},
+				Author:  author,
+				Support: &models.User{ID: user.UserID},
+			}
+
+			for i := 0; i < user.Count; i++ {
+				id, err := u.repo.CreateTicket(ticket)
+				if err != nil {
+					continue
+				}
+
+				u.CreateTicketStatusHistory(id, author.ID, ticket.Status)
+			}
+		}
+	}()
+
+	return nil
 }
 
 func (u *TicketUsecase) UpdateTicket(ticket *internal_models.Ticket, user *models.User, checkControls bool) models.Err {
