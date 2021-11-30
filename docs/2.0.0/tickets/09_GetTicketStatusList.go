@@ -2,7 +2,7 @@ package docs
 
 /**
  *
- * @api {get} /helpdesk/ticket_status/list 08. Получение всего списка статусов у запроса
+ * @api {get} /helpdesk/ticket_status/list 09. Получение всего списка статусов у запроса
  * @apiName GetTicketStatusList
  * @apiGroup 03. Запросы в тех. поддержку
  * @apiVersion  2.0.0

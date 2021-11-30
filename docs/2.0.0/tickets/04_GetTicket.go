@@ -2,7 +2,7 @@ package docs
 
 /**
  *
- * @api {GET} /helpdesk/ticket/ticket 03. Получение запроса
+ * @api {GET} /helpdesk/ticket/ticket 04. Получение запроса
  * @apiName GetTicket
  * @apiGroup 03. Запросы в тех. поддержку
  * @apiVersion  2.0.0

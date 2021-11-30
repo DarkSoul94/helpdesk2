@@ -92,6 +92,7 @@ func (r *TicketRepo) CreateTicket(ticket *internal_models.Ticket) (uint64, error
 	ticket_text = :ticket_text,
 	ticket_status_id = :ticket_status_id,
 	ticket_author_id = :ticket_author_id,
+	support_id = :support_id,
 	filial = :filial,
 	ip = :ip`
 
@@ -462,6 +463,37 @@ func (r *TicketRepo) GetTicket(ticketID uint64) (*internal_models.Ticket, error)
 	}
 
 	return r.toModelTicket(ticket), nil
+}
+
+func (r *TicketRepo) StealTicket(ticketID, supportID uint64, toWork bool) error {
+	var (
+		query string
+		err   error
+	)
+
+	if toWork {
+		query = `UPDATE tickets SET
+					support_id = ?,
+					ticket_status_id = 4
+					WHERE ticket_id = ?`
+	} else {
+		query = `UPDATE tickets SET
+					support_id = ?
+					WHERE ticket_id = ?`
+	}
+
+	_, err = r.db.Exec(query, supportID, ticketID)
+	if err != nil {
+		logger.LogError(
+			"Failed steal ticket",
+			"pkg_ticket/repo/mysql",
+			fmt.Sprintf("ticket id: %d; support id: %d;", ticketID, supportID),
+			err,
+		)
+		return err
+	}
+
+	return nil
 }
 
 func (r *TicketRepo) CheckNeedApprovalTicketExist(groupID uint64, forResolver bool) (bool, error) {

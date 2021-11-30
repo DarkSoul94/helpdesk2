@@ -477,6 +477,46 @@ func (u *TicketUsecase) GetTicket(ticketID uint64, user *models.User) (*internal
 	return ticket, nil
 }
 
+func (u *TicketUsecase) StealTicket(ticketID uint64, newSupport *models.User) models.Err {
+	existTicket, err := u.repo.GetTicket(ticketID)
+	if err != nil {
+		return models.BadRequest("Запроса с таким id не существует")
+	}
+
+	if existTicket.Support.ID == newSupport.ID {
+		return models.BadRequest("Запрос уже закреплен за вами")
+	}
+
+	switch existTicket.Status.ID {
+	case internal_models.TSCompletedID,
+		internal_models.TSRejectedID:
+		return models.InternalError("Невозможно забрать запрос")
+
+	case internal_models.TSWaitID, internal_models.TSWaitForResolveID:
+		err := u.repo.StealTicket(ticketID, newSupport.ID, true)
+		if err != nil {
+			return models.InternalError(err.Error())
+		}
+
+		err = u.suppUC.UpdateSupportActivity(newSupport.ID, ticketID)
+		if err != nil {
+			return models.InternalError(err.Error())
+		}
+
+	default:
+		err := u.repo.StealTicket(ticketID, newSupport.ID, false)
+		if err != nil {
+			return models.InternalError(err.Error())
+		}
+
+		err = u.suppUC.UpdateSupportActivity(newSupport.ID, ticketID)
+		if err != nil {
+			return models.InternalError(err.Error())
+		}
+	}
+	return nil
+}
+
 func (u *TicketUsecase) CheckNeedApprovalTicketExist(groupID uint64) bool {
 	exist, err := u.repo.CheckNeedApprovalTicketExist(groupID, u.permUC.CheckPermission(groupID, actions.TicketTA_Resolve))
 	if err != nil {

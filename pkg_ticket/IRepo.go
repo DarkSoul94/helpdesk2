@@ -19,6 +19,7 @@ type ITicketRepo interface {
 	GetTicketListForApproval(groupID uint64, limit, offset int, forResolver bool) ([]*internal_models.Ticket, error)
 	GetTicketListForDistribute() ([]*internal_models.Ticket, error)
 	GetTicket(ticketID uint64) (*internal_models.Ticket, error)
+	StealTicket(ticketID, supportID uint64, toWork bool) error
 	CheckNeedApprovalTicketExist(groupID uint64, forResolver bool) (bool, error)
 
 	Close() error

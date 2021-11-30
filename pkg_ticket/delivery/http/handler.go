@@ -383,6 +383,29 @@ func (h *TicketHandler) GetTicket(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToOutTicket(ticket))
 }
 
+func (h *TicketHandler) StealTicket(c *gin.Context) {
+	type inpTicketID struct {
+		TicketID uint64 `json:"ticket_id"`
+	}
+
+	var id inpTicketID
+
+	if err := c.BindJSON(&id); err != nil {
+		c.JSON(http.StatusBadRequest, map[string]string{"status": "error", "error": err.Error()})
+		return
+	}
+
+	user, _ := c.Get(global_const.CtxUserKey)
+
+	err := h.uc.StealTicket(id.TicketID, user.(*models.User))
+	if err != nil {
+		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]string{"status": "ok"})
+}
+
 func (h *TicketHandler) CreateComment(c *gin.Context) {
 	var comment dto.InpComment
 
