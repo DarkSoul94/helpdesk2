@@ -2,7 +2,7 @@ package docs
 
 /**
  *
- * @api {get} /helpdesk/ticket_status/history 09. Получение истории изменения статусов запроса
+ * @api {get} /helpdesk/ticket_status/history 10. Получение истории изменения статусов запроса
  * @apiName GetTicketStatusHistory
  * @apiGroup 03. Запросы в тех. поддержку
  * @apiVersion  2.0.0

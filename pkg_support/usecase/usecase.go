@@ -102,7 +102,7 @@ func (u *SupportUsecase) GetSupportForDistribution(supportID uint64) *internal_m
 	}
 
 	prioritized := u.repo.GetPrioritizedSupportID()
-	if u.repo.CheckForBusy(prioritized) {
+	if prioritized == 0 || u.repo.CheckForBusy(prioritized) {
 		support, _ = u.repo.GetRandomFreeSupport()
 	} else {
 		support, _ = u.repo.GetSupport(prioritized)
