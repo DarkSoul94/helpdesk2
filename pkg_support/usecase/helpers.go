@@ -6,27 +6,31 @@ import (
 	"github.com/DarkSoul94/helpdesk2/pkg_support/internal_models"
 )
 
-//priorityHelper модифицирует переданного саппорта в зависимости от нового статуса и текущего приоритетного саппорта.
-//Также по необходимости находит саппорта на которого необходимо переместить признак приоритетности.
-//Возвращает массив саппортов готовых к обновлению.
-func (u *SupportUsecase) priorityHelper(support *internal_models.Support) []*internal_models.Support {
-	forUpdate := make([]*internal_models.Support, 0)
-	prioritized := u.repo.GetPrioritizedSupportID()
-
-	if support.Status.AcceptTicket && prioritized == 0 {
-		support.Priority = true
-	}
-
-	if !support.Status.AcceptTicket && prioritized == support.ID {
-		support.Priority = false
+func (u *SupportUsecase) changePriority(support *internal_models.Support) models.Err {
+	prior := u.repo.GetPrioritizedSupportID()
+	support.Status, _ = u.repo.GetStatus(support.Status.ID)
+	switch prior {
+	case 0:
+		if support.Status.AcceptTicket {
+			support.Priority = true
+		}
+	case support.ID:
 		activeSupp, _ := u.repo.GetActiveSupports()
-		if nextSupp := nextPrioritizedSupport(support, activeSupp); nextSupp != nil {
-			forUpdate = append(forUpdate, nextSupp)
+
+		if len(activeSupp) > 1 {
+			if nextPrior := nextPrioritizedSupport(support, activeSupp); nextPrior != nil {
+				u.repo.UpdateSupport(nextPrior)
+			}
+			support.Priority = false
+			break
+		}
+
+		if !support.Status.AcceptTicket {
+			support.Priority = false
 		}
 	}
 
-	forUpdate = append(forUpdate, support)
-	return forUpdate
+	return u.repo.UpdateSupport(support)
 }
 
 //nextPrioritizedSupport анализирует список активных саппортов.
@@ -35,6 +39,7 @@ func nextPrioritizedSupport(support *internal_models.Support, active []*internal
 	for id, val := range active {
 		if val.ID == support.ID {
 			if id+1 < len(active) {
+				active[id+1].Priority = true
 				return active[id+1]
 			}
 			if active[0].ID != support.ID {
