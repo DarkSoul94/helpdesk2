@@ -16,7 +16,8 @@ func (u *SupportUsecase) changePriority(support *internal_models.Support) models
 		}
 	case support.ID:
 		activeSupp, _ := u.repo.GetActiveSupports()
-		if !(len(activeSupp) <= 1 && support.Status.AcceptTicket) {
+
+		if len(activeSupp) > 1 {
 			if nextPrior := nextPrioritizedSupport(support, activeSupp); nextPrior != nil {
 				u.repo.UpdateSupport(nextPrior)
 			}
@@ -24,6 +25,10 @@ func (u *SupportUsecase) changePriority(support *internal_models.Support) models
 			return u.repo.UpdateSupport(support)
 		}
 
+		if !support.Status.AcceptTicket {
+			support.Priority = false
+			return u.repo.UpdateSupport(support)
+		}
 	}
 
 	return u.repo.UpdateSupport(support)
