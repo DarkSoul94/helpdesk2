@@ -19,7 +19,7 @@ func NewCommentUsecase(repo comment_manager.ICommentRepo) *CommentUsecase {
 }
 
 func (u *CommentUsecase) CreateComment(comment *internal_models.Comment) (uint64, models.Err) {
-	comment.Date = time.Now().Truncate(time.Microsecond)
+	comment.Date = time.Now().Truncate(time.Second)
 
 	id, err := u.repo.CreateComment(comment)
 	if err != nil {
