@@ -222,7 +222,7 @@ func (r *Repo) CreateSupportActivity(supportID, ticketID uint64) models.Err {
 
 func (r *Repo) RemoveSupportActivity(ticketID uint64) models.Err {
 	query := `
-	DELETE FROM support_activity
+	DELETE FROM supports_activity
 		WHERE ticket_id = ?`
 	if _, err := r.db.Exec(query, ticketID); err != nil {
 		logger.LogError("Failed remove support activity", "pkg_support/repo/mysql", fmt.Sprintf("ticket id: %d", ticketID), err)

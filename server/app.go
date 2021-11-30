@@ -198,6 +198,10 @@ func (a *App) Run(port string) error {
 		}
 	}(l)
 
+	ctx1, shutdown1 := context.WithCancel(context.Background())
+	defer shutdown1()
+	go a.ticketUC.DistributeTicket(ctx1)
+
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, os.Interrupt)
 

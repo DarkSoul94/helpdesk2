@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/DarkSoul94/helpdesk2/global_const/actions"
@@ -32,6 +33,7 @@ func NewSupportUsecase(
 //CreateSupport создание нового саппорта
 func (u *SupportUsecase) CreateSupport(usersID ...uint64) models.Err {
 	for _, userID := range usersID {
+		fmt.Println(userID)
 		supp, _ := u.repo.GetSupport(userID)
 		if supp != nil {
 			continue
@@ -53,6 +55,7 @@ func (u *SupportUsecase) CreateSupport(usersID ...uint64) models.Err {
 //DeleteSupport - удаление саппорта из базы
 func (u *SupportUsecase) DeleteSupport(usersID ...uint64) models.Err {
 	for _, userID := range usersID {
+		fmt.Println(userID)
 		//проверка что суппорт с таким ID есть в списке, если нет - переходим к следующему
 		supp, _ := u.repo.GetSupport(userID)
 		if supp == nil {

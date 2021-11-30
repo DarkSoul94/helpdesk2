@@ -406,6 +406,27 @@ func (r *TicketRepo) GetTicketListForApproval(groupID uint64, limit, offset int,
 	return r.convertTicketList(dbList), nil
 }
 
+func (r *TicketRepo) GetTicketListForDistribute() ([]*internal_models.Ticket, error) {
+	var (
+		dbList []dbTicket
+		query  string
+		err    error
+	)
+
+	query = `SELECT T.* FROM tickets AS T
+				JOIN category_section USING(section_id)
+				JOIN category USING(category_id)
+				WHERE ticket_status_id = ?
+				ORDER BY support_id DESC, significant_category DESC, significant_category_section DESC, ticket_date`
+
+	err = r.db.Select(&dbList, query, internal_models.TSWaitID)
+	if err != nil {
+		return nil, err
+	}
+
+	return r.convertTicketList(dbList), nil
+}
+
 func (r *TicketRepo) convertTicketList(dbList []dbTicket) []*internal_models.Ticket {
 	var (
 		mList []*internal_models.Ticket
