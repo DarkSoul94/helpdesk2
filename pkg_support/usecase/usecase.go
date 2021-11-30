@@ -32,19 +32,19 @@ func NewSupportUsecase(
 //CreateSupport создание нового саппорта
 func (u *SupportUsecase) CreateSupport(usersID ...uint64) models.Err {
 	for _, userID := range usersID {
-		supp, _ := u.repo.GetSupport(userID)
-		if supp != nil {
-			continue
-		}
 		//Создание нового объекта саппорта и внесение его в базу
-		supp = internal_models.NewSupport(userID)
-		if err := u.repo.CreateSupport(supp); err != nil {
-			return err
+		if _, err := u.repo.GetSupport(userID); err != nil {
+			supp := internal_models.NewSupport(userID)
+			if err := u.repo.CreateSupport(supp); err != nil {
+				return err
+			}
 		}
-		//Создание нового объекта карточки саппорта и внесение ее в базу
-		card := internal_models.NewSupportCard(userID)
-		if err := u.repo.CreateCard(card); err != nil {
-			return err
+		if _, err := u.repo.GetCardBySupportID(userID); err != nil {
+			//Создание нового объекта карточки саппорта и внесение ее в базу
+			card := internal_models.NewSupportCard(userID)
+			if err := u.repo.CreateCard(card); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -53,26 +53,20 @@ func (u *SupportUsecase) CreateSupport(usersID ...uint64) models.Err {
 //DeleteSupport - удаление саппорта из базы
 func (u *SupportUsecase) DeleteSupport(usersID ...uint64) models.Err {
 	for _, userID := range usersID {
+
+		if card, err := u.repo.GetCardBySupportID(userID); err == nil {
+			//если у этого суппорта в карточке проставлен признак старшего, то обновляем информацию у его подчиненных
+			if card.IsSenior {
+				u.repo.ResetSenior(userID)
+			}
+			u.repo.DeleteCard(userID)
+		}
+
 		//проверка что суппорт с таким ID есть в списке, если нет - переходим к следующему
-		supp, _ := u.repo.GetSupport(userID)
-		if supp == nil {
-			continue
-		}
-		card, err := u.repo.GetCardBySupportID(userID)
-		if err != nil {
-			return err
-		}
-		//если у этого суппорта в карточке проставлен признак старшего, то обновляем информацию у его подчиненных
-		if card.IsSenior {
-			if err := u.repo.ResetSenior(userID); err != nil {
+		if _, err := u.repo.GetSupport(userID); err == nil {
+			if err := u.repo.DeleteSupport(userID); err != nil {
 				return err
 			}
-		}
-		if err := u.repo.DeleteCard(userID); err != nil {
-			return err
-		}
-		if err := u.repo.DeleteSupport(userID); err != nil {
-			return err
 		}
 	}
 	return nil

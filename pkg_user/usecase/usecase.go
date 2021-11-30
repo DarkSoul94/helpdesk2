@@ -39,7 +39,6 @@ func (u *Usecase) UserUpdate(askUser *models.User, userID, groupID uint64) model
 	//Проверка наличия прав на работу с запросами у текущей (forCurrent) и новой (forNew) групп
 	forCurrent := u.perm.CheckPermission(tUser.Group.ID, actions.TicketTA_Work)
 	forNew := u.perm.CheckPermission(groupID, actions.TicketTA_Work)
-
 	//если у текущей группы целевого пользователя нет прав на обработку запросов в ТП,
 	//а у новой группы есть, то добавляем пользователя в саппорты
 	if !forCurrent && forNew {
