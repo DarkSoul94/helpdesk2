@@ -1,6 +1,8 @@
 package pkg_ticket
 
 import (
+	"context"
+
 	"github.com/DarkSoul94/helpdesk2/models"
 	"github.com/DarkSoul94/helpdesk2/pkg_ticket/internal_models"
 )
@@ -31,6 +33,8 @@ type ITicketUsecase interface {
 	GetTicket(ticketID uint64, user *models.User) (*internal_models.Ticket, models.Err)
 	CheckNeedApprovalTicketExist(groupID uint64) bool
 	GetApprovalTicketList(groupID uint64, limit, offset int) ([]*internal_models.Ticket, []string, models.Err)
+
+	DistributeTicket(ctx context.Context)
 
 	CreateComment(comment *internal_models.Comment) (uint64, models.Err)
 }

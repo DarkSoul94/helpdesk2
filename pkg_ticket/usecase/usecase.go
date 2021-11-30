@@ -336,14 +336,14 @@ func (u *TicketUsecase) GetTicketList(user *models.User, limit, offset int) ([]*
 			return nil, nil, nil, models.InternalError(err.Error())
 		}
 
-		if ticket.Author != nil {
+		if ticket.Author.ID != 0 {
 			ticket.Author, err = u.userUC.GetUserByID(ticket.Author.ID)
 			if err != nil {
 				return nil, nil, nil, models.InternalError(err.Error())
 			}
 		}
 
-		if ticket.Support != nil && u.permUC.CheckPermission(user.Group.ID, actions.AdminTA) {
+		if ticket.Support.ID != 0 && u.permUC.CheckPermission(user.Group.ID, actions.AdminTA) {
 			ticket.Support, err = u.userUC.GetUserByID(ticket.Support.ID)
 			if err != nil {
 				return nil, nil, nil, models.InternalError(err.Error())
@@ -352,7 +352,7 @@ func (u *TicketUsecase) GetTicketList(user *models.User, limit, offset int) ([]*
 			ticket.Support = nil
 		}
 
-		if ticket.ResolvedUser != nil {
+		if ticket.ResolvedUser.ID != 0 {
 			ticket.ResolvedUser, err = u.userUC.GetUserByID(ticket.ResolvedUser.ID)
 			if err != nil {
 				return nil, nil, nil, models.InternalError(err.Error())
@@ -419,14 +419,14 @@ func (u *TicketUsecase) GetTicket(ticketID uint64, user *models.User) (*internal
 	}
 
 	if seeAdditionalInfo {
-		if ticket.Support != nil {
+		if ticket.Support.ID != 0 {
 			ticket.Support, err = u.userUC.GetUserByID(ticket.Support.ID)
 			if err != nil {
 				return nil, models.InternalError(err.Error())
 			}
 		}
 
-		if ticket.ResolvedUser != nil {
+		if ticket.ResolvedUser.ID != 0 {
 			ticket.ResolvedUser, err = u.userUC.GetUserByID(ticket.ResolvedUser.ID)
 			if err != nil {
 				return nil, models.InternalError(err.Error())

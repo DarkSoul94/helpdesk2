@@ -114,17 +114,17 @@ func ToOutTicket(ticket *internal_models.Ticket) OutTicket {
 		ServiceComment: ticket.ServiceComment,
 	}
 
-	if ticket.Author != nil {
+	if ticket.Author != nil && ticket.Author.ID != 0 {
 		author := ToOutUserWithOutGroup(ticket.Author)
 		outTicket.Author = &author
 	}
 
-	if ticket.Support != nil {
+	if ticket.Support != nil && ticket.Support.ID != 0 {
 		support := ToOutUserWithOutGroup(ticket.Support)
 		outTicket.Support = &support
 	}
 
-	if ticket.ResolvedUser != nil {
+	if ticket.ResolvedUser != nil && ticket.ResolvedUser.ID != 0 {
 		resolvUser := ToOutUserWithOutGroup(ticket.ResolvedUser)
 		outTicket.ResolvedUser = &resolvUser
 	}

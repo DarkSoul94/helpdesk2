@@ -106,7 +106,7 @@
         ]
       }
     },
-    "filename": "./docs/2.0.0/cat_end_sec/CreateCategory.go",
+    "filename": "./docs/2.0.0/cat_end_sec/01_CreateCategory.go",
     "groupTitle": "02._Категории_и_разделы_категорий"
   },
   {
@@ -250,7 +250,7 @@
         ]
       }
     },
-    "filename": "./docs/2.0.0/cat_end_sec/CreateCategorySection.go",
+    "filename": "./docs/2.0.0/cat_end_sec/03_CreateCategorySection.go",
     "groupTitle": "02._Категории_и_разделы_категорий"
   },
   {
@@ -378,7 +378,7 @@
         }
       ]
     },
-    "filename": "./docs/2.0.0/cat_end_sec/GetCategorySection.go",
+    "filename": "./docs/2.0.0/cat_end_sec/05_GetCategorySection.go",
     "groupTitle": "02._Категории_и_разделы_категорий"
   },
   {
@@ -513,7 +513,7 @@
         }
       ]
     },
-    "filename": "./docs/2.0.0/cat_end_sec/GetCategorySectionList.go",
+    "filename": "./docs/2.0.0/cat_end_sec/06_GetCategorySectionList.go",
     "groupTitle": "02._Категории_и_разделы_категорий"
   },
   {
@@ -623,7 +623,7 @@
         ]
       }
     },
-    "filename": "./docs/2.0.0/cat_end_sec/UpdateCategory.go",
+    "filename": "./docs/2.0.0/cat_end_sec/02_UpdateCategory.go",
     "groupTitle": "02._Категории_и_разделы_категорий"
   },
   {
@@ -760,7 +760,7 @@
         ]
       }
     },
-    "filename": "./docs/2.0.0/cat_end_sec/UpdateCategorySection.go",
+    "filename": "./docs/2.0.0/cat_end_sec/04_UpdateCategorySection.go",
     "groupTitle": "02._Категории_и_разделы_категорий"
   },
   {
@@ -810,7 +810,7 @@
         }
       ]
     },
-    "filename": "./docs/2.0.0/tickets/CheckNeedResolveTicketExist.go",
+    "filename": "./docs/2.0.0/tickets/05_CheckNeedResolveTicketExist.go",
     "groupTitle": "03._Запросы_в_тех._поддержку"
   },
   {
@@ -899,7 +899,7 @@
         ]
       }
     },
-    "filename": "./docs/2.0.0/tickets/comments/CreateCommentsHistory.go",
+    "filename": "./docs/2.0.0/tickets/comments/10_CreateCommentsHistory.go",
     "groupTitle": "03._Запросы_в_тех._поддержку"
   },
   {
@@ -1027,7 +1027,7 @@
         ]
       }
     },
-    "filename": "./docs/2.0.0/tickets/CreateTicket.go",
+    "filename": "./docs/2.0.0/tickets/01_CreateTicket.go",
     "groupTitle": "03._Запросы_в_тех._поддержку"
   },
   {
@@ -1160,7 +1160,7 @@
         }
       ]
     },
-    "filename": "./docs/2.0.0/tickets/GetResolveTicketsList.go",
+    "filename": "./docs/2.0.0/tickets/06_GetResolveTicketsList.go",
     "groupTitle": "03._Запросы_в_тех._поддержку"
   },
   {
@@ -1544,7 +1544,7 @@
         }
       ]
     },
-    "filename": "./docs/2.0.0/tickets/GetTicket.go",
+    "filename": "./docs/2.0.0/tickets/03_GetTicket.go",
     "groupTitle": "03._Запросы_в_тех._поддержку"
   },
   {
@@ -1602,7 +1602,7 @@
         }
       ]
     },
-    "filename": "./docs/2.0.0/tickets/GetTicketStatusListAll.go",
+    "filename": "./docs/2.0.0/tickets/07_GetTicketStatusListAll.go",
     "groupTitle": "03._Запросы_в_тех._поддержку"
   },
   {
@@ -1705,7 +1705,7 @@
         ]
       }
     },
-    "filename": "./docs/2.0.0/tickets/GetTicketStatusHistory.go",
+    "filename": "./docs/2.0.0/tickets/09_GetTicketStatusHistory.go",
     "groupTitle": "03._Запросы_в_тех._поддержку"
   },
   {
@@ -1763,7 +1763,7 @@
         }
       ]
     },
-    "filename": "./docs/2.0.0/tickets/GetTicketStatusList.go",
+    "filename": "./docs/2.0.0/tickets/08_GetTicketStatusList.go",
     "groupTitle": "03._Запросы_в_тех._поддержку"
   },
   {
@@ -1930,7 +1930,150 @@
         }
       ]
     },
-    "filename": "./docs/2.0.0/tickets/GetTicketsList.go",
+    "filename": "./docs/2.0.0/tickets/04_GetTicketsList.go",
+    "groupTitle": "03._Запросы_в_тех._поддержку"
+  },
+  {
+    "type": "post",
+    "url": "/helpdesk/ticket/update",
+    "title": "02. Обновление запроса в ТП",
+    "name": "UpdateTicket",
+    "group": "03._Запросы_в_тех._поддержку",
+    "version": "2.0.0",
+    "description": "<p>Обновление запроса в тех.поддержку.</p>",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "BearerToken",
+            "description": "<p>Авторизационный токен</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "Uint64",
+            "optional": false,
+            "field": "ticket_id",
+            "description": "<p>ID запроса</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Uint64",
+            "optional": false,
+            "field": "section_id",
+            "description": "<p>ID раздела категории. Передается только при изменении раздела категории в запросе</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Uint64",
+            "optional": false,
+            "field": "ticket_status_id",
+            "description": "<p>ID статуса запроса. Передается только при изменении статуса запроса</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Uint64",
+            "optional": false,
+            "field": "support_id",
+            "description": "<p>ID сотрудника ТП, передается только при изменении сотрудника ТП в запросе</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "service_comment",
+            "description": "<p>Сервисный комментарий для сотрудников ТП, передается только при добавлении/изменении сервисного комментария</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "files[]",
+            "optional": false,
+            "field": "files",
+            "description": "<p>Файлы, передается только при добавлении/изменении файлов</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "files.file_name",
+            "description": "<p>Имя файла</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "files.file_data",
+            "description": "<p>Данные файла</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Request-Example:",
+          "content": "{\n    \"ticket_id\": 2,\n    \"section_id\": 1,\n    \"ticket_status_id\": 9,\n    \"service_comment\": \"test\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "status",
+            "description": "<p>Статус ответа на запрос</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success-Response:",
+          "content": "{\n    \"status\": \"ok\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "error": {
+      "fields": {
+        "Error 4xx": [
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "ErrInvalidID",
+            "description": "<p>Неверный ID категории</p>"
+          },
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "ErrBlankTicketText",
+            "description": "<p>Пустой текст запроса</p>"
+          },
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "ErrBlankCategoryName",
+            "description": "<p>Пустое имя категории</p>"
+          },
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "ErrBlankSectionName",
+            "description": "<p>Пустое имя раздела категории</p>"
+          }
+        ]
+      }
+    },
+    "filename": "./docs/2.0.0/tickets/02_UpdateTicket.go",
     "groupTitle": "03._Запросы_в_тех._поддержку"
   },
   {
@@ -2003,9 +2146,484 @@
     ]
   },
   {
+    "type": "POST",
+    "url": "/helpdesk/support/change_status",
+    "title": "04. Сменить статус сотрудника ТП",
+    "name": "ChangeSupportStatus",
+    "group": "05._Сотрудник_ТП",
+    "version": "2.0.0",
+    "description": "<p>Смена рабочего статуса сотрудника ТП: &quot;принимаю запросы&quot;, &quot;не принимаю запросы&quot; и т.д. Используется как для смены статуса самому себе, так и для смены статуса другому сотруднику. Сменить статус другому сотруднику может только админ.</p>",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "BearerToken",
+            "description": "<p>Авторизационный токен</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "Uint64",
+            "optional": false,
+            "field": "support_id",
+            "description": "<p>ID сотрудника ТП. Если ID сотрудника не передается, то ID берется из авторизационного токена</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Uint64",
+            "optional": false,
+            "field": "support_status_id",
+            "description": "<p>ID нового статуса сотрудника ТП</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Смена статуса другому суппорту:",
+          "content": "{\n\t\t\"support_id\": 4,\n\t\t\"support_status_id\": 1\n}",
+          "type": "json"
+        },
+        {
+          "title": "Смена статуса себе:",
+          "content": "{\n        \"support_status_id\": 1\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "success": {
+      "examples": [
+        {
+          "title": "Success-Response:",
+          "content": "{\n  \"status\": \"ok\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "./docs/2.0.0/support/supports/04_ChangeSupportStatus.go",
+    "groupTitle": "05._Сотрудник_ТП"
+  },
+  {
+    "type": "POST",
+    "url": "/helpdesk/support/close_shift",
+    "title": "09. Закрытие смены сотруднику ТП",
+    "name": "CloseShift",
+    "group": "05._Сотрудник_ТП",
+    "version": "2.0.0",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "BearerToken",
+            "description": "<p>Авторизационный токен</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "Uint64",
+            "optional": false,
+            "field": "support_id",
+            "description": "<p>ID сотрудника которому нужно закрыть смену</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Request-Example:",
+          "content": "{\n    \"support_id\" : 6\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "status",
+            "description": "<p>Статус ответа</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success-Response:",
+          "content": "{\n  \"status\": \"ok\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "./docs/2.0.0/support/supports/09_ShiftClose.go",
+    "groupTitle": "05._Сотрудник_ТП"
+  },
+  {
+    "type": "POST",
+    "url": "/helpdesk/support/create_lateness",
+    "title": "08. Отправка причины опоздания",
+    "name": "CreateLateness",
+    "group": "05._Сотрудник_ТП",
+    "version": "2.0.0",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "BearerToken",
+            "description": "<p>Авторизационный токен</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "Uint64",
+            "optional": false,
+            "field": "support_id",
+            "description": "<p>ID сотрудника которому нужно открыть смену</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "cause",
+            "description": "<p>Причина опоздания</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Request-Example:",
+          "content": "{\n    \"support_id\" : 4,\n    \"cause\": \"test\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "status",
+            "description": "<p>Статус ответа</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success-Response:",
+          "content": "{\n  \"status\": \"ok\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "./docs/2.0.0/support/supports/08_CreateLateness.go",
+    "groupTitle": "05._Сотрудник_ТП"
+  },
+  {
+    "type": "GET",
+    "url": "/helpdesk/support/active_support_list",
+    "title": "06. Получение списка активных сотрудников ТП",
+    "name": "GetActiveSupportList",
+    "group": "05._Сотрудник_ТП",
+    "version": "2.0.0",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "BearerToken",
+            "description": "<p>Авторизационный токен</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "ActiveSupport[]",
+            "optional": false,
+            "field": "active_support",
+            "description": "<p>Массив объектов &quot;Активный сотрудник ТП&quot;</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Uint64",
+            "optional": false,
+            "field": "active_support.user_id",
+            "description": "<p>ID сотрудника</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "active_support.user_name",
+            "description": "<p>ФИО сотрудника</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success-Response:",
+          "content": "[\n    {\n        \"user_id\": 5,\n        \"user_name\": \"Евгений Николаевич Табаков\"\n    },\n    {\n        \"user_id\": 4,\n        \"user_name\": \"Вячеслав Викторович Тищенко\"\n    }\n]",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "./docs/2.0.0/support/supports/06_GetActiveSupportList.go",
+    "groupTitle": "05._Сотрудник_ТП"
+  },
+  {
+    "type": "GET",
+    "url": "/support/card/list",
+    "title": "11. Получить список карточек суппорта",
+    "name": "GetCardList",
+    "group": "05._Сотрудник_ТП",
+    "version": "0.1.1",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "BearerToken",
+            "description": "<p>Авторизационный токен</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "[]Card",
+            "optional": false,
+            "field": "cards",
+            "description": "<p>Массив карточек суппорта</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Uint64",
+            "optional": false,
+            "field": "cards.id",
+            "description": "<p>ИД карточки супорта</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "CardUser",
+            "optional": false,
+            "field": "cards.support",
+            "description": "<p>Объект содержащий данные суппорта</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Uint64",
+            "optional": false,
+            "field": "cards.support.id",
+            "description": "<p>ИД суппорта</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "cards.support.name",
+            "description": "<p>ФИО суппорта</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Bool",
+            "optional": false,
+            "field": "cards.is_senior",
+            "description": "<p>Признак старшего группы саппортов</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "CardUser",
+            "optional": false,
+            "field": "cards.senior",
+            "description": "<p>Объект содержащий данные о старшем суппорте в группу которого входит текущий сотрудник</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Uint64",
+            "optional": false,
+            "field": "cards.senior.id",
+            "description": "<p>ИД суппорта</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "cards.senior.name",
+            "description": "<p>ФИО суппорта</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "cards.color",
+            "description": "<p>Цвет отображения (в шестнадцатиричной системе)</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Список карточек:",
+          "content": "[\n  {\n    \"id\": 13,\n    \"support\": {\n      \"id\": 4,\n      \"name\": \"Вячеслав Викторович Тищенко\"\n    },\n    \"is_senior\": true,\n    \"senior\": null,\n    \"color\": \"0xFFFFF0\"\n  },\n  {\n    \"id\": 14,\n    \"support\": {\n      \"id\": 5,\n      \"name\": \"Евгений Николаевич Табаков\"\n    },\n    \"is_senior\": false,\n    \"senior\": {\n      \"id\": 4,\n      \"name\": \"Вячеслав Викторович Тищенко\"\n    },\n    \"color\": \"0xFFFFF0\"\n  }\n]",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "./docs/2.0.0/support/cards/11_GetCardList.go",
+    "groupTitle": "05._Сотрудник_ТП"
+  },
+  {
+    "type": "GET",
+    "url": "/support/card/seniors",
+    "title": "13. Получить список старших суппортов",
+    "name": "GetSeniorSupportsList",
+    "group": "05._Сотрудник_ТП",
+    "version": "0.1.1",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "BearerToken",
+            "description": "<p>Авторизационный токен</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "[]SeniorSupport",
+            "optional": false,
+            "field": "seniors",
+            "description": "<p>Массив старших суппортов</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Uint64",
+            "optional": false,
+            "field": "seniors.id",
+            "description": "<p>ИД старшего суппорта</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "seniors.name",
+            "description": "<p>ФИО суппорта</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Список старших суппортов:",
+          "content": "[\n  {\n    \"id\": 4,\n    \"name\": \"Вячеслав Викторович Тищенко\"\n  }\n]",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "./docs/2.0.0/support/cards/13_GetSeniorList.go",
+    "groupTitle": "05._Сотрудник_ТП"
+  },
+  {
+    "type": "GET",
+    "url": "/support/status_list",
+    "title": "02. Получение списка возможных статусов для работников ТП",
+    "name": "GetStatusesForSupport",
+    "group": "05._Сотрудник_ТП",
+    "version": "2.0.0",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "BearerToken",
+            "description": "<p>Авторизационный токен</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "SupportStatus[]",
+            "optional": false,
+            "field": "support_status",
+            "description": "<p>Массив объектов &quot;статус сотрудника ТП&quot;</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Uint64",
+            "optional": false,
+            "field": "support_status.support_status_id",
+            "description": "<p>ID статуса</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "support_status.support_status_name",
+            "description": "<p>Описание статуса</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success-Response:",
+          "content": "[\n  {\n      \"support_status_id\": 1,\n      \"support_status_name\": \"Принимаю запросы\"\n  },\n  {\n      \"support_status_id\": 2,\n      \"support_status_name\": \"Перерыв\"\n  },\n  {\n      \"support_status_id\": 3,\n      \"support_status_name\": \"Работа в офисе\"\n  },\n  {\n      \"support_status_id\": 4,\n      \"support_status_name\": \"Не принимаю запросы\"\n  }\n]",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "./docs/2.0.0/support/supports/02_GetStatusesForSupport.go",
+    "groupTitle": "05._Сотрудник_ТП"
+  },
+  {
     "type": "GET",
     "url": "/support/card",
-    "title": "01. Получить карточку сотрудника тех.поддержки",
+    "title": "12. Получить карточку сотрудника тех.поддержки",
     "name": "GetSupportCard",
     "group": "05._Сотрудник_ТП",
     "version": "2.0.0",
@@ -2145,7 +2763,500 @@
         }
       ]
     },
-    "filename": "./docs/2.0.0/support/cards/GetSupportCard.go",
+    "filename": "./docs/2.0.0/support/cards/12_GetCard.go",
+    "groupTitle": "05._Сотрудник_ТП"
+  },
+  {
+    "type": "GET",
+    "url": "/support/get_current_statuses",
+    "title": "10. Получение списка сотрудников ТП с их текущим рабочим статусом",
+    "name": "GetSupportCurrentStatuses",
+    "group": "05._Сотрудник_ТП",
+    "version": "2.0.0",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "BearerToken",
+            "description": "<p>Авторизационный токен</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "status",
+            "description": "<p>Статус выполнения запроса</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "support_current_status[]",
+            "optional": false,
+            "field": "support_current_status",
+            "description": "<p>Массив статистика по запросам и текущих статусов сотрудников ТП работающих сегодня</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "support_current_status.support_id",
+            "description": "<p>ID сотрудника ТП</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "support_current_status.support",
+            "description": "<p>Имя сотрудника ТП</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "support_current_status.status",
+            "description": "<p>Текущий статус сотрудника ТП</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Bool",
+            "optional": false,
+            "field": "support_current_status.shift_status",
+            "description": "<p>Текущий статус смены сотрудника ТП</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Uint",
+            "optional": false,
+            "field": "support_current_status.in_work",
+            "description": "<p>Количество запросов в работе у указанного сотрудника</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Uint",
+            "optional": false,
+            "field": "support_current_status.postproned",
+            "description": "<p>Количество отложеных запросов у указанного сотрудника</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Uint",
+            "optional": false,
+            "field": "support_current_status.complete",
+            "description": "<p>Количество выполненных за сегодня запросов у указанного сотрудника</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Uint",
+            "optional": false,
+            "field": "support_current_status.revision",
+            "description": "<p>Количество запросов за сегодня отправленных на доработку у указанного сотрудника</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Bool",
+            "optional": false,
+            "field": "support_current_status.priority",
+            "description": "<p>Признак приоритета по распределению запросов на саппорта</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "total",
+            "optional": false,
+            "field": "total",
+            "description": "<p>Суммарная статистика по кол-ву запросов в работе, отложеных, выполненых по сотрудникам за сегодня</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Uint",
+            "optional": false,
+            "field": "total.total_in_work",
+            "description": "<p>Общее кол-во запросов в работе</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Uint",
+            "optional": false,
+            "field": "total.total_postproned",
+            "description": "<p>Общее кол-во отложенных запросов</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Uint",
+            "optional": false,
+            "field": "total.total_complete",
+            "description": "<p>Общее кол-во выполненных за сегодня запросов</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Uint",
+            "optional": false,
+            "field": "total.total_revision",
+            "description": "<p>Общее кол-во запросов отправленных на доработку за сегодня</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Uint",
+            "optional": false,
+            "field": "wait_ticket_count",
+            "description": "<p>Кол-во запросов в очереди на распределение</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success-Response:",
+          "content": "{\n  \"status\": \"ok\",\n  \"support_current_status\": [\n    {\n      \"support_id\": 5,\n      \"support\": \"Артем Владимирович Шелкопляс\",\n      \"status\": \"Принимаю запросы\",\n      \"shift_status\": true,\n      \"in_work\": 1,\n      \"postproned\": 0,\n      \"complete\": 0\n    },\n    {\n      \"support_id\": 6,\n      \"support\": \"Вячеслав Викторович Тищенко\",\n      \"status\": \"Не принимаю запросы\",\n      \"shift_status\": false,\n      \"in_work\": 0,\n      \"postproned\": 0,\n      \"complete\": 0\n    }\n  ],\n  \"total\": {\n    \"total_in_work\": 1,\n    \"total_postproned\": 0,\n    \"total_complete\": 0\n  },\n  \"wait_ticket_count\": 0\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "./docs/2.0.0/support/supports/10_GetSupportCurrentStatuses.go",
+    "groupTitle": "05._Сотрудник_ТП"
+  },
+  {
+    "type": "GET",
+    "url": "/helpdesk/support/support_list",
+    "title": "01. Получение списка всех сотрудников ТП",
+    "name": "GetSupportList",
+    "group": "05._Сотрудник_ТП",
+    "version": "2.0.0",
+    "examples": [
+      {
+        "title": "Example usage:",
+        "content": "http://localhost:8888/helpdesk/support/support_list",
+        "type": "json"
+      }
+    ],
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "BearerToken",
+            "description": "<p>Авторизационный токен</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Support[]",
+            "optional": false,
+            "field": "support",
+            "description": "<p>Массив объектов &quot;Cотрудник ТП&quot;</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Uint64",
+            "optional": false,
+            "field": "support.user_id",
+            "description": "<p>ID сотрудника</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "support.user_name",
+            "description": "<p>ФИО сотрудника</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success-Response:",
+          "content": "[\n  {\n    \"user_id\": 4,\n    \"user_name\": \"Евгений Николаевич Табаков\"\n  },\n  {\n    \"user_id\": 5,\n    \"user_name\": \"Артем Владимирович Шелкопляс\"\n  },\n  {\n    \"user_id\": 6,\n    \"user_name\": \"Вячеслав Викторович Тищенко\"\n  },\n  {\n    \"user_id\": 7,\n    \"user_name\": \"Александр Игоревич Кудряшов\"\n  }\n]",
+          "type": "type"
+        }
+      ]
+    },
+    "filename": "./docs/2.0.0/support/supports/01_GetSupportList.go",
+    "groupTitle": "05._Сотрудник_ТП"
+  },
+  {
+    "type": "GET",
+    "url": "/helpdesk/support/shift_status",
+    "title": "05. Получение текущего статуса смены",
+    "name": "GetSupportShiftStatus",
+    "group": "05._Сотрудник_ТП",
+    "version": "2.0.0",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "BearerToken",
+            "description": "<p>Авторизационный токен</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Bool",
+            "optional": false,
+            "field": "shift_status",
+            "description": "<p>Статус смены. True - открыта</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "status",
+            "description": "<p>Статус ответа</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Смена закрыта:",
+          "content": "{\n  \"shift_status\": false,\n  \"status\": \"ok\"\n}",
+          "type": "json"
+        },
+        {
+          "title": "Смена открыта:",
+          "content": "{\n  \"shift_status\": true,\n  \"status\": \"ok\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "./docs/2.0.0/support/supports/05_GetShiftStatus.go",
+    "groupTitle": "05._Сотрудник_ТП"
+  },
+  {
+    "type": "GET",
+    "url": "/helpdesk/support/get_support_status",
+    "title": "03. Получение текущего статуса сотрудника ТП",
+    "name": "GetSupportStatus",
+    "group": "05._Сотрудник_ТП",
+    "version": "2.0.0",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "BearerToken",
+            "description": "<p>Авторизационный токен</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Uint64",
+            "optional": false,
+            "field": "support_status_id",
+            "description": "<p>ID статуса</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "support_status_name",
+            "description": "<p>Описание статуса</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success-Response:",
+          "content": "{\n  \"support_status_id\": 4,\n  \"support_status_name\": \"Не принимаю запросы\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "./docs/2.0.0/support/supports/03_GetSupportStatus.go",
+    "groupTitle": "05._Сотрудник_ТП"
+  },
+  {
+    "type": "POST",
+    "url": "/helpdesk/support/open_shift",
+    "title": "07. Открытие смены сотруднику ТП",
+    "name": "OpenShift",
+    "group": "05._Сотрудник_ТП",
+    "version": "2.0.0",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "BearerToken",
+            "description": "<p>Авторизационный токен</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "Uint64",
+            "optional": false,
+            "field": "support_id",
+            "description": "<p>ID сотрудника которому нужно открыть смену</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Request-Example:",
+          "content": "{\n    \"support_id\" : 6\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "status",
+            "description": "<p>Статус ответа</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success-Response:",
+          "content": "{\n  \"status\": \"ok\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "./docs/2.0.0/support/supports/07_ShiftOpen.go",
+    "groupTitle": "05._Сотрудник_ТП"
+  },
+  {
+    "type": "POST",
+    "url": "/support/card/update",
+    "title": "14. Обновить карточку суппорта",
+    "name": "UpdateSupportCard",
+    "group": "05._Сотрудник_ТП",
+    "version": "0.1.1",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "Uint64",
+            "optional": false,
+            "field": "id",
+            "description": "<p>ИД карточки</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Stirng",
+            "optional": false,
+            "field": "internal_number",
+            "description": "<p>Внутренний номер телефонии</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "mobile_number",
+            "description": "<p>Мобильный номер (в одном из форматов: 0671112233, +380671112233, 380671112233, 067 111 22 33, 067-111-22-33)</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "birth_date",
+            "description": "<p>Дата рождения (в формате ДД.ММ.ГГГГ)</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Bool",
+            "optional": false,
+            "field": "is_senior",
+            "description": "<p>Признак старшего суппорта</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Uint64",
+            "optional": false,
+            "field": "senior_id",
+            "description": "<p>ИД старшего суппорта (если есть)</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Float64",
+            "optional": false,
+            "field": "wager",
+            "description": "<p>Ставка за смену</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "comment",
+            "description": "<p>Комментарий</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "color",
+            "description": "<p>Цвет отображения (если назначен старший цвет берется из карточки старшего)</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Request-Example:",
+          "content": "{\n  \"id\": 14,\n  \"internal_number\": \"1487\",\n  \"mobile_number\": \"\",\n  \"birth_date\": \"\",\n  \"is_senior\": false,\n  \"senior_id\": 4,\n  \"wager\": 500,\n  \"comment\": \"test\",\n  \"color\": \"0xFFFFF\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "status",
+            "description": "<p>Статус выполнения запроса</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success-Response:",
+          "content": "{\n  \"status\": \"ok\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "./docs/2.0.0/support/cards/14_UpdateCard.go",
     "groupTitle": "05._Сотрудник_ТП"
   },
   {
@@ -2241,7 +3352,7 @@
         ]
       }
     },
-    "filename": "./docs/2.0.0/regions_and_filials/CreateFilial.go",
+    "filename": "./docs/2.0.0/regions_and_filials/04_CreateFilial.go",
     "groupTitle": "07._Настройка"
   },
   {
@@ -2311,7 +3422,7 @@
         }
       ]
     },
-    "filename": "./docs/2.0.0/regions_and_filials/CreateRegion.go",
+    "filename": "./docs/2.0.0/regions_and_filials/01_CreateRegion.go",
     "groupTitle": "07._Настройка"
   },
   {
@@ -2386,7 +3497,7 @@
         ]
       }
     },
-    "filename": "./docs/2.0.0/regions_and_filials/DeleteFilial.go",
+    "filename": "./docs/2.0.0/regions_and_filials/06_DeleteFilial.go",
     "groupTitle": "07._Настройка"
   },
   {
@@ -2450,7 +3561,7 @@
         }
       ]
     },
-    "filename": "./docs/2.0.0/regions_and_filials/DeleteRegion.go",
+    "filename": "./docs/2.0.0/regions_and_filials/03_DeleteRegion.go",
     "groupTitle": "07._Настройка"
   },
   {
@@ -2535,7 +3646,7 @@
         }
       ]
     },
-    "filename": "./docs/2.0.0/regions_and_filials/GetFilialList.go",
+    "filename": "./docs/2.0.0/regions_and_filials/07_GetFilialList.go",
     "groupTitle": "07._Настройка"
   },
   {
@@ -2626,7 +3737,7 @@
         }
       ]
     },
-    "filename": "./docs/2.0.0/regions_and_filials/UpdateFilial.go",
+    "filename": "./docs/2.0.0/regions_and_filials/05_UpdateFilial.go",
     "groupTitle": "07._Настройка"
   },
   {
@@ -2696,7 +3807,7 @@
         }
       ]
     },
-    "filename": "./docs/2.0.0/regions_and_filials/UpdateRegion.go",
+    "filename": "./docs/2.0.0/regions_and_filials/02_UpdateRegion.go",
     "groupTitle": "07._Настройка"
   }
 ]

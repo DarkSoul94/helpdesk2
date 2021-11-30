@@ -95,14 +95,20 @@ func (r *TicketRepo) toModelTicket(dbTick dbTicket) *internal_models.Ticket {
 
 	if dbTick.AuthorID.Valid {
 		mTick.Author = &models.User{ID: uint64(dbTick.AuthorID.Int64)}
+	} else {
+		mTick.Author = &models.User{ID: 0}
 	}
 
 	if dbTick.SupportID.Valid {
 		mTick.Support = &models.User{ID: uint64(dbTick.SupportID.Int64)}
+	} else {
+		mTick.Support = &models.User{ID: 0}
 	}
 
 	if dbTick.ResolvedUserID.Valid {
 		mTick.ResolvedUser = &models.User{ID: uint64(dbTick.ResolvedUserID.Int64)}
+	} else {
+		mTick.ResolvedUser = &models.User{ID: 0}
 	}
 
 	if dbTick.ServiceComment.Valid {

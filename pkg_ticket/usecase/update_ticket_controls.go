@@ -9,41 +9,35 @@ import (
 	"github.com/spf13/viper"
 )
 
+const (
+	fieldSection string = "section"
+	fieldStatus  string = "status"
+	fieldSupport string = "support"
+	fieldComment string = "comment"
+)
+
 func (u *TicketUsecase) prepareBeforeUpdate(ticket, existTicket *internal_models.Ticket, user *models.User) models.Err {
-	if u.permUC.CheckPermission(user.Group.ID, actions.AdminTA) {
-		return nil
-	}
+	fields := make([]string, 0)
 
-	err := u.generalChecks(existTicket, user)
-	if err != nil {
-		return err
-	}
-
-	if ticket.Status.ID != existTicket.Status.ID {
-		err := u.checkChangeStatus(ticket, existTicket, user)
+	if !u.permUC.CheckPermission(user.Group.ID, actions.AdminTA) {
+		err := u.generalChecks(existTicket, user)
 		if err != nil {
 			return err
 		}
 
-		err = u.changeStatus(ticket, existTicket, user)
-	}
-
-	if ticket.Support.ID != 0 && ticket.Support.ID != existTicket.Support.ID {
-		err := u.checkChangeSupport(user)
+		fields, err = u.checkChanges(ticket, existTicket, user)
 		if err != nil {
 			return err
 		}
-	}
-
-	if ticket.CatSect.ID != 0 && ticket.CatSect.ID != existTicket.CatSect.ID {
-		err := u.checkChangeSection(ticket.Status.ID, user)
-		if err != nil {
-			return err
+		if len(fields) > 0 {
+			err = u.prepareTicket(fields, ticket, existTicket, user)
+			if err != nil {
+				return err
+			}
 		}
-	}
-
-	if len(ticket.ServiceComment) > 0 && ticket.ServiceComment != existTicket.ServiceComment {
-		err := u.checkChangeServiceComment(user)
+	} else {
+		fields = append(fields, fieldSection, fieldStatus, fieldSupport, fieldComment)
+		err := u.prepareTicket(fields, ticket, existTicket, user)
 		if err != nil {
 			return err
 		}
@@ -86,6 +80,66 @@ func (u *TicketUsecase) generalChecks(existTicket *internal_models.Ticket, user 
 	}
 
 	return nil
+}
+
+func (u *TicketUsecase) checkChanges(ticket, existTicket *internal_models.Ticket, user *models.User) ([]string, models.Err) {
+	fields := make([]string, 0)
+
+	if ticket.Status.ID != existTicket.Status.ID {
+		err := u.checkChangeStatus(ticket, existTicket, user)
+		if err != nil {
+			return nil, err
+		}
+
+		fields = append(fields, fieldStatus)
+	}
+
+	if ticket.Support.ID != 0 && ticket.Support.ID != existTicket.Support.ID {
+		err := u.checkChangeSupport(user)
+		if err != nil {
+			return nil, err
+		}
+
+		fields = append(fields, fieldSupport)
+	}
+
+	if ticket.CatSect.ID != 0 && ticket.CatSect.ID != existTicket.CatSect.ID {
+		err := u.checkChangeSection(ticket.Status.ID, user)
+		if err != nil {
+			return nil, err
+		}
+
+		fields = append(fields, fieldSection)
+	}
+
+	if len(ticket.ServiceComment) > 0 && ticket.ServiceComment != existTicket.ServiceComment {
+		err := u.checkChangeServiceComment(user)
+		if err != nil {
+			return nil, err
+		}
+
+		fields = append(fields, fieldComment)
+	}
+
+	return fields, nil
+}
+
+func (u *TicketUsecase) prepareTicket(fields []string, ticket, existTicket *internal_models.Ticket, user *models.User) models.Err {
+	var err models.Err
+	for _, key := range fields {
+		switch key {
+		case fieldStatus:
+			err = u.changeStatus(ticket, existTicket, user)
+		case fieldSupport:
+			err = u.changeSupport(ticket)
+		case fieldSection:
+			err = u.changeSection(ticket)
+		case fieldComment:
+			continue
+		}
+	}
+
+	return err
 }
 
 func (u *TicketUsecase) checkChangeStatus(ticket, existTicket *internal_models.Ticket, user *models.User) models.Err {
