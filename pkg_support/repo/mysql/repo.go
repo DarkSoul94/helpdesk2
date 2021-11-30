@@ -239,7 +239,7 @@ func (r *Repo) SetReassignmentBySupport(supportID uint64, reassignment bool) mod
 	UPDATE supports_activity SET
 		reassignment = ?
 	WHERE support_id = ?`
-	if _, err := r.db.Exec(query, supportID, reassignment); err != nil {
+	if _, err := r.db.Exec(query, reassignment, supportID); err != nil {
 		logger.LogError("Failed update reassignment", "pkg_support/repo/mysql", fmt.Sprintf("support id: %d", supportID), err)
 		return errSupportModifyActivity
 	}
