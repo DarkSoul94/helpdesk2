@@ -537,6 +537,32 @@ func (u *TicketUsecase) StealTicket(ticketID uint64, newSupport *models.User) mo
 	return nil
 }
 
+func (u *TicketUsecase) TicketGrade(ticketID uint64, grade uint, user *models.User) models.Err {
+	ticket, err := u.repo.GetTicket(ticketID)
+	if err != nil {
+		return models.BadRequest("Запроса с таким ид не найдено")
+	}
+
+	if ticket.Grade != 0 {
+		return models.BadRequest("Запрос уже оценен")
+	}
+
+	if ticket.Author.ID != user.ID {
+		return models.Forbidden("Запрос может оценить только автор")
+	}
+
+	if ticket.Status.ID != internal_models.TSCompletedID {
+		return models.BadRequest("Оценивать можно только выполненые запросы")
+	}
+
+	err = u.repo.TicketGrade(ticketID, user.ID, grade)
+	if err != nil {
+		return models.InternalError(err.Error())
+	}
+
+	return nil
+}
+
 func (u *TicketUsecase) CheckNeedApprovalTicketExist(groupID uint64) bool {
 	exist, err := u.repo.CheckNeedApprovalTicketExist(groupID, u.permUC.CheckPermission(groupID, actions.TicketTA_Resolve))
 	if err != nil {

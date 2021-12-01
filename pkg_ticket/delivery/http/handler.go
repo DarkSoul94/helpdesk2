@@ -406,6 +406,25 @@ func (h *TicketHandler) StealTicket(c *gin.Context) {
 	c.JSON(http.StatusOK, map[string]string{"status": "ok"})
 }
 
+func (h *TicketHandler) TicketGrade(c *gin.Context) {
+	var grade dto.InpTicketGrade
+
+	if err := c.BindJSON(&grade); err != nil {
+		c.JSON(http.StatusBadRequest, map[string]string{"status": "error", "error": err.Error()})
+		return
+	}
+
+	user, _ := c.Get(global_const.CtxUserKey)
+
+	err := h.uc.TicketGrade(grade.TicketID, grade.Grade, user.(*models.User))
+	if err != nil {
+		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{"status": "ok"})
+}
+
 func (h *TicketHandler) CreateComment(c *gin.Context) {
 	var comment dto.InpComment
 

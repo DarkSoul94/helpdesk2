@@ -33,6 +33,7 @@ type ITicketUsecase interface {
 	GetTicketList(user *models.User, limit, offset int) ([]*internal_models.Ticket, []string, map[uint]uint, models.Err)
 	GetTicket(ticketID uint64, user *models.User) (*internal_models.Ticket, models.Err)
 	StealTicket(id uint64, newSupport *models.User) models.Err
+	TicketGrade(ticketID uint64, grade uint, user *models.User) models.Err
 	CheckNeedApprovalTicketExist(groupID uint64) bool
 	GetApprovalTicketList(groupID uint64, limit, offset int) ([]*internal_models.Ticket, []string, models.Err)
 

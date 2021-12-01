@@ -80,6 +80,8 @@ func RegisterHTTPEndpoints(router *gin.RouterGroup, uc pkg_ticket.ITicketUsecase
 		ticketEndpoints.GET("/ticket", h.GetTicket)
 		//http://localhost:8888/helpdesk/ticket/steal
 		ticketEndpoints.POST("/steal", h.StealTicket)
+		//http://localhost:8888/helpdesk/ticket/ticket_grade
+		ticketEndpoints.POST("/ticket_grade", h.TicketGrade)
 	}
 
 	commentEndpoints := router.Group("/comment")

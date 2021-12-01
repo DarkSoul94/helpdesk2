@@ -1,6 +1,8 @@
 package pkg_ticket
 
-import "github.com/DarkSoul94/helpdesk2/pkg_ticket/internal_models"
+import (
+	"github.com/DarkSoul94/helpdesk2/pkg_ticket/internal_models"
+)
 
 type ITicketRepo interface {
 	GetTicketStatuses() ([]*internal_models.TicketStatus, error)
@@ -21,6 +23,7 @@ type ITicketRepo interface {
 	GetTicketListForReturnToDistribute() ([]*internal_models.Ticket, error)
 	GetTicket(ticketID uint64) (*internal_models.Ticket, error)
 	StealTicket(ticketID, supportID uint64, toWork bool) error
+	TicketGrade(ticketID, userID uint64, grade uint) error
 	CheckNeedApprovalTicketExist(groupID uint64, forResolver bool) (bool, error)
 
 	Close() error

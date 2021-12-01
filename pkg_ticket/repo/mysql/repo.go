@@ -2,6 +2,7 @@ package mysql
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/DarkSoul94/helpdesk2/pkg/logger"
@@ -509,6 +510,39 @@ func (r *TicketRepo) StealTicket(ticketID, supportID uint64, toWork bool) error 
 			err,
 		)
 		return err
+	}
+
+	return nil
+}
+
+func (r *TicketRepo) TicketGrade(ticketID, userID uint64, grade uint) error {
+	var (
+		res   sql.Result
+		query string
+		err   error
+	)
+
+	query = `UPDATE tickets SET 
+				ticket_grade = ?
+				WHERE ticket_id = ? 
+				AND ticket_status_id = 9 
+				AND support_id IS NOT NULL
+				AND ticket_author_id = ?`
+
+	res, err = r.db.Exec(query, grade, ticketID, userID)
+	if err != nil {
+		logger.LogError(
+			"Failed ticket grade",
+			"pkg_ticket/repo/mysql",
+			fmt.Sprintf("ticket id: %d; grade: %d; user id: %d;", ticketID, grade, userID),
+			err,
+		)
+		return err
+	}
+
+	count, _ := res.RowsAffected()
+	if count == 0 {
+		return errors.New("Ошибка оценки запроса")
 	}
 
 	return nil
