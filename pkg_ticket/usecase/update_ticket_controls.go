@@ -14,10 +14,14 @@ const (
 	fieldStatus  string = "status"
 	fieldSupport string = "support"
 	fieldComment string = "comment"
+	fieldFiles   string = "files"
 )
 
 func (u *TicketUsecase) prepareBeforeUpdate(ticket, existTicket *internal_models.Ticket, user *models.User) models.Err {
-	fields := make([]string, 0)
+	fields, err := u.checkChanges(ticket, existTicket, user)
+	if err != nil {
+		return err
+	}
 
 	if !u.permUC.CheckPermission(user.Group.ID, actions.AdminTA) {
 		err := u.generalChecks(existTicket, user)
@@ -25,22 +29,15 @@ func (u *TicketUsecase) prepareBeforeUpdate(ticket, existTicket *internal_models
 			return err
 		}
 
-		fields, err = u.checkChanges(ticket, existTicket, user)
+		err = u.checkRules(fields, ticket, existTicket, user)
 		if err != nil {
 			return err
 		}
-		if len(fields) > 0 {
-			err = u.prepareTicket(fields, ticket, existTicket, user)
-			if err != nil {
-				return err
-			}
-		}
-	} else {
-		fields = append(fields, fieldSection, fieldStatus, fieldSupport, fieldComment)
-		err := u.prepareTicket(fields, ticket, existTicket, user)
-		if err != nil {
-			return err
-		}
+	}
+
+	err = u.prepareTicket(fields, ticket, existTicket, user)
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -86,42 +83,65 @@ func (u *TicketUsecase) checkChanges(ticket, existTicket *internal_models.Ticket
 	fields := make([]string, 0)
 
 	if ticket.Status.ID != existTicket.Status.ID {
-		err := u.checkChangeStatus(ticket, existTicket, user)
-		if err != nil {
-			return nil, err
-		}
-
 		fields = append(fields, fieldStatus)
 	}
 
 	if ticket.Support.ID != 0 && ticket.Support.ID != existTicket.Support.ID {
-		err := u.checkChangeSupport(user)
-		if err != nil {
-			return nil, err
-		}
-
 		fields = append(fields, fieldSupport)
 	}
 
 	if ticket.CatSect.ID != 0 && ticket.CatSect.ID != existTicket.CatSect.ID {
-		err := u.checkChangeSection(ticket.Status.ID, user)
-		if err != nil {
-			return nil, err
-		}
-
 		fields = append(fields, fieldSection)
 	}
 
 	if len(ticket.ServiceComment) > 0 && ticket.ServiceComment != existTicket.ServiceComment {
-		err := u.checkChangeServiceComment(user)
-		if err != nil {
-			return nil, err
-		}
-
 		fields = append(fields, fieldComment)
 	}
 
+	if len(ticket.Files) > 0 {
+		fields = append(fields, fieldFiles)
+	}
+
 	return fields, nil
+}
+
+func (u *TicketUsecase) checkRules(fields []string, ticket, existTicket *internal_models.Ticket, user *models.User) models.Err {
+	for _, key := range fields {
+		switch key {
+		case fieldStatus:
+			err := u.checkChangeStatus(ticket, existTicket, user)
+			if err != nil {
+				return err
+			}
+
+		case fieldSupport:
+			err := u.checkChangeSupport(user)
+			if err != nil {
+				return err
+			}
+
+		case fieldSection:
+			err := u.checkChangeSection(ticket.Status.ID, user)
+			if err != nil {
+				return err
+			}
+
+		case fieldComment:
+			err := u.checkChangeServiceComment(user)
+			if err != nil {
+				return err
+			}
+
+		case fieldFiles:
+			err := u.checkChangeFiles(existTicket, user)
+			if err != nil {
+				return err
+			}
+
+		}
+	}
+
+	return nil
 }
 
 func (u *TicketUsecase) prepareTicket(fields []string, ticket, existTicket *internal_models.Ticket, user *models.User) models.Err {
@@ -135,6 +155,8 @@ func (u *TicketUsecase) prepareTicket(fields []string, ticket, existTicket *inte
 		case fieldSection:
 			err = u.changeSection(ticket)
 		case fieldComment:
+			continue
+		case fieldFiles:
 			continue
 		}
 	}
@@ -277,6 +299,27 @@ func (u *TicketUsecase) changeSection(ticket *internal_models.Ticket) models.Err
 func (u *TicketUsecase) checkChangeServiceComment(user *models.User) models.Err {
 	if !u.permUC.CheckPermission(user.Group.ID, actions.TicketTA_Work) {
 		return errCannotUpdateTicket
+	}
+
+	return nil
+}
+
+func (u *TicketUsecase) checkChangeFiles(existTicket *internal_models.Ticket, user *models.User) models.Err {
+	switch existTicket.Status.ID {
+	case internal_models.TSInWorkID, internal_models.TSImplementationID:
+		if !u.permUC.CheckPermission(user.Group.ID, actions.TicketTA_Work) {
+			return errCannotUpdateTicket
+		}
+
+	case internal_models.TSRevisionID:
+		if existTicket.Author.ID != user.ID {
+			return errCannotUpdateTicket
+		}
+
+	case internal_models.TSWaitForResolveID:
+		if !u.permUC.CheckPermission(user.Group.ID, actions.TicketTA_Resolve) {
+			return errCannotUpdateTicket
+		}
 	}
 
 	return nil

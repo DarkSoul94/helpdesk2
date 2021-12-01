@@ -251,6 +251,10 @@ func (u *TicketUsecase) CreateTicket(ticket *internal_models.Ticket) (uint64, mo
 		err              models.Err
 	)
 
+	if len(ticket.Text) == 0 {
+		return 0, models.BadRequest("Текст запроса не должен быть пустым")
+	}
+
 	if ticket.CatSect, err = u.catSecUC.GetSectionWithCategoryByID(ticket.CatSect.ID); err != nil {
 		return 0, err
 	}
