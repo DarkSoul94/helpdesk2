@@ -90,6 +90,7 @@ func (r *TicketRepo) CreateTicket(ticket *internal_models.Ticket) (uint64, error
 	query = `INSERT INTO tickets SET
 	ticket_date = :ticket_date,
 	section_id = :section_id,
+	need_resolve = :need_resolve,
 	ticket_text = :ticket_text,
 	ticket_status_id = :ticket_status_id,
 	ticket_author_id = :ticket_author_id,
@@ -121,8 +122,10 @@ func (r *TicketRepo) UpdateTicket(ticket *internal_models.Ticket) error {
 
 	query = `UPDATE tickets SET
 				section_id = :section_id,
+				need_resolve = :need_resolve,
 				ticket_status_id = :ticket_status_id,
 				support_id = :support_id,
+				resolved_user_id = :resolved_user_id,
 				service_comment = :service_comment
 				WHERE ticket_id = :ticket_id`
 
@@ -381,10 +384,8 @@ func (r *TicketRepo) GetTicketListForApproval(groupID uint64, limit, offset int,
 		}
 	} else {
 		query = `SELECT T.*, TS.ticket_status_id, TS.ticket_status_name FROM tickets AS T
-					INNER JOIN category_section AS CS ON CS.section_id = T.section_id
 					INNER JOIN ticket_status AS TS ON TS.ticket_status_id = T.ticket_status_id
-					WHERE resolved_user_id IS NULL
-					AND CS.need_approval = true
+					WHERE T.need_resolve = true
 					AND T.ticket_status_id NOT IN(8, 9)
 					ORDER BY T.ticket_id
 					DESC LIMIT ? OFFSET ?`
@@ -576,9 +577,7 @@ func (r *TicketRepo) CheckNeedApprovalTicketExist(groupID uint64, forResolver bo
 		}
 	} else {
 		query = `SELECT COUNT(*) FROM tickets AS T
-					INNER JOIN category_section AS CS ON CS.section_id = T.section_id
-					WHERE resolved_user_id IS NULL
-					AND CS.need_approval = true
+					WHERE T.need_resolve = true
 					AND T.ticket_status_id NOT IN(8, 9)`
 		err = r.db.Get(&count, query)
 		if err != nil {

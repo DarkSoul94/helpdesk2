@@ -64,9 +64,7 @@ func (u *SupportUsecase) DeleteSupport(askUser *models.User, usersID ...uint64) 
 
 		//проверка что суппорт с таким ID есть в списке, если нет - переходим к следующему
 		if _, err := u.repo.GetSupport(userID); err == nil {
-			if err := u.CloseShift(userID, askUser); err != nil {
-				return err
-			}
+			u.CloseShift(userID, askUser)
 			if err := u.repo.DeleteSupport(userID); err != nil {
 				return err
 			}

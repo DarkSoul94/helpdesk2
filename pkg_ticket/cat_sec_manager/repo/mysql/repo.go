@@ -359,6 +359,29 @@ func (r *CatSecRepo) GetSectionWithCategoryByID(id uint64) (*internal_models.Sec
 	return r.toModelSectionWithCategory(sect), nil
 }
 
+func (r *CatSecRepo) CheckExistInResolveGroupList(sectionID, groupID uint64) bool {
+	var (
+		exist bool
+		query string
+		err   error
+	)
+
+	query = `SELECT EXISTS (SELECT * FROM approval_bindings
+				WHERE section_id = ? AND group_id = ?)`
+
+	err = r.db.Get(&exist, query, sectionID, groupID)
+	if err != nil {
+		logger.LogError(
+			"Failed check exist in resolve group list",
+			"pkg_ticket/cat_sec_manager/repo/mysql",
+			fmt.Sprintf("section id: %d;", sectionID),
+			err,
+		)
+	}
+
+	return exist
+}
+
 func (r *CatSecRepo) Close() error {
 	r.db.Close()
 	return nil

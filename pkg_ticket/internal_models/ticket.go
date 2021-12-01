@@ -15,6 +15,7 @@ type Ticket struct {
 	ID             uint64
 	Date           time.Time
 	CatSect        *SectionWithCategory
+	NeedResolve    bool
 	Text           string
 	Status         *TicketStatus
 	Filial         string

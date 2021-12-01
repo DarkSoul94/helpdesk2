@@ -14,6 +14,7 @@ type ICatSecRepo interface {
 	GetCategorySectionList() ([]internal_models.CategorySectionList, error)
 	GetCategorySectionByID(id uint64) (*internal_models.CategorySection, error)
 	GetSectionWithCategoryByID(id uint64) (*internal_models.SectionWithCategory, error)
+	CheckExistInResolveGroupList(sectionID, groupID uint64) bool
 
 	Close() error
 }

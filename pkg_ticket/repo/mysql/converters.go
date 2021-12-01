@@ -23,12 +23,13 @@ func (r *TicketRepo) toDbTicketStatus(stat *internal_models.TicketStatus) *dbTic
 
 func (r *TicketRepo) toDbTicket(ticket *internal_models.Ticket) dbTicket {
 	dbTick := dbTicket{
-		ID:        ticket.ID,
-		Date:      ticket.Date,
-		SectionID: ticket.CatSect.ID,
-		Text:      ticket.Text,
-		Status:    r.toDbTicketStatus(ticket.Status),
-		Grade:     sql.NullInt32{Int32: int32(ticket.Grade), Valid: true},
+		ID:          ticket.ID,
+		Date:        ticket.Date,
+		SectionID:   ticket.CatSect.ID,
+		NeedResolve: ticket.NeedResolve,
+		Text:        ticket.Text,
+		Status:      r.toDbTicketStatus(ticket.Status),
+		Grade:       sql.NullInt32{Int32: int32(ticket.Grade), Valid: true},
 	}
 
 	if len(ticket.Filial) > 0 {
@@ -78,11 +79,12 @@ func (r *TicketRepo) toDbTicket(ticket *internal_models.Ticket) dbTicket {
 
 func (r *TicketRepo) toModelTicket(dbTick dbTicket) *internal_models.Ticket {
 	mTick := &internal_models.Ticket{
-		ID:      dbTick.ID,
-		Date:    dbTick.Date,
-		Text:    dbTick.Text,
-		CatSect: &internal_models.SectionWithCategory{ID: dbTick.SectionID},
-		Status:  r.toModelTicketStatus(*dbTick.Status),
+		ID:          dbTick.ID,
+		Date:        dbTick.Date,
+		Text:        dbTick.Text,
+		CatSect:     &internal_models.SectionWithCategory{ID: dbTick.SectionID},
+		NeedResolve: dbTick.NeedResolve,
+		Status:      r.toModelTicketStatus(*dbTick.Status),
 	}
 
 	if dbTick.Filial.Valid {

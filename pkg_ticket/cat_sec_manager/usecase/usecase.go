@@ -111,3 +111,7 @@ func (u *CatSecUsecase) GetSectionWithCategoryByID(id uint64) (*internal_models.
 
 	return sect, nil
 }
+
+func (u *CatSecUsecase) CheckExistInResolveGroupList(sectionID, groupID uint64) bool {
+	return u.repo.CheckExistInResolveGroupList(sectionID, groupID)
+}

@@ -35,3 +35,7 @@ func checkResolveTicket(group *models.Group) bool {
 func checkSeeAdditionalInfo(group *models.Group) bool {
 	return group.SeeAdditionalInfo
 }
+
+func checkCreateTicket(group *models.Group) bool {
+	return group.CreateTicket
+}

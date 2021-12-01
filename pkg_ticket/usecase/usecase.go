@@ -266,8 +266,10 @@ func (u *TicketUsecase) CreateTicket(ticket *internal_models.Ticket) (uint64, mo
 
 	if ticket.CatSect.NeedApproval {
 		ticket.Status.Set(internal_models.KeyTSResolve)
+		ticket.NeedResolve = true
 	} else {
 		ticket.Status.Set(internal_models.KeyTSWait)
+		ticket.NeedResolve = false
 	}
 
 	ticket.Date = time.Now().Truncate(time.Second)
@@ -595,6 +597,37 @@ func (u *TicketUsecase) GetApprovalTicketList(groupID uint64, limit, offset int)
 	}
 
 	return list, u.makeTagList(groupID), nil
+}
+
+func (u *TicketUsecase) ResolveTicket(ticketID uint64, user *models.User) models.Err {
+	if !u.permUC.CheckPermission(user.Group.ID, actions.TicketTA_Resolve) {
+		return models.Forbidden("У вас нет прав согласовывать запрос")
+	}
+
+	ticket, err := u.repo.GetTicket(ticketID)
+	if err != nil {
+		return models.InternalError(err.Error())
+	}
+
+	if !ticket.NeedResolve {
+		return models.BadRequest("Запрос не нуждается в согласовании")
+	}
+
+	if !u.catSecUC.CheckExistInResolveGroupList(ticket.CatSect.ID, user.Group.ID) {
+		return models.Forbidden("У вас нет прав согласовывать запрос данной категории")
+	}
+
+	if ticket.ResolvedUser != nil && ticket.ResolvedUser.ID != 0 {
+		return models.BadRequest("Запрос уже согласован")
+	}
+
+	ticket.ResolvedUser = user
+	ticket.NeedResolve = false
+	if ticket.Status.ID == internal_models.TSWaitForResolveID {
+		ticket.Status.ID = internal_models.TSWaitID
+	}
+
+	return u.UpdateTicket(ticket, user, false)
 }
 
 func (u *TicketUsecase) CreateComment(comment *internal_models.Comment) (uint64, models.Err) {

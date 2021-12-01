@@ -42,13 +42,13 @@ func (p *PermissionMiddleware) CheckPermissions(c *gin.Context) {
 		}
 
 	case "/helpdesk/ticket/create":
-		if !(p.usecase.CheckPermission(user.(*models.User).Group.ID, actions.AdminTA) || p.usecase.CheckPermission(user.(*models.User).Group.ID, actions.TicketTA_Create)) {
+		if !p.usecase.CheckPermission(user.(*models.User).Group.ID, actions.TicketTA_Create) {
 			c.AbortWithStatus(http.StatusForbidden)
 		}
 
 	case "/helpdesk/resolve_ticket/check_exist",
 		"/helpdesk/resolve_ticket/resolve_tickets_list":
-		if !p.usecase.CheckPermission(user.(*models.User).Group.ID, actions.TicketTA_Resolve) || !p.usecase.CheckPermission(user.(*models.User).Group.ID, actions.TicketTA_Work) {
+		if !(p.usecase.CheckPermission(user.(*models.User).Group.ID, actions.TicketTA_Resolve) || p.usecase.CheckPermission(user.(*models.User).Group.ID, actions.TicketTA_Work)) {
 			c.AbortWithStatus(http.StatusForbidden)
 		}
 
@@ -56,5 +56,11 @@ func (p *PermissionMiddleware) CheckPermissions(c *gin.Context) {
 		if !(p.usecase.CheckPermission(user.(*models.User).Group.ID, actions.AdminTA) || p.usecase.CheckPermission(user.(*models.User).Group.ID, actions.TicketTA_Work)) {
 			c.AbortWithStatus(http.StatusForbidden)
 		}
+
+	case "/helpdesk/resolve_ticket/resolve":
+		if !p.usecase.CheckPermission(user.(*models.User).Group.ID, actions.TicketTA_Resolve) {
+			c.AbortWithStatus(http.StatusForbidden)
+		}
+
 	}
 }

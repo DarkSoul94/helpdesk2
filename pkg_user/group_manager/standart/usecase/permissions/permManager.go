@@ -66,6 +66,8 @@ func (u *Usecase) check(group *models.Group, action string) bool {
 	case actions.TicketTA_SeeAdditionalInfo:
 		return checkSeeAdditionalInfo(group)
 
+	case actions.TicketTA_Create:
+		return checkCreateTicket(group)
 	default:
 		return false
 	}

@@ -289,6 +289,8 @@ func (u *TicketUsecase) changeSection(ticket *internal_models.Ticket) models.Err
 		return err
 	}
 
+	ticket.NeedResolve = section.NeedApproval
+
 	if section.NeedApproval {
 		ticket.Status.ID = internal_models.TSWaitForResolveID
 	}
