@@ -269,12 +269,18 @@ func (u *SupportUsecase) UpdateCard(card *internal_models.Card) models.Err {
 			return err
 		}
 	}
-	if card.Senior != nil && card.Senior.ID != currentCard.Senior.ID {
-		seniorCard, err := u.repo.GetCardBySupportID(card.Senior.ID)
-		if err != nil {
-			return err
+	if card.IsSenior {
+		card.Senior = nil
+	}
+
+	if card.Senior != nil {
+		if currentCard.Senior == nil || card.Senior.ID != currentCard.Senior.ID {
+			seniorCard, err := u.repo.GetCardBySupportID(card.Senior.ID)
+			if err != nil {
+				return err
+			}
+			card.Color = seniorCard.Color
 		}
-		card.Color = seniorCard.Color
 	}
 
 	return u.repo.UpdateCard(card)

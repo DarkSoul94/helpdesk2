@@ -28,11 +28,13 @@ type dbStatus struct {
 type dbCard struct {
 	ID             uint64          `db:"id"`
 	SupportID      uint64          `db:"support_id"`
+	SupportName    string          `db:"support_name"`
 	InternalNumber string          `db:"internal_number"`
 	MobileNumber   string          `db:"mobile_number"`
 	BirthDate      string          `db:"birth_date"`
 	IsSenior       bool            `db:"is_senior"`
 	SeniorID       sql.NullInt64   `db:"senior_id"`
+	SeniorName     sql.NullString  `db:"senior_name"`
 	Wager          decimal.Decimal `db:"wager"`
 	Comment        string          `db:"comment"`
 	Color          string          `db:"color"`

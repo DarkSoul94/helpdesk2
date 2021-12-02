@@ -103,10 +103,10 @@ func (r *Repo) GetSeniors() ([]*internal_models.Support, models.Err) {
 	mSupports := make([]*internal_models.Support, 0)
 	query := `
 	SELECT 
-		support.*, 
+		S.*, 
 		users.user_name AS support_name 
 	FROM support AS S
-	LEFT JOIN users ON user_id = support_id
+	LEFT JOIN users ON user_id = S.support_id
 		WHERE EXISTS (
 			SELECT * FROM supports_cards AS C
 			WHERE S.support_id = C.support_id
@@ -397,8 +397,14 @@ func (r *Repo) DeleteCard(supportID uint64) models.Err {
 func (r *Repo) GetCard(cardID uint64) (*internal_models.Card, models.Err) {
 	card := new(dbCard)
 	query := `
-	SELECT * FROM supports_cards 
-	WHERE id = ?`
+	SELECT 
+		SC.*, 
+		U.user_name AS support_name, 
+		U2.user_name AS senior_name 
+	FROM supports_cards AS SC
+	LEFT JOIN users AS U ON SC.support_id = U.user_id
+	LEFT JOIN users AS U2 ON SC.senior_id = U2.user_id
+	WHERE SC.id = ?`
 	if err := r.db.Get(card, query, cardID); err != nil {
 		logger.LogError("Failed get support card", "pkg_support/repo/mysql", fmt.Sprintf("card id: %d", cardID), err)
 		return nil, errCardGet
@@ -409,7 +415,15 @@ func (r *Repo) GetCard(cardID uint64) (*internal_models.Card, models.Err) {
 func (r *Repo) GetCardsList() ([]*internal_models.Card, models.Err) {
 	cards := make([]dbCard, 0)
 	mCards := make([]*internal_models.Card, 0)
-	if err := r.db.Select(&cards, "SELECT * FROM supports_cards"); err != nil {
+	query := `
+	SELECT 
+		SC.*, 
+		U.user_name AS support_name,
+		U2.user_name AS senior_name 
+	FROM supports_cards AS SC
+	LEFT JOIN users AS U ON SC.support_id = U.user_id
+	LEFT JOIN users AS U2 ON SC.senior_id = U2.user_id`
+	if err := r.db.Select(&cards, query); err != nil {
 		logger.LogError("Failed get support list", "pkg_support/repo/mysql", "", err)
 		return nil, errCardGet
 	}
@@ -422,7 +436,7 @@ func (r *Repo) GetCardsList() ([]*internal_models.Card, models.Err) {
 func (r *Repo) UpdateCard(card *internal_models.Card) models.Err {
 	dbCard := r.toDbSupportCard(card)
 	query := `
-	UPDATE cupports_cards SET
+	UPDATE supports_cards SET
 		internal_number = :internal_number,
 		mobile_number = :mobile_number,
 		birth_date = :birth_date,
