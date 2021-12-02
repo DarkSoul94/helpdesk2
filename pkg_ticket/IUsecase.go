@@ -31,6 +31,7 @@ type ITicketUsecase interface {
 	GenerateTicket(ticket internal_models.TicketGenerate, author *models.User) models.Err
 	UpdateTicket(ticket *internal_models.Ticket, user *models.User, checkControls bool) models.Err
 	GetTicketList(user *models.User, limit, offset int) ([]*internal_models.Ticket, []string, map[uint]uint, models.Err)
+	GetFilteredTicketsList(filter map[string]interface{}, user *models.User) ([]*internal_models.Ticket, []string, models.Err)
 	GetTicket(ticketID uint64, user *models.User) (*internal_models.Ticket, models.Err)
 	StealTicket(id uint64, newSupport *models.User) models.Err
 	TicketGrade(ticketID uint64, grade uint, user *models.User) models.Err

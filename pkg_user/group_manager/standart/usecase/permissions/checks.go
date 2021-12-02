@@ -21,7 +21,7 @@ func checkIsAdmin(group *models.Group) bool {
 }
 
 func checkFullSearch(group *models.Group) bool {
-	return group.ChangeSettings
+	return group.FullSearch
 }
 
 func checkWorkOnTicket(group *models.Group) bool {

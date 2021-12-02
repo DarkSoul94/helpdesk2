@@ -4,8 +4,10 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/DarkSoul94/helpdesk2/pkg/logger"
+	"github.com/DarkSoul94/helpdesk2/pkg_ticket"
 	"github.com/DarkSoul94/helpdesk2/pkg_ticket/internal_models"
 	"github.com/jmoiron/sqlx"
 )
@@ -446,6 +448,122 @@ func (r *TicketRepo) GetTicketListForReturnToDistribute() ([]*internal_models.Ti
 	}
 
 	return r.convertTicketList(dbList), nil
+}
+
+func (r *TicketRepo) FilterDispatcher(filter map[string]interface{}) (string, []interface{}) {
+	var (
+		query     string
+		args, arg []interface{}
+	)
+
+	baseQuery := `SELECT T.*, TS.ticket_status_id, TS.ticket_status_name FROM tickets AS T
+					INNER JOIN category_section AS CS ON CS.section_id = T.section_id
+					INNER JOIN category AS C ON CS.category_id = C.category_id
+					INNER JOIN ticket_status AS TS ON TS.ticket_status_id = T.ticket_status_id`
+
+	query = baseQuery + `
+	WHERE T.ticket_id != 0 `
+
+	for key, value := range filter {
+		switch key {
+		case pkg_ticket.TicketIDAll:
+			query = baseQuery + `
+			WHERE T.ticket_id != 0 AND T.ticket_id = ? ORDER BY T.ticket_id DESC`
+			arg = append(arg, filter[pkg_ticket.TicketIDAll])
+			return query, arg
+
+		case pkg_ticket.TicketIDBACK:
+			query = baseQuery + `
+			WHERE T.ticket_id != 0 AND T.ticket_id = ? AND (CS.need_approval = TRUE OR T.ticket_author_id = ?) ORDER BY T.ticket_id DESC`
+			arg = append(arg, filter[pkg_ticket.TicketIDBACK], filter[pkg_ticket.AuthorAndResolve])
+			return query, arg
+
+		case pkg_ticket.TicketIDREG:
+			query = baseQuery + `
+			WHERE T.ticket_id != 0 AND T.ticket_id = ? AND T.ticket_author_id = ? ORDER BY T.ticket_id DESC`
+			arg = append(arg, filter[pkg_ticket.TicketIDREG], filter[pkg_ticket.AuthorID])
+			return query, arg
+
+		case pkg_ticket.StartDate:
+			layout := "2006-01-02 15:04:05"
+			startDate, _ := time.ParseInLocation(layout, filter[pkg_ticket.StartDate].(string), time.Local)
+
+			var endDate time.Time
+			if filter[pkg_ticket.EndDate] != nil && len(filter[pkg_ticket.EndDate].(string)) > 0 {
+				endDate, _ = time.ParseInLocation(layout, filter[pkg_ticket.EndDate].(string), time.Local)
+			} else {
+				endDate = time.Now()
+			}
+
+			query += `AND T.ticket_date BETWEEN ? AND ? `
+			args = append(args, startDate, endDate)
+
+		case pkg_ticket.CategoryID:
+			query += `AND C.category_id = ? `
+			args = append(args, value)
+
+		case pkg_ticket.SectionID:
+			q, arg, _ := sqlx.In(`AND CS.section_id IN(?) `, value)
+			query += q
+			args = append(args, arg...)
+
+		case pkg_ticket.Text:
+			query += `AND T.ticket_text LIKE ? `
+			value = fmt.Sprintf("%s%s%s", "%", value, "%")
+			args = append(args, value)
+
+		case pkg_ticket.StatusID:
+			query += `AND T.ticket_status_id = ? `
+			args = append(args, value)
+
+		case pkg_ticket.AuthorID:
+			q, arg, _ := sqlx.In(`AND T.ticket_author_id IN(?) `, value)
+			query += q
+			args = append(args, arg...)
+
+		case pkg_ticket.SupportID:
+			q, arg, _ := sqlx.In(`AND T.support_id IN(?) `, value)
+			query += q
+			args = append(args, arg...)
+
+		case pkg_ticket.Filial:
+			query += `AND T.filial LIKE ? `
+			value = fmt.Sprintf("%s%s%s", "%", value, "%")
+			args = append(args, value)
+
+		case pkg_ticket.AuthorAndResolve:
+			query += `AND (CS.need_approval = TRUE OR T.ticket_author_id = ?) `
+			args = append(args, value)
+
+		case pkg_ticket.Comments:
+			query += `AND ticket_id IN (SELECT ticket_id FROM comment_history WHERE comment_text LIKE ?) `
+			value = fmt.Sprintf("%s%s%s", "%", value, "%")
+			args = append(args, value)
+		}
+	}
+
+	query += `ORDER BY T.ticket_id DESC`
+	return query, args
+}
+
+func (r *TicketRepo) GetFilteredTicketsList(query string, args []interface{}, fullSearch bool) ([]*internal_models.Ticket, error) {
+	var (
+		dbTick []dbTicket
+		err    error
+	)
+
+	err = r.db.Select(&dbTick, query, args...)
+	if err != nil {
+		logger.LogError(
+			"Failed read filtered ticket list",
+			"pkg_ticket/repo/mysql",
+			fmt.Sprintf("query: %s;", query),
+			err,
+		)
+		return nil, err
+	}
+
+	return r.convertTicketList(dbTick), nil
 }
 
 func (r *TicketRepo) convertTicketList(dbList []dbTicket) []*internal_models.Ticket {

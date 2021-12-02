@@ -370,6 +370,30 @@ func (h *TicketHandler) GetTicketsList(c *gin.Context) {
 	c.JSON(http.StatusOK, map[string]interface{}{"fields": tags, "tickets": outList})
 }
 
+func (h *TicketHandler) GetFilteredTicketsList(c *gin.Context) {
+	var filter map[string]interface{}
+
+	if err := c.BindJSON(&filter); err != nil {
+		c.JSON(http.StatusBadRequest, map[string]string{"status": "error", "error": err.Error()})
+		return
+	}
+
+	user, _ := c.Get(global_const.CtxUserKey)
+
+	list, tags, err := h.uc.GetFilteredTicketsList(filter, user.(*models.User))
+	if err != nil {
+		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+
+	outList := make([]dto.OutTicketForList, 0)
+	for _, tick := range list {
+		outList = append(outList, dto.ToOutTicketForList(tick, nil))
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{"fields": tags, "tickets": outList})
+}
+
 func (h *TicketHandler) GetTicket(c *gin.Context) {
 	ticketID, _ := strconv.ParseUint(c.Request.URL.Query().Get("ticket_id"), 10, 64)
 	user, _ := c.Get(global_const.CtxUserKey)
