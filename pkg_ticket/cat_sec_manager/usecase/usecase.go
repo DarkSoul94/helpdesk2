@@ -112,6 +112,15 @@ func (u *CatSecUsecase) GetSectionWithCategoryByID(id uint64) (*internal_models.
 	return sect, nil
 }
 
+func (u *CatSecUsecase) GetServiceSectionID(priority bool) (uint64, models.Err) {
+	id, err := u.repo.GetServiceSectionID(priority)
+	if err != nil {
+		return 0, models.InternalError(err.Error())
+	}
+
+	return id, nil
+}
+
 func (u *CatSecUsecase) CheckExistInResolveGroupList(sectionID, groupID uint64) bool {
 	return u.repo.CheckExistInResolveGroupList(sectionID, groupID)
 }

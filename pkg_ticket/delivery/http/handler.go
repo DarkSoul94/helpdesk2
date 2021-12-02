@@ -508,3 +508,24 @@ func (h *TicketHandler) GetFile(c *gin.Context) {
 
 	c.JSON(http.StatusOK, dto.ToOutFile(file))
 }
+
+func (h *TicketHandler) AutoCreateTicket(c *gin.Context) {
+	var ticket dto.InpServiceTicket
+
+	if err := c.BindJSON(&ticket); err != nil {
+		c.JSON(http.StatusBadRequest, map[string]string{"status": "error", "error": err.Error()})
+		return
+	}
+
+	if len(ticket.UserIP) == 0 {
+		ticket.UserIP = c.GetHeader("X-Forwarded-For")
+	}
+
+	id, err := h.uc.AutoCreateTicket(ticket.Text, ticket.UserEmail, ticket.UserIP, ticket.Priority)
+	if err != nil {
+		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{"status": "ok", "ticket_id": id})
+}

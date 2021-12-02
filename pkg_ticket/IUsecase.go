@@ -43,4 +43,6 @@ type ITicketUsecase interface {
 	CreateComment(comment *internal_models.Comment) (uint64, models.Err)
 
 	GetFile(fileID uint64) (*internal_models.File, models.Err)
+
+	AutoCreateTicket(text, email, ip string, priority bool) (uint64, models.Err)
 }

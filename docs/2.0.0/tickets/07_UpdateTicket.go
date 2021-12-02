@@ -2,7 +2,7 @@ package docs
 
 /**
 *
-* @api {post} /helpdesk/ticket/update 03. Обновление запроса в ТП
+* @api {post} /helpdesk/ticket/update 07. Обновление запроса в ТП
 * @apiName UpdateTicket
 * @apiGroup 03. Запросы в тех. поддержку
 * @apiVersion  2.0.0

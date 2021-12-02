@@ -2,7 +2,7 @@ package docs
 
 /**
  *
- * @api {GET} /helpdesk/resolve_ticket/resolve_tickets_list 07. Получение списка запросов в тех. поддержку ожидающих согласования
+ * @api {GET} /helpdesk/resolve_ticket/resolve_tickets_list 13. Получение списка запросов в тех. поддержку ожидающих согласования
  * @apiName GetResolveTicketsList
  * @apiGroup 03. Запросы в тех. поддержку
  * @apiVersion  2.0.0

@@ -294,9 +294,11 @@ func (u *TicketUsecase) CreateTicket(ticket *internal_models.Ticket) (uint64, mo
 		return 0, err
 	}
 
-	err = u.fileUC.CreateFiles(ticket.Files, id)
-	if err != nil {
-		return 0, err
+	if len(ticket.Files) > 0 {
+		err = u.fileUC.CreateFiles(ticket.Files, id)
+		if err != nil {
+			return 0, err
+		}
 	}
 
 	u.store.Add(ticket.Author.Email, ticketHash, viper.GetInt64("app.ttl_cache.life_time"))
@@ -702,4 +704,43 @@ func (u *TicketUsecase) createCommentDispatcher(comment *internal_models.Comment
 
 func (u *TicketUsecase) GetFile(fileID uint64) (*internal_models.File, models.Err) {
 	return u.fileUC.GetFile(fileID)
+}
+
+func (u *TicketUsecase) AutoCreateTicket(text, email, ip string, priority bool) (uint64, models.Err) {
+	var (
+		author *models.User = new(models.User)
+		err    models.Err
+	)
+
+	if len(email) > 0 {
+		author, err = u.userUC.GetUserByEmail(email)
+		if err != nil {
+			author = &models.User{
+				Email: email,
+				Name:  email,
+			}
+
+			author.ID, err = u.userUC.CreateUser(author)
+			if err != nil {
+				return 0, models.InternalError("Не удалось создать пользователя")
+			}
+		}
+	} else {
+		return 0, models.BadRequest("Email пользователя пустой")
+	}
+
+	sectionID, err := u.catSecUC.GetServiceSectionID(priority)
+	if err != nil {
+		return 0, err
+	}
+
+	ticket := &internal_models.Ticket{
+		Text:    text,
+		CatSect: &internal_models.SectionWithCategory{ID: sectionID},
+		Status:  &internal_models.TicketStatus{},
+		IP:      ip,
+		Author:  author,
+	}
+
+	return u.CreateTicket(ticket)
 }

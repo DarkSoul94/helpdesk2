@@ -2,7 +2,7 @@ package docs
 
 /**
  *
- * @api {POST} /helpdesk/resolve_ticket/resolve Согласование запроса
+ * @api {POST} /helpdesk/resolve_ticket/resolve 14. Согласование запроса
  * @apiName ResolveTicket
  * @apiGroup 03. Запросы в тех. поддержку
  * @apiVersion  2.0.0

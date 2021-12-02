@@ -2,7 +2,7 @@ package docs
 
 /**
 *
-* @api {GET} /helpdesk/ticket/tickets_list 05. Получение списка запросов в тех. поддержку
+* @api {GET} /helpdesk/ticket/tickets_list 04. Получение списка запросов в тех. поддержку
 * @apiName GetTicketsList
 * @apiGroup 03. Запросы в тех. поддержку
 * @apiVersion  2.0.0

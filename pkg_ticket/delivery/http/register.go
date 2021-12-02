@@ -109,4 +109,9 @@ func RegisterHTTPEndpoints(router *gin.RouterGroup, uc pkg_ticket.ITicketUsecase
 		fileEndpoints.GET("/", h.GetFile)
 	}
 
+	serviceEndpoints := router.Group("/service")
+	{
+		//http://localhost:8888/helpdesk/service/auto_create
+		serviceEndpoints.POST("/auto_create", h.AutoCreateTicket)
+	}
 }

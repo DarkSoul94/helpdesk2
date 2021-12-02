@@ -2,7 +2,7 @@ package docs
 
 /**
  *
- * @api {get} /file/ 13. Получение файла по его ид
+ * @api {get} /file/ 17. Получение файла по его ид
  * @apiName GetFile
  * @apiGroup 03. Запросы в тех. поддержку
  * @apiVersion  2.0.0

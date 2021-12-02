@@ -359,6 +359,31 @@ func (r *CatSecRepo) GetSectionWithCategoryByID(id uint64) (*internal_models.Sec
 	return r.toModelSectionWithCategory(sect), nil
 }
 
+func (r *CatSecRepo) GetServiceSectionID(priority bool) (uint64, error) {
+	var (
+		id    uint64
+		query string
+		err   error
+	)
+
+	query = `SELECT section_id FROM category_section 
+				WHERE service = true AND significant_category_section = ?`
+
+	err = r.db.Get(&id, query, priority)
+	if err != nil {
+		logger.LogError(
+			"Failed read service section",
+			"pkg_ticket/cat_sec_manager/repo/mysql",
+			fmt.Sprintf("priority: %t", priority),
+			err,
+		)
+
+		return 0, err
+	}
+
+	return id, nil
+}
+
 func (r *CatSecRepo) CheckExistInResolveGroupList(sectionID, groupID uint64) bool {
 	var (
 		exist bool
