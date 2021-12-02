@@ -52,6 +52,11 @@ import (
 	supportrepo "github.com/DarkSoul94/helpdesk2/pkg_support/repo/mysql"
 	supportusecase "github.com/DarkSoul94/helpdesk2/pkg_support/usecase"
 
+	"github.com/DarkSoul94/helpdesk2/pkg_consts"
+	constshttp "github.com/DarkSoul94/helpdesk2/pkg_consts/delivery/http"
+	constsrepo "github.com/DarkSoul94/helpdesk2/pkg_consts/repo/mysql"
+	constsusecase "github.com/DarkSoul94/helpdesk2/pkg_consts/usecase"
+
 	"github.com/DarkSoul94/helpdesk2/auth"
 	authhttp "github.com/DarkSoul94/helpdesk2/auth/delivery/http"
 	authusecase "github.com/DarkSoul94/helpdesk2/auth/usecase"
@@ -98,6 +103,9 @@ type App struct {
 	ticketRepo pkg_ticket.ITicketRepo
 	ticketUC   pkg_ticket.ITicketUsecase
 
+	constsRepo pkg_consts.IConstsRepo
+	constsUC   pkg_consts.IConstsUsecase
+
 	httpServer *http.Server
 }
 
@@ -113,6 +121,7 @@ func NewApp() *App {
 	fileRepo := filerepo.NewFileRepo(db)
 	commentRepo := commentrepo.NewCommentRepo(db)
 	ticketRepo := ticketrepo.NewTicketRepo(db)
+	constsRepo := constsrepo.NewConstsRepo(db)
 
 	grpUC := groupusecase.NewGroupManager(grpRepo)
 	permUC := permusecase.NewPermManager(grpRepo)
@@ -129,6 +138,8 @@ func NewApp() *App {
 	fileUC := fileusecase.NewFileUsecase(fileRepo)
 	commentUC := commentusecase.NewCommentUsecase(commentRepo)
 	ticketUC := ticketusecase.NewTicketUsecase(ticketRepo, catsecUC, regfilUC, fileUC, permUC, userUC, suppUC, commentUC)
+
+	constsUC := constsusecase.NewConstsUsecase(constsRepo)
 
 	return &App{
 		dbConnect: db,
@@ -161,6 +172,9 @@ func NewApp() *App {
 
 		ticketRepo: ticketRepo,
 		ticketUC:   ticketUC,
+
+		constsRepo: constsRepo,
+		constsUC:   constsUC,
 	}
 }
 
@@ -196,6 +210,8 @@ func (a *App) Run(port string) error {
 
 	ticketMiddleware := tickethttp.NewPermissionMiddleware(a.permUC)
 	tickethttp.RegisterHTTPEndpoints(apiRouter, a.ticketUC, authMiddlware, ticketMiddleware)
+
+	constshttp.RegisterHTTPEndpoints(apiRouter, a.constsUC, authMiddlware)
 
 	a.httpServer = &http.Server{
 		Addr:           ":" + port,
