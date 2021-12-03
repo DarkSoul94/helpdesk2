@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/DarkSoul94/helpdesk2/pkg/logger"
+	"github.com/DarkSoul94/helpdesk2/pkg_reports/internal_models"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -48,6 +49,46 @@ func (r *ReportsRepo) GetAverageGradesBySupport(startDate, endDate time.Time) (m
 	}
 
 	return mAVG, nil
+}
+
+func (r *ReportsRepo) GetSupportsStatusHistory(startDate, endDate time.Time) (map[string][]internal_models.SupportStatusHistory, error) {
+	var (
+		dbHistoryList []dbSupportStatusHistory
+		mHistory      map[string][]internal_models.SupportStatusHistory = make(map[string][]internal_models.SupportStatusHistory)
+		query         string
+		err           error
+	)
+
+	query = `SELECT user_name AS support_name, support_status_name AS status_name, select_time, duration FROM support_status_history
+				LEFT JOIN users ON user_id = support_id
+				LEFT JOIN support_status ON support_status_id = status_id
+				WHERE shift_id IS NOT NULL
+				AND EXISTS (SELECT * FROM supports_shifts
+								WHERE id = shift_id
+								AND opening_time BETWEEN ? AND ?
+							)
+				ORDER BY support_id, select_time`
+
+	err = r.db.Select(&dbHistoryList, query, startDate, endDate)
+	if err != nil {
+		logger.LogError(
+			"Failed read supports status history",
+			"pkg_reports/repo/mysql",
+			fmt.Sprintf("start date: %s; end date: %s;", startDate, endDate),
+			err,
+		)
+		return nil, err
+	}
+
+	for _, history := range dbHistoryList {
+		mHistory[history.SupportName] = append(mHistory[history.SupportName], internal_models.SupportStatusHistory{
+			StatusName: history.StatusName,
+			SelectTime: history.SelectTime,
+			Duration:   history.Duration,
+		})
+	}
+
+	return mHistory, nil
 }
 
 func (r *ReportsRepo) Close() error {

@@ -6,6 +6,7 @@ import (
 	"github.com/DarkSoul94/helpdesk2/models"
 	"github.com/DarkSoul94/helpdesk2/pkg/logger"
 	"github.com/DarkSoul94/helpdesk2/pkg_reports"
+	"github.com/DarkSoul94/helpdesk2/pkg_reports/internal_models"
 )
 
 type ReportsUsecase struct {
@@ -63,4 +64,18 @@ func (u *ReportsUsecase) parseTime(startDate, endDate string) (time.Time, time.T
 	}
 
 	return start, end, nil
+}
+
+func (u *ReportsUsecase) GetSupportsStatusHistory(date string) (map[string][]internal_models.SupportStatusHistory, models.Err) {
+	startDate, endDate, err := u.parseTime(date, date)
+	if err != nil {
+		return nil, err
+	}
+
+	historyList, er := u.repo.GetSupportsStatusHistory(startDate, endDate)
+	if er != nil {
+		return nil, models.InternalError(er.Error())
+	}
+
+	return historyList, nil
 }

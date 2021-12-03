@@ -82,5 +82,13 @@ func (h *ReportsHandler) GetSupportsShifts(c *gin.Context) {
 }
 
 func (h *ReportsHandler) GetSupportStatusHistory(c *gin.Context) {
+	date := c.Request.URL.Query().Get("date")
 
+	historyList, err := h.uc.GetSupportsStatusHistory(date)
+	if err != nil {
+		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.ToOutSupportStatusHistoryList(historyList))
 }
