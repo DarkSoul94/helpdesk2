@@ -66,6 +66,34 @@ func (u *ReportsUsecase) parseTime(startDate, endDate string) (time.Time, time.T
 	return start, end, nil
 }
 
+func (u ReportsUsecase) GetSupportsShifts(startDate, endDate string) (map[string][]internal_models.SupportsShifts, models.Err) {
+	var (
+		period       internal_models.Period
+		rangeByMonth []internal_models.Period
+		result       map[string][]internal_models.SupportsShifts = make(map[string][]internal_models.SupportsShifts)
+	)
+
+	period, err := internal_models.ParceString(startDate, endDate)
+	if err != nil {
+		return nil, models.InternalError(err.Error())
+	}
+
+	rangeByMonth = period.SplitByMonth()
+
+	for _, month := range rangeByMonth {
+		index := month.FormLabel()
+
+		report, err := u.repo.GetSupportsShifts(month.StartDate, month.EndDate)
+		if err != nil {
+			return nil, models.InternalError(err.Error())
+		}
+
+		result[index] = report
+	}
+
+	return result, nil
+}
+
 func (u *ReportsUsecase) GetSupportsStatusHistory(date string) (map[string][]internal_models.SupportStatusHistory, models.Err) {
 	startDate, endDate, err := u.parseTime(date, date)
 	if err != nil {

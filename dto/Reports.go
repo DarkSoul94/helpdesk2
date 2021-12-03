@@ -11,6 +11,35 @@ type OutAverageGrade struct {
 	AverageGrade float64 `json:"average_grade_by_support"`
 }
 
+type outOpeningDayTime struct {
+	OpeningDate        string `json:"opening_date"`
+	ClosingDate        string `json:"closing_date"`
+	CountOfMinutesLate uint64 `json:"count_of_minutes_late"`
+}
+
+type OutSupportsShift struct {
+	Support          string              `json:"support"`
+	WithOutGraceTime string              `json:"with_out_grace_time"`
+	SupportShifts    []outOpeningDayTime `json:"shifts"`
+}
+
+func ToOutSupportShift(shift internal_models.SupportsShifts) OutSupportsShift {
+	outShift := OutSupportsShift{
+		Support:          shift.Support,
+		WithOutGraceTime: time.Duration(shift.WithOutGraceTime * uint64(time.Minute)).String(),
+	}
+
+	for _, val := range shift.DayTime {
+		outShift.SupportShifts = append(outShift.SupportShifts, outOpeningDayTime{
+			OpeningDate:        val.OpeningDate,
+			ClosingDate:        val.ClosingDate,
+			CountOfMinutesLate: val.CountOfMinutesLate,
+		})
+	}
+
+	return outShift
+}
+
 type OutSupportStatusHistory struct {
 	StatusName string `json:"time"`
 	SelectTime string `json:"name"`

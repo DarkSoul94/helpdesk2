@@ -78,7 +78,24 @@ func (h *ReportsHandler) GetSupportsStatusesByWeekDay(c *gin.Context) {
 }
 
 func (h *ReportsHandler) GetSupportsShifts(c *gin.Context) {
+	startDate := c.Request.URL.Query().Get("start_date")
+	endDate := c.Request.URL.Query().Get("end_date")
 
+	mShifts, err := h.uc.GetSupportsShifts(startDate, endDate)
+	if err != nil {
+		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+
+	outShifts := make(map[string][]dto.OutSupportsShift)
+	for period, shifts := range mShifts {
+		outShifts[period] = make([]dto.OutSupportsShift, 0)
+		for _, shift := range shifts {
+			outShifts[period] = append(outShifts[period], dto.ToOutSupportShift(shift))
+		}
+	}
+
+	c.JSON(http.StatusOK, outShifts)
 }
 
 func (h *ReportsHandler) GetSupportStatusHistory(c *gin.Context) {
