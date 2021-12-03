@@ -57,6 +57,11 @@ import (
 	constsrepo "github.com/DarkSoul94/helpdesk2/pkg_consts/repo/mysql"
 	constsusecase "github.com/DarkSoul94/helpdesk2/pkg_consts/usecase"
 
+	"github.com/DarkSoul94/helpdesk2/pkg_reports"
+	reportshttp "github.com/DarkSoul94/helpdesk2/pkg_reports/delivery/http"
+	reportsrepo "github.com/DarkSoul94/helpdesk2/pkg_reports/repo/mysql"
+	reportsusecase "github.com/DarkSoul94/helpdesk2/pkg_reports/usecase"
+
 	"github.com/DarkSoul94/helpdesk2/auth"
 	authhttp "github.com/DarkSoul94/helpdesk2/auth/delivery/http"
 	authusecase "github.com/DarkSoul94/helpdesk2/auth/usecase"
@@ -106,6 +111,9 @@ type App struct {
 	constsRepo pkg_consts.IConstsRepo
 	constsUC   pkg_consts.IConstsUsecase
 
+	reportsRepo pkg_reports.IReportsRepo
+	reportsUC   pkg_reports.IReportsUsecase
+
 	httpServer *http.Server
 }
 
@@ -122,6 +130,7 @@ func NewApp() *App {
 	commentRepo := commentrepo.NewCommentRepo(db)
 	ticketRepo := ticketrepo.NewTicketRepo(db)
 	constsRepo := constsrepo.NewConstsRepo(db)
+	reportsRepo := reportsrepo.NewReportsRepo(db)
 
 	grpUC := groupusecase.NewGroupManager(grpRepo)
 	permUC := permusecase.NewPermManager(grpRepo)
@@ -140,6 +149,8 @@ func NewApp() *App {
 	ticketUC := ticketusecase.NewTicketUsecase(ticketRepo, catsecUC, regfilUC, fileUC, permUC, userUC, suppUC, commentUC)
 
 	constsUC := constsusecase.NewConstsUsecase(constsRepo)
+
+	reportsUC := reportsusecase.NewReportsUsecase(reportsRepo)
 
 	return &App{
 		dbConnect: db,
@@ -175,6 +186,9 @@ func NewApp() *App {
 
 		constsRepo: constsRepo,
 		constsUC:   constsUC,
+
+		reportsRepo: reportsRepo,
+		reportsUC:   reportsUC,
 	}
 }
 
@@ -211,7 +225,10 @@ func (a *App) Run(port string) error {
 	ticketMiddleware := tickethttp.NewPermissionMiddleware(a.permUC)
 	tickethttp.RegisterHTTPEndpoints(apiRouter, a.ticketUC, authMiddlware, ticketMiddleware)
 
-	constshttp.RegisterHTTPEndpoints(apiRouter, a.constsUC, authMiddlware)
+	constsMiddleware := constshttp.NewPermissionMiddleware(a.permUC)
+	constshttp.RegisterHTTPEndpoints(apiRouter, a.constsUC, authMiddlware, constsMiddleware)
+
+	reportshttp.RegisterHTTPEndpoints(apiRouter, a.reportsUC, authMiddlware)
 
 	a.httpServer = &http.Server{
 		Addr:           ":" + port,
