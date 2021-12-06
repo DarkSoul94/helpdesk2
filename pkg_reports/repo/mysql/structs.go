@@ -24,6 +24,13 @@ type dbAverageGrade struct {
 	AverageGrade float64 `db:"average_grade"`
 }
 
+type dbTicketsGrade struct {
+	TicketID   uint64 `db:"ticket_id"`
+	Grade      uint   `db:"ticket_grade"`
+	UserName   string `db:"user_name"`
+	Department string `db:"department"`
+}
+
 type dbSupportsShifts struct {
 	Support            string        `db:"support"`
 	OpeningDate        time.Time     `db:"opening_time"`

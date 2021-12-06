@@ -76,7 +76,54 @@ func (h *ReportsHandler) GetAverageGrades(c *gin.Context) {
 }
 
 func (h *ReportsHandler) GetTicketsGrades(c *gin.Context) {
+	var param dto.InpParam
 
+	if err := c.BindJSON(&param); err != nil {
+		c.JSON(http.StatusBadRequest, map[string]string{"status": "error", "error": err.Error()})
+		return
+	}
+
+	grades, err := h.uc.GetTicketsGrade(param.StartDate, param.EndDate, param.UsersID, param.Departments)
+	if err != nil {
+		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+
+	outGrades := make([]dto.OutDepartmentTicketGrade, 0)
+
+	for department, departmentGrades := range grades {
+		outDepartmentGrades := dto.OutDepartmentTicketGrade{
+			Department:             department,
+			UsersGrades:            make([]dto.OutUserTicketGrades, 0),
+			AvaregeDepartmentGrade: 0,
+		}
+
+		for user, userTicketsGrades := range departmentGrades {
+			outUserGrades := dto.OutUserTicketGrades{
+				UserName:         user,
+				TicketsGrades:    make([]dto.OutTicketGrade, 0),
+				AverageUserGrade: 0,
+			}
+
+			for _, ticketGrade := range userTicketsGrades {
+				outGrade := dto.OutTicketGrade{
+					TicketID:    ticketGrade.TicketID,
+					TicketGrade: ticketGrade.TicketGrade,
+				}
+
+				outUserGrades.AverageUserGrade += float64(ticketGrade.TicketGrade)
+				outUserGrades.TicketsGrades = append(outUserGrades.TicketsGrades, outGrade)
+			}
+
+			outUserGrades.AverageUserGrade = math.Round(outUserGrades.AverageUserGrade/float64(len(outUserGrades.TicketsGrades))*100) / 100
+			outDepartmentGrades.AvaregeDepartmentGrade += outUserGrades.AverageUserGrade
+			outDepartmentGrades.UsersGrades = append(outDepartmentGrades.UsersGrades, outUserGrades)
+		}
+		outDepartmentGrades.AvaregeDepartmentGrade = math.Round(outDepartmentGrades.AvaregeDepartmentGrade/float64(len(outDepartmentGrades.UsersGrades))*100) / 100
+		outGrades = append(outGrades, outDepartmentGrades)
+	}
+
+	c.JSON(http.StatusOK, outGrades)
 }
 
 func (h *ReportsHandler) GetReturnedTickets(c *gin.Context) {

@@ -99,6 +99,86 @@ func (r *ReportsRepo) GetAverageGradesBySupport(startDate, endDate time.Time) (m
 	return mAVG, nil
 }
 
+func (r *ReportsRepo) GetTicketsGrade(startDate, endDate time.Time, usersID []uint64, departments []string) (map[string]map[string][]internal_models.TicketGrade, error) {
+	var (
+		userIDList       []uint64
+		dbGrades         []dbTicketsGrade
+		departmentGrades map[string]map[string][]internal_models.TicketGrade = make(map[string]map[string][]internal_models.TicketGrade)
+		query            string
+		args             []interface{}
+		err              error
+	)
+
+	query = `SELECT ticket_id, ticket_grade, user_name, department FROM tickets
+	INNER JOIN users ON user_id = ticket_author_id
+	WHERE ticket_date BETWEEN ? AND ?
+	AND ticket_grade IS NOT NULL `
+	args = append(args, startDate, endDate)
+
+	userIDList, err = r.formUserIDList(usersID, departments)
+	if err != nil {
+		return nil, err
+	}
+
+	q, arg, _ := sqlx.In(`AND ticket_author_id IN(?)`, userIDList)
+	query += q
+	args = append(args, arg...)
+
+	err = r.db.Select(&dbGrades, query, args...)
+	if err != nil {
+		logger.LogError(
+			"Failed read tickets grade",
+			"pkg_reports/repo/mysql",
+			fmt.Sprintf("start date: %s; end date: %s;", startDate, endDate),
+			err,
+		)
+		return nil, err
+	}
+
+	for _, grade := range dbGrades {
+		if departmentGrades[grade.Department] == nil {
+			departmentGrades[grade.Department] = make(map[string][]internal_models.TicketGrade)
+		}
+		departmentGrades[grade.Department][grade.UserName] = append(departmentGrades[grade.Department][grade.UserName],
+			internal_models.TicketGrade{
+				TicketID:    grade.TicketID,
+				TicketGrade: grade.Grade,
+			})
+	}
+
+	return departmentGrades, nil
+}
+
+func (r *ReportsRepo) formUserIDList(usersID []uint64, departments []string) ([]uint64, error) {
+	var (
+		list  []uint64
+		args  []interface{}
+		query string
+		err   error
+	)
+
+	q1, arg1, _ := sqlx.In(`department IN(?)`, departments)
+	q2, arg2, _ := sqlx.In(`OR user_id IN(?)`, usersID)
+
+	query = fmt.Sprintf(`SELECT user_id FROM users
+							WHERE %s %s`, q1, q2)
+	args = append(args, arg1...)
+	args = append(args, arg2...)
+
+	err = r.db.Select(&list, query, args...)
+	if err != nil {
+		logger.LogError(
+			"Failed read user list from department",
+			"pkg_reports/repo/mysql",
+			"",
+			err,
+		)
+		return nil, err
+	}
+
+	return list, nil
+}
+
 func (r *ReportsRepo) GetSupportsShifts(startDate, endDate time.Time) ([]internal_models.SupportsShifts, error) {
 	var (
 		dbShifts     []dbSupportsShifts

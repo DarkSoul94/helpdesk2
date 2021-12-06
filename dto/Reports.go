@@ -40,6 +40,32 @@ func ToOutTicketStatusDifference(ticket internal_models.TicketDifference, status
 	return outTicket
 }
 
+type InpParam struct {
+	StartDate   string   `json:"start_date"`
+	EndDate     string   `json:"end_date"`
+	UsersID     []uint64 `json:"users_id,omitempty"`
+	Departments []string `json:"departments,omitempty"`
+}
+
+type OutTicketGrade struct {
+	TicketID    uint64 `json:"ticket_id"`
+	TicketGrade uint   `json:"ticket_grade"`
+}
+
+//outUserTicketGrades ...
+type OutUserTicketGrades struct {
+	UserName         string           `json:"user_name"`
+	TicketsGrades    []OutTicketGrade `json:"tickets_grades"`
+	AverageUserGrade float64          `json:"average_user_grade"`
+}
+
+//outDepartmentTicketGrade ...
+type OutDepartmentTicketGrade struct {
+	Department             string                `json:"department"`
+	UsersGrades            []OutUserTicketGrades `json:"users_grades"`
+	AvaregeDepartmentGrade float64               `json:"avarege_department_grade"`
+}
+
 type OutAverageGrade struct {
 	Name         string  `json:"support"`
 	AverageGrade float64 `json:"average_grade_by_support"`

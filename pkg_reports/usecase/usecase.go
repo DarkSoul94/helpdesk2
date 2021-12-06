@@ -47,6 +47,24 @@ func (u *ReportsUsecase) GetAverageGradesBySupport(startDate, endDate string) (m
 	return grades, nil
 }
 
+func (u *ReportsUsecase) GetTicketsGrade(startDate, endDate string, usersID []uint64, departments []string) (map[string]map[string][]internal_models.TicketGrade, models.Err) {
+	if len(usersID) == 0 && len(departments) == 0 {
+		return nil, models.BadRequest("Не выбраного ни одного пользователя и раздела")
+	}
+
+	start, end, err := u.parseTime(startDate, endDate)
+	if err != nil {
+		return nil, err
+	}
+
+	grades, er := u.repo.GetTicketsGrade(start, end, usersID, departments)
+	if er != nil {
+		return nil, models.InternalError(er.Error())
+	}
+
+	return grades, nil
+}
+
 func (u *ReportsUsecase) parseTime(startDate, endDate string) (time.Time, time.Time, models.Err) {
 	var (
 		start, end time.Time

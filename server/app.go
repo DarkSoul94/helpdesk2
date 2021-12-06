@@ -238,7 +238,7 @@ func (a *App) Run(port string) error {
 	supporthttp.RegisterHTTPEndpoints(apiRouter, a.suppUC, authMiddlware, supportMiddleware)
 
 	schedulerMiddleware := schedulerhttp.NewPermissionMiddleware(a.permUC)
-	schedulerhttp.RegisterHTTPEndpoints(apiRouter, a.schedulerUC, schedulerMiddleware)
+	schedulerhttp.RegisterHTTPEndpoints(apiRouter, a.schedulerUC, authMiddlware, schedulerMiddleware)
 
 	ticketMiddleware := tickethttp.NewPermissionMiddleware(a.permUC)
 	tickethttp.RegisterHTTPEndpoints(apiRouter, a.ticketUC, authMiddlware, ticketMiddleware)
