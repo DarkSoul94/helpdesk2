@@ -136,7 +136,7 @@ func (r *Repo) toModelSupportCard(dbCard *dbCard) *internal_models.Card {
 	mCard := internal_models.Card{
 		ID: dbCard.ID,
 		Support: &internal_models.Support{
-			ID:   dbCard.ID,
+			ID:   dbCard.SupportID,
 			Name: dbCard.SupportName},
 		InternalNumber: dbCard.InternalNumber,
 		MobileNumber:   dbCard.MobileNumber,

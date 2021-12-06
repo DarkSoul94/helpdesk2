@@ -33,6 +33,19 @@ func (u *ReportsUsecase) GetTicketStatusDifference(startDate, endDate string) (m
 	return difference, nil
 }
 
+func (u *ReportsUsecase) GetTicketsCountByDaysHours(startDate, endDate string) (map[string]map[string]uint, models.Err) {
+	start, end, err := u.parseTime(startDate, endDate)
+	if err != nil {
+		return nil, err
+	}
+	list, er := u.repo.GetTicketsCountByDaysHours(start, end)
+	if er != nil {
+		return nil, models.InternalError(er.Error())
+	}
+
+	return list, nil
+}
+
 func (u *ReportsUsecase) GetAverageGradesBySupport(startDate, endDate string) (map[string]float64, models.Err) {
 	start, end, err := u.parseTime(startDate, endDate)
 	if err != nil {

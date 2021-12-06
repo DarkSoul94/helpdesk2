@@ -31,6 +31,12 @@ type dbTicketsGrade struct {
 	Department string `db:"department"`
 }
 
+type dbTicketCount struct {
+	Day   time.Time `db:"day"`
+	Hour  time.Time `db:"hour"`
+	Count uint      `db:"count"`
+}
+
 type dbSupportsShifts struct {
 	Support            string        `db:"support"`
 	OpeningDate        time.Time     `db:"opening_time"`

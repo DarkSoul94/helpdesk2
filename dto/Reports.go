@@ -71,6 +71,37 @@ type OutAverageGrade struct {
 	AverageGrade float64 `json:"average_grade_by_support"`
 }
 
+type OutTicketsCountByHour struct {
+	Hour  string `json:"hour"`
+	Count uint   `json:"count"`
+}
+
+type OutTicketsCountByDay struct {
+	Date        string                  `json:"date"`
+	CountByHour []OutTicketsCountByHour `json:"count_by_hour"`
+}
+
+func ToOutTicketsCountByDay(counts map[string]map[string]uint) []OutTicketsCountByDay {
+	outCounts := make([]OutTicketsCountByDay, 0)
+
+	for day, countByHour := range counts {
+		countByDay := OutTicketsCountByDay{
+			Date:        day,
+			CountByHour: make([]OutTicketsCountByHour, 0),
+		}
+
+		for hour, count := range countByHour {
+			countByDay.CountByHour = append(countByDay.CountByHour, OutTicketsCountByHour{
+				Hour:  hour,
+				Count: count,
+			})
+		}
+		outCounts = append(outCounts, countByDay)
+	}
+
+	return outCounts
+}
+
 type outOpeningDayTime struct {
 	OpeningDate        string `json:"opening_date"`
 	ClosingDate        string `json:"closing_date"`

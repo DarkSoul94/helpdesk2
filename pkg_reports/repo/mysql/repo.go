@@ -179,6 +179,47 @@ func (r *ReportsRepo) formUserIDList(usersID []uint64, departments []string) ([]
 	return list, nil
 }
 
+func (r *ReportsRepo) GetTicketsCountByDaysHours(startDate, endDate time.Time) (map[string]map[string]uint, error) {
+	var (
+		ticketCount  []dbTicketCount
+		mTicketCount map[string]map[string]uint = make(map[string]map[string]uint)
+		query        string
+		err          error
+	)
+
+	query = `SELECT TIMESTAMP(DATE_FORMAT(ticket_date, "%y-%m-%d")) AS day,
+				TIMESTAMP(DATE_FORMAT(ticket_date, "%y-%m-%d %H:00:00")) AS hour,
+				COUNT(*) AS count
+			FROM tickets AS Tickets
+			WHERE ticket_date BETWEEN ? AND ?
+			Group by day, hour
+			ORDER by day`
+
+	err = r.db.Select(&ticketCount, query, startDate, endDate)
+	if err != nil {
+		logger.LogError(
+			"Failed read returned ticket list",
+			"pkg_reports/repo/mysql",
+			fmt.Sprintf("start date: %s; end date: %s;", startDate, endDate),
+			err,
+		)
+		return nil, err
+	}
+
+	for _, count := range ticketCount {
+		day := count.Day.Local().Format("2006-01-02")
+		if mTicketCount[day] == nil {
+			mTicketCount[day] = make(map[string]uint)
+		}
+
+		hour := fmt.Sprint(count.Hour.Local().Format("15:00:00"), " - ", count.Hour.Local().Format("15"), ":59:59")
+
+		mTicketCount[day][hour] = count.Count
+	}
+
+	return mTicketCount, nil
+}
+
 func (r *ReportsRepo) GetSupportsShifts(startDate, endDate time.Time) ([]internal_models.SupportsShifts, error) {
 	var (
 		dbShifts     []dbSupportsShifts

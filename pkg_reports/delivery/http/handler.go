@@ -131,7 +131,16 @@ func (h *ReportsHandler) GetReturnedTickets(c *gin.Context) {
 }
 
 func (h *ReportsHandler) GetTicketsCountByDaysHours(c *gin.Context) {
+	startDate := c.Request.URL.Query().Get("start_date")
+	endDate := c.Request.URL.Query().Get("end_date")
 
+	countByDayHour, err := h.uc.GetTicketsCountByDaysHours(startDate, endDate)
+	if err != nil {
+		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.ToOutTicketsCountByDay(countByDayHour))
 }
 
 func (h *ReportsHandler) GetSupportsStatusesByWeekDay(c *gin.Context) {
