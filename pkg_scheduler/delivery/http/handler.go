@@ -8,6 +8,7 @@ import (
 	"github.com/DarkSoul94/helpdesk2/models"
 	"github.com/DarkSoul94/helpdesk2/pkg_scheduler"
 	"github.com/DarkSoul94/helpdesk2/pkg_scheduler/internal_models"
+	supp_models "github.com/DarkSoul94/helpdesk2/pkg_support/internal_models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -67,7 +68,40 @@ func (h *Handler) UpdateShiftsShedule(c *gin.Context) {
 }
 
 func (h *Handler) GetShiftsShedule(c *gin.Context) {
-	//TODO добавить получение групп из пакета саппортов
+	var (
+		date              string
+		seniors, regulars []*supp_models.Card
+		scheduleCells     []*internal_models.Cell
+		offices           []*internal_models.Office
+		lateness          []*internal_models.Lateness
+		err               error
+	)
+	if date = c.Request.URL.Query().Get("date"); len(date) == 0 {
+		c.JSON(http.StatusBadRequest, map[string]string{"status": "error", "error": "Blank date"})
+		return
+	}
+
+	if scheduleCells, offices, err = h.uc.GetSchedule(date); err != nil {
+		c.JSON(http.StatusInternalServerError, map[string]string{"status": "error", "error": err.Error()})
+		return
+	}
+	if lateness, err = h.uc.GetLateness(date); err != nil {
+		c.JSON(http.StatusInternalServerError, map[string]string{"status": "error", "error": err.Error()})
+		return
+	}
+
+	if seniors, regulars, err = h.uc.GetSupportGroups(); err != nil {
+		c.JSON(http.StatusInternalServerError, map[string]string{"status": "error", "error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"status":           "ok",
+		"shifts_schedule":  dto.ToOutShiftsScheduleCell(scheduleCells, lateness),
+		"legend":           dto.ToOutOffices(offices),
+		"senior_supports":  dto.ToOutSupportGroup(seniors),
+		"regular_supports": dto.ToOutSupportGroup(regulars),
+	})
 }
 
 func (h *Handler) CheckNewLateness(c *gin.Context) {

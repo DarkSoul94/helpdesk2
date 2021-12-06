@@ -4,15 +4,19 @@ import (
 	"github.com/DarkSoul94/helpdesk2/models"
 	"github.com/DarkSoul94/helpdesk2/pkg_scheduler"
 	"github.com/DarkSoul94/helpdesk2/pkg_scheduler/internal_models"
+	"github.com/DarkSoul94/helpdesk2/pkg_support"
+	supp_models "github.com/DarkSoul94/helpdesk2/pkg_support/internal_models"
 )
 
 type SchedulerUsecase struct {
 	repo pkg_scheduler.ISchedulerRepo
+	supp pkg_support.ISuppForScheduler
 }
 
-func NewSchedulerUsecase(repo pkg_scheduler.ISchedulerRepo) *SchedulerUsecase {
+func NewSchedulerUsecase(repo pkg_scheduler.ISchedulerRepo, supp pkg_support.ISuppForScheduler) *SchedulerUsecase {
 	return &SchedulerUsecase{
 		repo: repo,
+		supp: supp,
 	}
 }
 
@@ -81,6 +85,10 @@ func (u *SchedulerUsecase) GetSchedule(date string) ([]*internal_models.Cell, []
 	}
 	offices = append(offices, deleted...)
 	return schedule, offices, nil
+}
+
+func (u *SchedulerUsecase) GetSupportGroups() (seniors, regulars []*supp_models.Card, err models.Err) {
+	return u.supp.GetSupportGroups()
 }
 
 func (u *SchedulerUsecase) GetLateness(date string) ([]*internal_models.Lateness, models.Err) {

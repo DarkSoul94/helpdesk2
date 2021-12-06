@@ -54,3 +54,7 @@ type ISuppForTicket interface {
 	//Модифицирует запись о работе саппорта над запросом (в случае когда запрос переходит к другому саппорту)
 	UpdateSupportActivity(supportID, ticketID uint64) models.Err
 }
+
+type ISuppForScheduler interface {
+	GetSupportGroups() (seniors, regulars []*internal_models.Card, err models.Err)
+}

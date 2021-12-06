@@ -90,6 +90,7 @@ type App struct {
 	ticketUCForSupp pkg_ticket.IUCForSupport
 	suppRepo        pkg_support.ISupportRepo
 	suppUC          pkg_support.ISupportUsecase
+	schedulerSupp   pkg_support.ISuppForScheduler
 
 	permUC group_manager.IPermManager
 
@@ -144,6 +145,7 @@ func NewApp() *App {
 	permUC := permusecase.NewPermManager(grpRepo)
 	ticketUCForSupp := ticketucforsupp.NewTicketUCForSupport(ticketRepo)
 	suppUC := supportusecase.NewSupportUsecase(suppRepo, permUC, ticketUCForSupp)
+	schedulerSupp := supportusecase.NewSuppForSchedulerUsecase(suppRepo)
 	userUC := userusecase.NewUsecase(userRepo, grpUC, permUC, suppUC)
 	authUC := authusecase.NewUsecase(userUC,
 		viper.GetString("app.auth.secret_key"),
@@ -155,7 +157,7 @@ func NewApp() *App {
 	fileUC := fileusecase.NewFileUsecase(fileRepo)
 	commentUC := commentusecase.NewCommentUsecase(commentRepo)
 	ticketUC := ticketusecase.NewTicketUsecase(ticketRepo, catsecUC, regfilUC, fileUC, permUC, userUC, suppUC, commentUC)
-	schedulerUC := schedulerusecase.NewSchedulerUsecase(schedulerRepo)
+	schedulerUC := schedulerusecase.NewSchedulerUsecase(schedulerRepo, schedulerSupp)
 
 	constsUC := constsusecase.NewConstsUsecase(constsRepo)
 
@@ -170,6 +172,7 @@ func NewApp() *App {
 		ticketUCForSupp: ticketUCForSupp,
 		suppRepo:        suppRepo,
 		suppUC:          suppUC,
+		schedulerSupp:   schedulerSupp,
 
 		permUC: permUC,
 

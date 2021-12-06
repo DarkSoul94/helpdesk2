@@ -30,6 +30,13 @@ type SupportCardShort struct {
 	Color    string    `json:"color"`
 }
 
+type SupportGroup struct {
+	ID       uint64 `json:"id"`
+	Name     string `json:"name"`
+	Color    string `json:"color"`
+	SeniorID uint64 `json:"senior_id"`
+}
+
 func ToOutSupportCardShort(card *internal_models.Card) SupportCardShort {
 	outCard := SupportCardShort{
 		ID: card.ID,
@@ -136,4 +143,25 @@ func (sc *SupportCard) validateMobileNumber() models.Err {
 		}
 	}
 	return nil
+}
+
+func ToOutSupportGroup(cards []*internal_models.Card) []*SupportGroup {
+	var (
+		groups   = make([]*SupportGroup, 0)
+		seniorID uint64
+	)
+	for _, card := range cards {
+		if card.Senior != nil {
+			seniorID = card.Senior.ID
+		} else {
+			seniorID = 0
+		}
+		groups = append(groups, &SupportGroup{
+			ID:       card.Support.ID,
+			Name:     card.Support.Name,
+			Color:    card.Color,
+			SeniorID: seniorID,
+		})
+	}
+	return groups
 }
