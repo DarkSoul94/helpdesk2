@@ -23,6 +23,7 @@ type dbTicket struct {
 	ID             uint64          `db:"ticket_id"`
 	Date           time.Time       `db:"ticket_date"`
 	SectionID      uint64          `db:"section_id"`
+	NeedResolve    bool            `db:"need_resolve"`
 	Text           string          `db:"ticket_text"`
 	Status         *dbTicketStatus `db:""`
 	Filial         sql.NullString  `db:"filial"`

@@ -62,6 +62,13 @@ type InpGenerateTicket struct {
 	Users     []inpUserForGenerate `json:"users,omitempty"`
 }
 
+type InpServiceTicket struct {
+	Text      string `json:"text"`
+	UserEmail string `json:"user_email"`
+	UserIP    string `json:"user_ip,omitempty"`
+	Priority  bool   `json:"priority"`
+}
+
 func NewTicketToModelTicket(tick NewTicket) *internal_models.Ticket {
 	mTicket := &internal_models.Ticket{
 		CatSect: &internal_models.SectionWithCategory{ID: tick.SectionID},

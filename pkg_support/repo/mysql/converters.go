@@ -134,8 +134,10 @@ func (r *Repo) toDbSupportCard(card *internal_models.Card) dbCard {
 
 func (r *Repo) toModelSupportCard(dbCard *dbCard) *internal_models.Card {
 	mCard := internal_models.Card{
-		ID:             dbCard.ID,
-		Support:        &internal_models.Support{ID: dbCard.ID},
+		ID: dbCard.ID,
+		Support: &internal_models.Support{
+			ID:   dbCard.ID,
+			Name: dbCard.SupportName},
 		InternalNumber: dbCard.InternalNumber,
 		MobileNumber:   dbCard.MobileNumber,
 		BirthDate:      dbCard.BirthDate,
@@ -146,6 +148,9 @@ func (r *Repo) toModelSupportCard(dbCard *dbCard) *internal_models.Card {
 	}
 	if dbCard.SeniorID.Valid {
 		mCard.Senior = &internal_models.Support{ID: uint64(dbCard.SeniorID.Int64)}
+	}
+	if dbCard.SeniorName.Valid {
+		mCard.Senior.Name = dbCard.SeniorName.String
 	}
 	return &mCard
 }

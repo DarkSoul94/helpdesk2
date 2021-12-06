@@ -15,4 +15,6 @@ type ICatSecUsecase interface {
 	GetCategorySectionList() ([]internal_models.CategorySectionList, models.Err)
 	GetCategorySectionByID(id uint64) (*internal_models.CategorySection, models.Err)
 	GetSectionWithCategoryByID(id uint64) (*internal_models.SectionWithCategory, models.Err)
+	GetServiceSectionID(priority bool) (uint64, models.Err)
+	CheckExistInResolveGroupList(sectionID, groupID uint64) bool
 }

@@ -266,8 +266,10 @@ func (u *TicketUsecase) CreateTicket(ticket *internal_models.Ticket) (uint64, mo
 
 	if ticket.CatSect.NeedApproval {
 		ticket.Status.Set(internal_models.KeyTSResolve)
+		ticket.NeedResolve = true
 	} else {
 		ticket.Status.Set(internal_models.KeyTSWait)
+		ticket.NeedResolve = false
 	}
 
 	ticket.Date = time.Now().Truncate(time.Second)
@@ -292,9 +294,11 @@ func (u *TicketUsecase) CreateTicket(ticket *internal_models.Ticket) (uint64, mo
 		return 0, err
 	}
 
-	err = u.fileUC.CreateFiles(ticket.Files, id)
-	if err != nil {
-		return 0, err
+	if len(ticket.Files) > 0 {
+		err = u.fileUC.CreateFiles(ticket.Files, id)
+		if err != nil {
+			return 0, err
+		}
 	}
 
 	u.store.Add(ticket.Author.Email, ticketHash, viper.GetInt64("app.ttl_cache.life_time"))
@@ -378,24 +382,36 @@ func (u *TicketUsecase) GetTicketList(user *models.User, limit, offset int) ([]*
 		list, err = u.repo.GetTicketListForUser(user.ID, limit, offset)
 		priority = u.repo.GetTicketStatusesSortPriority(false)
 	}
+	if err != nil {
+		return nil, nil, nil, models.InternalError(err.Error())
+	}
 
-	for _, ticket := range list {
+	if err := u.loadAddInfoForTicket(list, user); err != nil {
+		return nil, nil, nil, err
+	}
+
+	return list, u.makeTagList(user.Group.ID), priority, nil
+}
+
+func (u *TicketUsecase) loadAddInfoForTicket(ticketList []*internal_models.Ticket, user *models.User) models.Err {
+	var err models.Err
+	for _, ticket := range ticketList {
 		ticket.CatSect, err = u.catSecUC.GetSectionWithCategoryByID(ticket.CatSect.ID)
 		if err != nil {
-			return nil, nil, nil, models.InternalError(err.Error())
+			return err
 		}
 
 		if ticket.Author.ID != 0 {
 			ticket.Author, err = u.userUC.GetUserByID(ticket.Author.ID)
 			if err != nil {
-				return nil, nil, nil, models.InternalError(err.Error())
+				return err
 			}
 		}
 
 		if ticket.Support.ID != 0 && u.permUC.CheckPermission(user.Group.ID, actions.AdminTA) {
 			ticket.Support, err = u.userUC.GetUserByID(ticket.Support.ID)
 			if err != nil {
-				return nil, nil, nil, models.InternalError(err.Error())
+				return err
 			}
 		} else {
 			ticket.Support = nil
@@ -404,12 +420,12 @@ func (u *TicketUsecase) GetTicketList(user *models.User, limit, offset int) ([]*
 		if ticket.ResolvedUser.ID != 0 {
 			ticket.ResolvedUser, err = u.userUC.GetUserByID(ticket.ResolvedUser.ID)
 			if err != nil {
-				return nil, nil, nil, models.InternalError(err.Error())
+				return err
 			}
 		}
 	}
 
-	return list, u.makeTagList(user.Group.ID), priority, nil
+	return nil
 }
 
 func (u *TicketUsecase) makeTagList(groupID uint64) []string {
@@ -432,6 +448,72 @@ func (u *TicketUsecase) makeTagList(groupID uint64) []string {
 	}
 
 	return tags
+}
+
+func (u *TicketUsecase) GetFilteredTicketsList(filter map[string]interface{}, user *models.User) ([]*internal_models.Ticket, []string, models.Err) {
+	fullSearch := u.permUC.CheckPermission(user.Group.ID, actions.TicketTA_FullSearch)
+
+	for key, value := range filter {
+		v := value
+		switch v.(type) {
+		case string:
+			if len(value.(string)) == 0 {
+				delete(filter, key)
+			}
+		case float64:
+			if value.(float64) == 0 {
+				delete(filter, key)
+			}
+		case []interface{}:
+			if len(value.([]interface{})) == 0 {
+				delete(filter, key)
+			}
+		default:
+			delete(filter, key)
+		}
+	}
+
+	if len(filter) == 0 {
+		return nil, nil, models.BadRequest("Не выбрано ни одного параметра для поиска")
+	}
+
+	if !fullSearch {
+		if u.permUC.CheckPermission(user.Group.ID, actions.TicketTA_Resolve) {
+			delete(filter, pkg_ticket.SupportID)
+			delete(filter, pkg_ticket.AuthorID)
+			filter[pkg_ticket.AuthorAndResolve] = user.ID
+
+			if filter[pkg_ticket.TicketID] != nil {
+				filter[pkg_ticket.TicketIDBACK] = filter[pkg_ticket.TicketID]
+				delete(filter, pkg_ticket.TicketID)
+			}
+		} else {
+			delete(filter, pkg_ticket.SupportID)
+			filter[pkg_ticket.AuthorID] = user.ID
+			if filter[pkg_ticket.TicketID] != nil {
+				filter[pkg_ticket.TicketIDREG] = filter[pkg_ticket.TicketID]
+				delete(filter, pkg_ticket.TicketID)
+			}
+		}
+	} else {
+		if filter[pkg_ticket.TicketID] != nil {
+			filter[pkg_ticket.TicketIDAll] = filter[pkg_ticket.TicketID]
+			delete(filter, pkg_ticket.TicketID)
+		}
+	}
+
+	query, args := u.repo.FilterDispatcher(filter)
+
+	ticketsList, err := u.repo.GetFilteredTicketsList(query, args, fullSearch)
+	if err != nil {
+		return nil, nil, models.InternalError(err.Error())
+	}
+
+	if err := u.loadAddInfoForTicket(ticketsList, user); err != nil {
+		return nil, nil, err
+	}
+
+	return ticketsList, u.makeTagList(user.Group.ID), nil
 }
 
 func (u *TicketUsecase) GetTicket(ticketID uint64, user *models.User) (*internal_models.Ticket, models.Err) {
@@ -597,6 +679,37 @@ func (u *TicketUsecase) GetApprovalTicketList(groupID uint64, limit, offset int)
 	return list, u.makeTagList(groupID), nil
 }
 
+func (u *TicketUsecase) ResolveTicket(ticketID uint64, user *models.User) models.Err {
+	if !u.permUC.CheckPermission(user.Group.ID, actions.TicketTA_Resolve) {
+		return models.Forbidden("У вас нет прав согласовывать запрос")
+	}
+
+	ticket, err := u.repo.GetTicket(ticketID)
+	if err != nil {
+		return models.InternalError(err.Error())
+	}
+
+	if !ticket.NeedResolve {
+		return models.BadRequest("Запрос не нуждается в согласовании")
+	}
+
+	if !u.catSecUC.CheckExistInResolveGroupList(ticket.CatSect.ID, user.Group.ID) {
+		return models.Forbidden("У вас нет прав согласовывать запрос данной категории")
+	}
+
+	if ticket.ResolvedUser != nil && ticket.ResolvedUser.ID != 0 {
+		return models.BadRequest("Запрос уже согласован")
+	}
+
+	ticket.ResolvedUser = user
+	ticket.NeedResolve = false
+	if ticket.Status.ID == internal_models.TSWaitForResolveID {
+		ticket.Status.ID = internal_models.TSWaitID
+	}
+
+	return u.UpdateTicket(ticket, user, false)
+}
+
 func (u *TicketUsecase) CreateComment(comment *internal_models.Comment) (uint64, models.Err) {
 	if err := u.createCommentDispatcher(comment); err != nil {
 		return 0, err
@@ -669,4 +782,43 @@ func (u *TicketUsecase) createCommentDispatcher(comment *internal_models.Comment
 
 func (u *TicketUsecase) GetFile(fileID uint64) (*internal_models.File, models.Err) {
 	return u.fileUC.GetFile(fileID)
+}
+
+func (u *TicketUsecase) AutoCreateTicket(text, email, ip string, priority bool) (uint64, models.Err) {
+	var (
+		author *models.User = new(models.User)
+		err    models.Err
+	)
+
+	if len(email) > 0 {
+		author, err = u.userUC.GetUserByEmail(email)
+		if err != nil {
+			author = &models.User{
+				Email: email,
+				Name:  email,
+			}
+
+			author.ID, err = u.userUC.CreateUser(author)
+			if err != nil {
+				return 0, models.InternalError("Не удалось создать пользователя")
+			}
+		}
+	} else {
+		return 0, models.BadRequest("Email пользователя пустой")
+	}
+
+	sectionID, err := u.catSecUC.GetServiceSectionID(priority)
+	if err != nil {
+		return 0, err
+	}
+
+	ticket := &internal_models.Ticket{
+		Text:    text,
+		CatSect: &internal_models.SectionWithCategory{ID: sectionID},
+		Status:  &internal_models.TicketStatus{},
+		IP:      ip,
+		Author:  author,
+	}
+
+	return u.CreateTicket(ticket)
 }

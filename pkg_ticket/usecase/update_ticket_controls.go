@@ -170,7 +170,7 @@ func (u *TicketUsecase) checkChangeStatus(ticket, existTicket *internal_models.T
 
 	switch ticket.Status.ID {
 	case internal_models.TSWaitID:
-		if ticket.Author.ID != user.ID {
+		if existTicket.Author.ID != user.ID {
 			return errCannotUpdateTicket
 		}
 
@@ -288,6 +288,8 @@ func (u *TicketUsecase) changeSection(ticket *internal_models.Ticket) models.Err
 	if err != nil {
 		return err
 	}
+
+	ticket.NeedResolve = section.NeedApproval
 
 	if section.NeedApproval {
 		ticket.Status.ID = internal_models.TSWaitForResolveID

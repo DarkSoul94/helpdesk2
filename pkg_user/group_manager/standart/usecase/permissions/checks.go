@@ -21,7 +21,7 @@ func checkIsAdmin(group *models.Group) bool {
 }
 
 func checkFullSearch(group *models.Group) bool {
-	return group.ChangeSettings
+	return group.FullSearch
 }
 
 func checkWorkOnTicket(group *models.Group) bool {
@@ -34,4 +34,8 @@ func checkResolveTicket(group *models.Group) bool {
 
 func checkSeeAdditionalInfo(group *models.Group) bool {
 	return group.SeeAdditionalInfo
+}
+
+func checkCreateTicket(group *models.Group) bool {
+	return group.CreateTicket
 }

@@ -57,6 +57,16 @@ import (
 	schedulerrepo "github.com/DarkSoul94/helpdesk2/pkg_scheduler/repo/mysql"
 	schedulerusecase "github.com/DarkSoul94/helpdesk2/pkg_scheduler/usecase"
 
+	"github.com/DarkSoul94/helpdesk2/pkg_consts"
+	constshttp "github.com/DarkSoul94/helpdesk2/pkg_consts/delivery/http"
+	constsrepo "github.com/DarkSoul94/helpdesk2/pkg_consts/repo/mysql"
+	constsusecase "github.com/DarkSoul94/helpdesk2/pkg_consts/usecase"
+
+	"github.com/DarkSoul94/helpdesk2/pkg_reports"
+	reportshttp "github.com/DarkSoul94/helpdesk2/pkg_reports/delivery/http"
+	reportsrepo "github.com/DarkSoul94/helpdesk2/pkg_reports/repo/mysql"
+	reportsusecase "github.com/DarkSoul94/helpdesk2/pkg_reports/usecase"
+
 	"github.com/DarkSoul94/helpdesk2/auth"
 	authhttp "github.com/DarkSoul94/helpdesk2/auth/delivery/http"
 	authusecase "github.com/DarkSoul94/helpdesk2/auth/usecase"
@@ -105,6 +115,11 @@ type App struct {
 
 	schedulerRepo pkg_scheduler.ISchedulerRepo
 	schedulerUC   pkg_scheduler.ISchedulerUsecase
+	constsRepo    pkg_consts.IConstsRepo
+	constsUC      pkg_consts.IConstsUsecase
+
+	reportsRepo pkg_reports.IReportsRepo
+	reportsUC   pkg_reports.IReportsUsecase
 
 	httpServer *http.Server
 }
@@ -122,6 +137,8 @@ func NewApp() *App {
 	ticketRepo := ticketrepo.NewTicketRepo(db)
 	commentRepo := commentrepo.NewCommentRepo(db)
 	schedulerRepo := schedulerrepo.NewShedulerRepo(db)
+	constsRepo := constsrepo.NewConstsRepo(db)
+	reportsRepo := reportsrepo.NewReportsRepo(db)
 
 	grpUC := groupusecase.NewGroupManager(grpRepo)
 	permUC := permusecase.NewPermManager(grpRepo)
@@ -139,6 +156,10 @@ func NewApp() *App {
 	commentUC := commentusecase.NewCommentUsecase(commentRepo)
 	ticketUC := ticketusecase.NewTicketUsecase(ticketRepo, catsecUC, regfilUC, fileUC, permUC, userUC, suppUC, commentUC)
 	schedulerUC := schedulerusecase.NewSchedulerUsecase(schedulerRepo)
+
+	constsUC := constsusecase.NewConstsUsecase(constsRepo)
+
+	reportsUC := reportsusecase.NewReportsUsecase(reportsRepo)
 
 	return &App{
 		dbConnect: db,
@@ -174,6 +195,12 @@ func NewApp() *App {
 
 		schedulerRepo: schedulerRepo,
 		schedulerUC:   schedulerUC,
+
+		constsRepo: constsRepo,
+		constsUC:   constsUC,
+
+		reportsRepo: reportsRepo,
+		reportsUC:   reportsUC,
 	}
 }
 
@@ -212,6 +239,11 @@ func (a *App) Run(port string) error {
 
 	ticketMiddleware := tickethttp.NewPermissionMiddleware(a.permUC)
 	tickethttp.RegisterHTTPEndpoints(apiRouter, a.ticketUC, authMiddlware, ticketMiddleware)
+
+	constsMiddleware := constshttp.NewPermissionMiddleware(a.permUC)
+	constshttp.RegisterHTTPEndpoints(apiRouter, a.constsUC, authMiddlware, constsMiddleware)
+
+	reportshttp.RegisterHTTPEndpoints(apiRouter, a.reportsUC, authMiddlware)
 
 	a.httpServer = &http.Server{
 		Addr:           ":" + port,

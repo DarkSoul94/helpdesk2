@@ -71,7 +71,6 @@ func ToOutUserWithOutGroup(user *models.User) OutUserWithOutGroup {
 		Name:       user.Name,
 		Email:      user.Email,
 		Department: user.Department,
-		GroupID:    user.Group.ID,
 	}
 }
 

@@ -2,7 +2,7 @@ package docs
 
 /**
  *
- * @api {POST} /helpdesk/ticket/ticket_grade Оценка запроса в тех.поддержку
+ * @api {POST} /helpdesk/ticket/ticket_grade 15. Оценка запроса в тех.поддержку
  * @apiName CreateTicketGrade
  * @apiGroup 03. Запросы в тех. поддержку
  * @apiVersion  2.0.0

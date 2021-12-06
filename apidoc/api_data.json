@@ -764,9 +764,93 @@
     "groupTitle": "02._Категории_и_разделы_категорий"
   },
   {
+    "type": "POST",
+    "url": "/helpdesk/service/auto_create",
+    "title": "03. Автоматическое создание запроса",
+    "name": "AutoCreateTicket",
+    "group": "03._Запросы_в_тех._поддержку",
+    "version": "2.0.0",
+    "description": "<p>Автоматическое создание запроса из данных присланных по API сторонними сервисами.</p>",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "text",
+            "description": "<p>Текст запроса</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "user_email",
+            "description": "<p>Доменная почта пользователя</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": true,
+            "field": "user_ip",
+            "description": "<p>IP-адресс компьютера с которого отправлялся запрос</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Bool",
+            "optional": false,
+            "field": "priority",
+            "description": "<p>Признак являеться ли запрос приоритетным</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Request-Example:",
+          "content": "{\n   \"text\":\"api ticket\",\n   \"user_email\" : \"tishchenko.v.v@limefin.com\",\n   \"user_ip\":\"10.54.1.101\",\n\t  \"priority\" : true\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "success": {
+      "fields": {
+        "200": [
+          {
+            "group": "200",
+            "type": "String",
+            "optional": false,
+            "field": "status",
+            "description": "<p>статус выполнения запроса</p>"
+          },
+          {
+            "group": "200",
+            "type": "Int",
+            "optional": false,
+            "field": "ticket_id",
+            "description": "<p>номер созданного запроса(0 - если была ошибка)</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Запрос успешно создан:",
+          "content": "{\n  \"status\": \"ok\",\n  \"ticket_id\": 49\n}",
+          "type": "json"
+        },
+        {
+          "title": "Запрос без email:",
+          "content": "{\n\t \"error\": \"Email is blank\",\n\t \"status\": \"error\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "./docs/2.0.0/tickets/03_AutoCreateTicket.go",
+    "groupTitle": "03._Запросы_в_тех._поддержку"
+  },
+  {
     "type": "GET",
     "url": "/helpdesk/resolve_ticket/check_exist",
-    "title": "06. Проверка есть ли запросы ожидающие согласования",
+    "title": "12. Проверка есть ли запросы ожидающие согласования",
     "name": "CheckNeedResolveTicketExist",
     "group": "03._Запросы_в_тех._поддержку",
     "version": "2.0.0",
@@ -810,13 +894,13 @@
         }
       ]
     },
-    "filename": "./docs/2.0.0/tickets/06_CheckNeedResolveTicketExist.go",
+    "filename": "./docs/2.0.0/tickets/12_CheckNeedResolveTicketExist.go",
     "groupTitle": "03._Запросы_в_тех._поддержку"
   },
   {
     "type": "post",
     "url": "/helpdesk/comment/create",
-    "title": "12. Создание нового комментария в запросе",
+    "title": "16. Создание нового комментария в запросе",
     "name": "CreateCommentsHistory",
     "group": "03._Запросы_в_тех._поддержку",
     "version": "2.0.0",
@@ -899,7 +983,7 @@
         ]
       }
     },
-    "filename": "./docs/2.0.0/tickets/comments/12_CreateCommentsHistory.go",
+    "filename": "./docs/2.0.0/tickets/comments/16_CreateCommentsHistory.go",
     "groupTitle": "03._Запросы_в_тех._поддержку"
   },
   {
@@ -1132,9 +1216,86 @@
     "groupTitle": "03._Запросы_в_тех._поддержку"
   },
   {
+    "type": "POST",
+    "url": "/helpdesk/ticket/ticket_grade",
+    "title": "15. Оценка запроса в тех.поддержку",
+    "name": "CreateTicketGrade",
+    "group": "03._Запросы_в_тех._поддержку",
+    "version": "2.0.0",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "BearerToken",
+            "description": "<p>Авторизационный токен</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "Uint64",
+            "optional": false,
+            "field": "ticket_id",
+            "description": "<p>ID оцениваемого запроса</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Uint64",
+            "optional": false,
+            "field": "ticket_grade",
+            "description": "<p>Оценка</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Request-Example:",
+          "content": "{\n  \"ticket_id\":5,\n  \"ticket_grade\":5\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "status",
+            "description": "<p>Статус ответа</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "ticket_grade_id",
+            "description": "<p>ID созданного объекта</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success-Response:",
+          "content": "{\n   \"status\": \"ok\",\n   \"ticket_grade_id\": \"1\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "./docs/2.0.0/tickets/15_TicketGrade.go",
+    "groupTitle": "03._Запросы_в_тех._поддержку"
+  },
+  {
     "type": "get",
     "url": "/file/",
-    "title": "13. Получение файла по его ид",
+    "title": "17. Получение файла по его ид",
     "name": "GetFile",
     "group": "03._Запросы_в_тех._поддержку",
     "version": "2.0.0",
@@ -1220,13 +1381,13 @@
         }
       ]
     },
-    "filename": "./docs/2.0.0/tickets/files/13_GetFile.go",
+    "filename": "./docs/2.0.0/tickets/files/17_GetFile.go",
     "groupTitle": "03._Запросы_в_тех._поддержку"
   },
   {
     "type": "GET",
     "url": "/helpdesk/resolve_ticket/resolve_tickets_list",
-    "title": "07. Получение списка запросов в тех. поддержку ожидающих согласования",
+    "title": "13. Получение списка запросов в тех. поддержку ожидающих согласования",
     "name": "GetResolveTicketsList",
     "group": "03._Запросы_в_тех._поддержку",
     "version": "2.0.0",
@@ -1353,13 +1514,13 @@
         }
       ]
     },
-    "filename": "./docs/2.0.0/tickets/07_GetResolveTicketsList.go",
+    "filename": "./docs/2.0.0/tickets/13_GetResolveTicketsList.go",
     "groupTitle": "03._Запросы_в_тех._поддержку"
   },
   {
     "type": "GET",
     "url": "/helpdesk/ticket/ticket",
-    "title": "04. Получение запроса",
+    "title": "06. Получение запроса",
     "name": "GetTicket",
     "group": "03._Запросы_в_тех._поддержку",
     "version": "2.0.0",
@@ -1737,7 +1898,7 @@
         }
       ]
     },
-    "filename": "./docs/2.0.0/tickets/04_GetTicket.go",
+    "filename": "./docs/2.0.0/tickets/06_GetTicket.go",
     "groupTitle": "03._Запросы_в_тех._поддержку"
   },
   {
@@ -1962,7 +2123,7 @@
   {
     "type": "GET",
     "url": "/helpdesk/ticket/tickets_list",
-    "title": "05. Получение списка запросов в тех. поддержку",
+    "title": "04. Получение списка запросов в тех. поддержку",
     "name": "GetTicketsList",
     "group": "03._Запросы_в_тех._поддержку",
     "version": "2.0.0",
@@ -2123,7 +2284,88 @@
         }
       ]
     },
-    "filename": "./docs/2.0.0/tickets/05_GetTicketsList.go",
+    "filename": "./docs/2.0.0/tickets/04_GetTicketsList.go",
+    "groupTitle": "03._Запросы_в_тех._поддержку"
+  },
+  {
+    "type": "POST",
+    "url": "/helpdesk/resolve_ticket/resolve",
+    "title": "14. Согласование запроса",
+    "name": "ResolveTicket",
+    "group": "03._Запросы_в_тех._поддержку",
+    "version": "2.0.0",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "BearerToken",
+            "description": "<p>Авторизационный токен</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "Uint64",
+            "optional": false,
+            "field": "ticket_id",
+            "description": "<p>ID запроса который согласовывается.</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Request-Example:",
+          "content": "{\n  \"ticket_id\":5\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "status",
+            "description": "<p>Статус ответа на запрос</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success-Response:",
+          "content": "{\n    \"status\": \"ok\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "error": {
+      "fields": {
+        "Error 4xx": [
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "ErrTicketDoesNotExist",
+            "description": "<p>Запроса с таким ID не существует</p>"
+          },
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "ErrDoesNotNeedApproval",
+            "description": "<p>Запрос не нуждается в согласовании</p>"
+          }
+        ]
+      }
+    },
+    "filename": "./docs/2.0.0/tickets/14_ResolveTicket.go",
     "groupTitle": "03._Запросы_в_тех._поддержку"
   },
   {
@@ -2215,7 +2457,7 @@
   {
     "type": "post",
     "url": "/helpdesk/ticket/update",
-    "title": "03. Обновление запроса в ТП",
+    "title": "07. Обновление запроса в ТП",
     "name": "UpdateTicket",
     "group": "03._Запросы_в_тех._поддержку",
     "version": "2.0.0",
@@ -2352,7 +2594,223 @@
         ]
       }
     },
-    "filename": "./docs/2.0.0/tickets/03_UpdateTicket.go",
+    "filename": "./docs/2.0.0/tickets/07_UpdateTicket.go",
+    "groupTitle": "03._Запросы_в_тех._поддержку"
+  },
+  {
+    "type": "POST",
+    "url": "/helpdesk/ticket/filtered_tickets_list",
+    "title": "05. Получение отфильтрованого списка запросов",
+    "name": "apiName",
+    "group": "03._Запросы_в_тех._поддержку",
+    "version": "2.0.0",
+    "description": "<p>Если у обратившегося пользователя стоит доступ <code>full_search</code> фильтр накладывается на все запросы. Если стоит <code>can_resolve</code> накладывается на список запросов которые требовали и требуют согласования и там где пользователь автор запроса. Для всех остальных накладывается на список где пользователь автор запроса. Поле support_id игнорируется для всех у кого не стоит доступ <code>full_search</code>. Если в фильтре ничего не указано отправится список всех запросов с учётом доступов пользователя.</p>",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "BearerToken",
+            "description": "<p>Авторизационный токен</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "Uint64",
+            "optional": false,
+            "field": "ticket_id",
+            "description": "<p>ИД запроса</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "start_date",
+            "description": "<p>Дата начала выборки</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "end_date",
+            "description": "<p>Дата конца выборки</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Uint64",
+            "optional": false,
+            "field": "category_id",
+            "description": "<p>ИД категории</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Uint64[]",
+            "optional": false,
+            "field": "section_id",
+            "description": "<p>Массив ид раздела категории</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "text",
+            "description": "<p>Текст который должен содержаться в запросе</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Uint64",
+            "optional": false,
+            "field": "status_id",
+            "description": "<p>ИД статуса запроса</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Uint64[]",
+            "optional": false,
+            "field": "author_id",
+            "description": "<p>Массив ид автора запроса</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Uint64[]",
+            "optional": false,
+            "field": "support_id",
+            "description": "<p>Массив ид сотрудника работавшего над запросом</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "filial",
+            "description": "<p>Филиал запроса</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "comment",
+            "description": "<p>Текст который должен содержаться в комментариях к этому запросу</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Request-Example:",
+          "content": "{\n    \"ticket_id\": 131,\n    \"start_date\" : \"2021-06-17 10:00:00\",\n    \"end_date\" : \"2021-06-17 10:30:00\",\n    \"category_id\" : 1,\n    \"section_id\" : [1, 2, 3],\n    \"text\" : \"asdfasf\",\n    \"status_id\" : 1,\n    \"author_id\" : [1, 2, 3],\n    \"support_id\" : [1, 2, 3],\n    \"filial\" : \"asfasdcv\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "String[]",
+            "optional": false,
+            "field": "fields",
+            "description": "<p>Список полей которые должны отрисоваться на стороне фронта</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Ticket[]",
+            "optional": false,
+            "field": "tickets",
+            "description": "<p>Массив запросов в тех. поддержку</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Uint64",
+            "optional": false,
+            "field": "tickets.ticket_id",
+            "description": "<p>ID запроса</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "tickets.ticket_date",
+            "description": "<p>Дата создания запроса</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "tickets.category",
+            "description": "<p>Категория</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "tickets.section",
+            "description": "<p>Раздел категории</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "tickets.ticket_text",
+            "description": "<p>Текст запроса</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "tickets.status",
+            "description": "<p>Статус запроса</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "tickets.ticket_author",
+            "description": "<p>Автор запроса</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "tickets.support",
+            "description": "<p>Сотрудник ТП работающий над запросом</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "tickets.filial",
+            "description": "<p>Отделение за которым закрелен автор запроса</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Uint",
+            "optional": false,
+            "field": "tickets.grade",
+            "description": "<p>Оценка запроса</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Ответ для обычного пользователя и сотрудника бэк-офиса:",
+          "content": "{\n  \"fields\": [\n    \"ticket_id\",\n    \"ticket_date\",\n    \"category\",\n    \"section\",\n    \"ticket_text\",\n    \"status\",\n    \"filial\",\n    \"ticket_author\",\n    \"grade\"\n  ],\n  \"tickets\": [\n    {\n      \"ticket_id\": 141,\n      \"ticket_date\": \"2021-06-17T14:42:30Z\",\n      \"significant\": false,\n      \"category\": \"Валютообмен\",\n      \"section\": \"Спецоперация\",\n      \"ticket_text\": \"asfsdfgsgvxcfasf\",\n      \"status\": \"В процессе реализации\",\n      \"ticket_status_id\": 5,\n      \"filial\": \"not found\",\n      \"ticket_author\": \"Вячеслав Викторович Тищенко\",\n      \"support\": \"\",\n      \"grade\": 0\n    }\n ]\n}",
+          "type": "json"
+        },
+        {
+          "title": "Ответ для тех у кого есть разрешение `full_search`:",
+          "content": "{\n  \"fields\": [\n   \"ticket_id\",\n   \"ticket_date\",\n   \"category\",\n   \"section\",\n   \"ticket_text\",\n   \"status\",\n   \"filial\",\n   \"ticket_author\",\n   \"support\",\n   \"grade\"\n  ],\n  \"tickets\": [\n    {\n      \"ticket_id\": 140,\n      \"ticket_date\": \"2021-06-17T13:20:57Z\",\n      \"significant\": true,\n      \"category\": \"1С \",\n      \"section\": \"Изменение/удаление кассовых ордеров\",\n      \"ticket_text\": \"выпывп\",\n      \"status\": \"В процессе реализации\",\n      \"ticket_status_id\": 5,\n      \"filial\": \"not found\",\n      \"ticket_author\": \"Евгений Николаевич Табаков\",\n      \"support\": \"Евгений Николаевич Табаков\",\n      \"grade\": 0\n    }\n ]\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "./docs/2.0.0/tickets/05_GetFilteredTicketList.go",
     "groupTitle": "03._Запросы_в_тех._поддержку"
   },
   {
@@ -3845,6 +4303,49 @@
   },
   {
     "type": "GET",
+    "url": "/helpdesk/const/banner",
+    "title": "02. Получение текущего текста баннера",
+    "name": "GetBanner",
+    "group": "07._Настройка",
+    "version": "2.0.0",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "BearerToken",
+            "description": "<p>Авторизационный токен</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "text",
+            "description": "<p>Текст баннера</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success-Response:",
+          "content": "{\n\t \t\t\"text\":\"text\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "./docs/2.0.0/consts/02_GetBanner.go",
+    "groupTitle": "07._Настройка"
+  },
+  {
+    "type": "GET",
     "url": "/helpdesk/filial/filial_list",
     "title": "07. Получение списка отделений из базы",
     "name": "GetFilialList",
@@ -3926,6 +4427,69 @@
       ]
     },
     "filename": "./docs/2.0.0/regions_and_filials/07_GetFilialList.go",
+    "groupTitle": "07._Настройка"
+  },
+  {
+    "type": "POST",
+    "url": "/helpdesk/const/banner",
+    "title": "01. Модификация текста баннера",
+    "name": "SetBanner",
+    "group": "07._Настройка",
+    "version": "2.0.0",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "BearerToken",
+            "description": "<p>Авторизационный токен</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "text",
+            "description": "<p>Текст баннера</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Request-Example:",
+          "content": "{\n\t \t\t\"text\":\"text\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "status",
+            "description": "<p>Статус ответа на запрос</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success-Response:",
+          "content": "{\n    \"status\": \"ok\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "./docs/2.0.0/consts/01_SetBanner.go",
     "groupTitle": "07._Настройка"
   },
   {

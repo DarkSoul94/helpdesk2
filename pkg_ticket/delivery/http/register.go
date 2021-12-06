@@ -76,6 +76,8 @@ func RegisterHTTPEndpoints(router *gin.RouterGroup, uc pkg_ticket.ITicketUsecase
 		ticketEndpoints.POST("/update", h.UpdateTicket)
 		//http://localhost:8888/helpdesk/ticket/tickets_list?count=5&offset=0
 		ticketEndpoints.GET("/tickets_list", h.GetTicketsList)
+		//http://localhost:8888/helpdesk/ticket/filtered_tickets_list
+		ticketEndpoints.POST("/filtered_tickets_list", h.GetFilteredTicketsList)
 		//http://localhost:8888/helpdesk/ticket/ticket?ticket_id=23
 		ticketEndpoints.GET("/ticket", h.GetTicket)
 		//http://localhost:8888/helpdesk/ticket/steal
@@ -98,6 +100,8 @@ func RegisterHTTPEndpoints(router *gin.RouterGroup, uc pkg_ticket.ITicketUsecase
 		resolveTicketEndpoints.GET("/check_exist", h.CheckNeedApprovalTicketExist)
 		//http://localhost:8888/helpdesk/resolve_ticket/resolve_tickets_list?count=5&offset=0
 		resolveTicketEndpoints.GET("/resolve_tickets_list", h.GetApprovalTicketList)
+		//http://localhost:8888/helpdesk/resolve_ticket/resolve
+		resolveTicketEndpoints.POST("/resolve", h.ResolveTicket)
 	}
 
 	fileEndpoints := router.Group("/file")
@@ -107,4 +111,9 @@ func RegisterHTTPEndpoints(router *gin.RouterGroup, uc pkg_ticket.ITicketUsecase
 		fileEndpoints.GET("/", h.GetFile)
 	}
 
+	serviceEndpoints := router.Group("/service")
+	{
+		//http://localhost:8888/helpdesk/service/auto_create
+		serviceEndpoints.POST("/auto_create", h.AutoCreateTicket)
+	}
 }

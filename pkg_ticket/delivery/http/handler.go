@@ -370,6 +370,30 @@ func (h *TicketHandler) GetTicketsList(c *gin.Context) {
 	c.JSON(http.StatusOK, map[string]interface{}{"fields": tags, "tickets": outList})
 }
 
+func (h *TicketHandler) GetFilteredTicketsList(c *gin.Context) {
+	var filter map[string]interface{}
+
+	if err := c.BindJSON(&filter); err != nil {
+		c.JSON(http.StatusBadRequest, map[string]string{"status": "error", "error": err.Error()})
+		return
+	}
+
+	user, _ := c.Get(global_const.CtxUserKey)
+
+	list, tags, err := h.uc.GetFilteredTicketsList(filter, user.(*models.User))
+	if err != nil {
+		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+
+	outList := make([]dto.OutTicketForList, 0)
+	for _, tick := range list {
+		outList = append(outList, dto.ToOutTicketForList(tick, nil))
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{"fields": tags, "tickets": outList})
+}
+
 func (h *TicketHandler) GetTicket(c *gin.Context) {
 	ticketID, _ := strconv.ParseUint(c.Request.URL.Query().Get("ticket_id"), 10, 64)
 	user, _ := c.Get(global_const.CtxUserKey)
@@ -474,6 +498,29 @@ func (h *TicketHandler) GetApprovalTicketList(c *gin.Context) {
 	c.JSON(http.StatusOK, map[string]interface{}{"fields": tags, "tickets": outList})
 }
 
+func (h *TicketHandler) ResolveTicket(c *gin.Context) {
+	type inpTicketID struct {
+		TicketID uint64 `json:"ticket_id"`
+	}
+
+	var id inpTicketID
+
+	if err := c.BindJSON(&id); err != nil {
+		c.JSON(http.StatusBadRequest, map[string]string{"status": "error", "error": err.Error()})
+		return
+	}
+
+	user, _ := c.Get(global_const.CtxUserKey)
+
+	err := h.uc.ResolveTicket(id.TicketID, user.(*models.User))
+	if err != nil {
+		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]string{"status": "ok"})
+}
+
 func (h *TicketHandler) GetFile(c *gin.Context) {
 	id, _ := strconv.ParseUint(c.Request.URL.Query().Get("file_id"), 10, 64)
 
@@ -484,4 +531,25 @@ func (h *TicketHandler) GetFile(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, dto.ToOutFile(file))
+}
+
+func (h *TicketHandler) AutoCreateTicket(c *gin.Context) {
+	var ticket dto.InpServiceTicket
+
+	if err := c.BindJSON(&ticket); err != nil {
+		c.JSON(http.StatusBadRequest, map[string]string{"status": "error", "error": err.Error()})
+		return
+	}
+
+	if len(ticket.UserIP) == 0 {
+		ticket.UserIP = c.GetHeader("X-Forwarded-For")
+	}
+
+	id, err := h.uc.AutoCreateTicket(ticket.Text, ticket.UserEmail, ticket.UserIP, ticket.Priority)
+	if err != nil {
+		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{"status": "ok", "ticket_id": id})
 }

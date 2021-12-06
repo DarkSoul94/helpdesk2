@@ -2,7 +2,7 @@ package docs
 
 /**
  *
- * @api {GET} /helpdesk/resolve_ticket/check_exist 06. Проверка есть ли запросы ожидающие согласования
+ * @api {GET} /helpdesk/resolve_ticket/check_exist 12. Проверка есть ли запросы ожидающие согласования
  * @apiName CheckNeedResolveTicketExist
  * @apiGroup 03. Запросы в тех. поддержку
  * @apiVersion  2.0.0

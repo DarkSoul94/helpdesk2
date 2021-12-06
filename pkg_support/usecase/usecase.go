@@ -64,9 +64,7 @@ func (u *SupportUsecase) DeleteSupport(askUser *models.User, usersID ...uint64) 
 
 		//проверка что суппорт с таким ID есть в списке, если нет - переходим к следующему
 		if _, err := u.repo.GetSupport(userID); err == nil {
-			if err := u.CloseShift(userID, askUser); err != nil {
-				return err
-			}
+			u.CloseShift(userID, askUser)
 			if err := u.repo.DeleteSupport(userID); err != nil {
 				return err
 			}
@@ -271,12 +269,18 @@ func (u *SupportUsecase) UpdateCard(card *internal_models.Card) models.Err {
 			return err
 		}
 	}
-	if card.Senior != nil && card.Senior.ID != currentCard.Senior.ID {
-		seniorCard, err := u.repo.GetCardBySupportID(card.Senior.ID)
-		if err != nil {
-			return err
+	if card.IsSenior {
+		card.Senior = nil
+	}
+
+	if card.Senior != nil {
+		if currentCard.Senior == nil || card.Senior.ID != currentCard.Senior.ID {
+			seniorCard, err := u.repo.GetCardBySupportID(card.Senior.ID)
+			if err != nil {
+				return err
+			}
+			card.Color = seniorCard.Color
 		}
-		card.Color = seniorCard.Color
 	}
 
 	return u.repo.UpdateCard(card)
