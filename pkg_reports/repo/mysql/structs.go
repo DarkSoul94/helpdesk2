@@ -11,6 +11,14 @@ type ReportsRepo struct {
 	db *sqlx.DB
 }
 
+type dbTicketStatusDifference struct {
+	TicketID    uint64        `db:"ticket_id"`
+	SupportName string        `db:"support_name"`
+	Section     string        `db:"section"`
+	StatusName  string        `db:"status_name"`
+	Duration    time.Duration `db:"duration"`
+}
+
 type dbAverageGrade struct {
 	SupportName  string  `db:"user_name"`
 	AverageGrade float64 `db:"average_grade"`

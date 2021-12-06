@@ -17,6 +17,53 @@ func NewReportsRepo(db *sql.DB) *ReportsRepo {
 	}
 }
 
+func (r *ReportsRepo) GetTicketStatusDifference(startDate, endDate time.Time) (map[internal_models.TicketDifference][]internal_models.StatusDifference, error) {
+	var (
+		dbStatusDifference []dbTicketStatusDifference
+		mStatusDifference  map[internal_models.TicketDifference][]internal_models.StatusDifference = make(map[internal_models.TicketDifference][]internal_models.StatusDifference)
+		query              string
+		err                error
+	)
+
+	query = `SELECT ticket_id, user_name AS support_name, category_section_name AS section, ts.ticket_status_name AS status_name, SUM(duration) AS duration 
+				FROM ticket_status_history AS th
+				INNER JOIN tickets AS t USING(ticket_id)
+				INNER JOIN ticket_status AS ts ON th.ticket_status_id = ts.ticket_status_id
+				INNER JOIN users ON user_id = support_id
+				INNER JOIN category_section USING(section_id)
+				WHERE ticket_date BETWEEN ? AND ?
+				GROUP BY th.ticket_id, th.ticket_status_id
+				ORDER BY th.ticket_id`
+
+	err = r.db.Select(&dbStatusDifference, query, startDate, endDate)
+	if err != nil {
+		logger.LogError(
+			"Failed read ticket status difference",
+			"pkg_reports/repo/mysql",
+			fmt.Sprintf("start date: %s; end date: %s;", startDate, endDate),
+			err,
+		)
+		return nil, err
+	}
+
+	for _, difference := range dbStatusDifference {
+		ticket := internal_models.TicketDifference{
+			TicketID:    difference.TicketID,
+			SupportName: difference.SupportName,
+			Section:     difference.Section,
+		}
+
+		status := internal_models.StatusDifference{
+			StatusName: difference.StatusName,
+			Duration:   (difference.Duration * time.Second).String(),
+		}
+
+		mStatusDifference[ticket] = append(mStatusDifference[ticket], status)
+	}
+
+	return mStatusDifference, nil
+}
+
 func (r *ReportsRepo) GetAverageGradesBySupport(startDate, endDate time.Time) (map[string]float64, error) {
 	var (
 		dbAVG []dbAverageGrade

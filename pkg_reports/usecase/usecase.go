@@ -19,6 +19,20 @@ func NewReportsUsecase(repo pkg_reports.IReportsRepo) *ReportsUsecase {
 	}
 }
 
+func (u *ReportsUsecase) GetTicketStatusDifference(startDate, endDate string) (map[internal_models.TicketDifference][]internal_models.StatusDifference, models.Err) {
+	start, end, err := u.parseTime(startDate, endDate)
+	if err != nil {
+		return nil, err
+	}
+
+	difference, er := u.repo.GetTicketStatusDifference(start, end)
+	if er != nil {
+		return nil, models.InternalError(er.Error())
+	}
+
+	return difference, nil
+}
+
 func (u *ReportsUsecase) GetAverageGradesBySupport(startDate, endDate string) (map[string]float64, models.Err) {
 	start, end, err := u.parseTime(startDate, endDate)
 	if err != nil {
