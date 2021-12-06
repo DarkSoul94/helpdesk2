@@ -24,7 +24,21 @@ func (h *ReportsHandler) GetMotivation(c *gin.Context) {
 }
 
 func (h *ReportsHandler) GetTicketStatusDifference(c *gin.Context) {
+	startDate := c.Request.URL.Query().Get("start_date")
+	endDate := c.Request.URL.Query().Get("end_date")
 
+	difference, err := h.uc.GetTicketStatusDifference(startDate, endDate)
+	if err != nil {
+		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+
+	outDifference := make([]dto.OutTicketStatusDifference, 0)
+	for ticket, statuses := range difference {
+		outDifference = append(outDifference, dto.ToOutTicketStatusDifference(ticket, statuses))
+	}
+
+	c.JSON(http.StatusOK, outDifference)
 }
 
 func (h *ReportsHandler) GetAverageGrades(c *gin.Context) {

@@ -6,6 +6,40 @@ import (
 	"github.com/DarkSoul94/helpdesk2/pkg_reports/internal_models"
 )
 
+type OutStatusDifference struct {
+	Status   string `json:"status"`
+	DiffTime string `json:"diff_time"`
+}
+
+func toOutStatusDifference(diff internal_models.StatusDifference) OutStatusDifference {
+	return OutStatusDifference{
+		Status:   diff.StatusName,
+		DiffTime: diff.Duration,
+	}
+}
+
+type OutTicketStatusDifference struct {
+	TicketID         uint64                `json:"ticket_id"`
+	SupportName      string                `json:"support_name"`
+	Section          string                `json:"section"`
+	StatusDifference []OutStatusDifference `json:"status_difference"`
+}
+
+func ToOutTicketStatusDifference(ticket internal_models.TicketDifference, statuses []internal_models.StatusDifference) OutTicketStatusDifference {
+	outTicket := OutTicketStatusDifference{
+		TicketID:         ticket.TicketID,
+		SupportName:      ticket.SupportName,
+		Section:          ticket.Section,
+		StatusDifference: make([]OutStatusDifference, 0),
+	}
+
+	for _, status := range statuses {
+		outTicket.StatusDifference = append(outTicket.StatusDifference, toOutStatusDifference(status))
+	}
+
+	return outTicket
+}
+
 type OutAverageGrade struct {
 	Name         string  `json:"support"`
 	AverageGrade float64 `json:"average_grade_by_support"`
