@@ -52,6 +52,11 @@ import (
 	supportrepo "github.com/DarkSoul94/helpdesk2/pkg_support/repo/mysql"
 	supportusecase "github.com/DarkSoul94/helpdesk2/pkg_support/usecase"
 
+	"github.com/DarkSoul94/helpdesk2/pkg_scheduler"
+	schedulerhttp "github.com/DarkSoul94/helpdesk2/pkg_scheduler/delivery/http"
+	schedulerrepo "github.com/DarkSoul94/helpdesk2/pkg_scheduler/repo/mysql"
+	schedulerusecase "github.com/DarkSoul94/helpdesk2/pkg_scheduler/usecase"
+
 	"github.com/DarkSoul94/helpdesk2/auth"
 	authhttp "github.com/DarkSoul94/helpdesk2/auth/delivery/http"
 	authusecase "github.com/DarkSoul94/helpdesk2/auth/usecase"
@@ -98,6 +103,9 @@ type App struct {
 	ticketRepo pkg_ticket.ITicketRepo
 	ticketUC   pkg_ticket.ITicketUsecase
 
+	schedulerRepo pkg_scheduler.ISchedulerRepo
+	schedulerUC   pkg_scheduler.ISchedulerUsecase
+
 	httpServer *http.Server
 }
 
@@ -108,11 +116,12 @@ func NewApp() *App {
 	grpRepo := grouprepo.NewGroupRepo(db)
 	suppRepo := supportrepo.NewSupportRepo(db)
 	userRepo := userrepo.NewRepo(db)
+	fileRepo := filerepo.NewFileRepo(db)
 	catsecRepo := catsecrepo.NewCatSecRepo(db)
 	regfilRepo := regfilrepo.NewRegFilRepo(db)
-	fileRepo := filerepo.NewFileRepo(db)
-	commentRepo := commentrepo.NewCommentRepo(db)
 	ticketRepo := ticketrepo.NewTicketRepo(db)
+	commentRepo := commentrepo.NewCommentRepo(db)
+	schedulerRepo := schedulerrepo.NewShedulerRepo(db)
 
 	grpUC := groupusecase.NewGroupManager(grpRepo)
 	permUC := permusecase.NewPermManager(grpRepo)
@@ -129,6 +138,7 @@ func NewApp() *App {
 	fileUC := fileusecase.NewFileUsecase(fileRepo)
 	commentUC := commentusecase.NewCommentUsecase(commentRepo)
 	ticketUC := ticketusecase.NewTicketUsecase(ticketRepo, catsecUC, regfilUC, fileUC, permUC, userUC, suppUC, commentUC)
+	schedulerUC := schedulerusecase.NewSchedulerUsecase(schedulerRepo)
 
 	return &App{
 		dbConnect: db,
@@ -161,6 +171,9 @@ func NewApp() *App {
 
 		ticketRepo: ticketRepo,
 		ticketUC:   ticketUC,
+
+		schedulerRepo: schedulerRepo,
+		schedulerUC:   schedulerUC,
 	}
 }
 
@@ -193,6 +206,9 @@ func (a *App) Run(port string) error {
 
 	supportMiddleware := supporthttp.NewPermissionMiddleware(a.permUC)
 	supporthttp.RegisterHTTPEndpoints(apiRouter, a.suppUC, authMiddlware, supportMiddleware)
+
+	schedulerMiddleware := schedulerhttp.NewPermissionMiddleware(a.permUC)
+	schedulerhttp.RegisterHTTPEndpoints(apiRouter, a.schedulerUC, schedulerMiddleware)
 
 	ticketMiddleware := tickethttp.NewPermissionMiddleware(a.permUC)
 	tickethttp.RegisterHTTPEndpoints(apiRouter, a.ticketUC, authMiddlware, ticketMiddleware)
@@ -314,6 +330,7 @@ func (a *App) close() {
 	a.fileRepo.Close()
 	a.commentRepo.Close()
 	a.ticketRepo.Close()
+	a.schedulerRepo.Close()
 }
 
 func moveFileFromDBtoFolder(db *sql.DB) {

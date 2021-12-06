@@ -5,5 +5,6 @@ CREATE TABLE IF NOT EXISTS `const_change_history` (
   `name` VARCHAR(255) NOT NULL,
   `val` VARCHAR(255) NOT NULL,
   `val_type` VARCHAR(255) NOT NULL,
-  PRIMARY KEY `pk_id`(`id`)
+  PRIMARY KEY `pk_id`(`id`),
+  CONSTRAINT `name_date` UNIQUE (`name`, `date`)
 )
