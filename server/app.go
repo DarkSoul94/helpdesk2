@@ -52,6 +52,11 @@ import (
 	supportrepo "github.com/DarkSoul94/helpdesk2/pkg_support/repo/mysql"
 	supportusecase "github.com/DarkSoul94/helpdesk2/pkg_support/usecase"
 
+	"github.com/DarkSoul94/helpdesk2/pkg_scheduler"
+	schedulerhttp "github.com/DarkSoul94/helpdesk2/pkg_scheduler/delivery/http"
+	schedulerrepo "github.com/DarkSoul94/helpdesk2/pkg_scheduler/repo/mysql"
+	schedulerusecase "github.com/DarkSoul94/helpdesk2/pkg_scheduler/usecase"
+
 	"github.com/DarkSoul94/helpdesk2/pkg_consts"
 	constshttp "github.com/DarkSoul94/helpdesk2/pkg_consts/delivery/http"
 	constsrepo "github.com/DarkSoul94/helpdesk2/pkg_consts/repo/mysql"
@@ -108,8 +113,10 @@ type App struct {
 	ticketRepo pkg_ticket.ITicketRepo
 	ticketUC   pkg_ticket.ITicketUsecase
 
-	constsRepo pkg_consts.IConstsRepo
-	constsUC   pkg_consts.IConstsUsecase
+	schedulerRepo pkg_scheduler.ISchedulerRepo
+	schedulerUC   pkg_scheduler.ISchedulerUsecase
+	constsRepo    pkg_consts.IConstsRepo
+	constsUC      pkg_consts.IConstsUsecase
 
 	reportsRepo pkg_reports.IReportsRepo
 	reportsUC   pkg_reports.IReportsUsecase
@@ -124,11 +131,12 @@ func NewApp() *App {
 	grpRepo := grouprepo.NewGroupRepo(db)
 	suppRepo := supportrepo.NewSupportRepo(db)
 	userRepo := userrepo.NewRepo(db)
+	fileRepo := filerepo.NewFileRepo(db)
 	catsecRepo := catsecrepo.NewCatSecRepo(db)
 	regfilRepo := regfilrepo.NewRegFilRepo(db)
-	fileRepo := filerepo.NewFileRepo(db)
-	commentRepo := commentrepo.NewCommentRepo(db)
 	ticketRepo := ticketrepo.NewTicketRepo(db)
+	commentRepo := commentrepo.NewCommentRepo(db)
+	schedulerRepo := schedulerrepo.NewShedulerRepo(db)
 	constsRepo := constsrepo.NewConstsRepo(db)
 	reportsRepo := reportsrepo.NewReportsRepo(db)
 
@@ -147,6 +155,7 @@ func NewApp() *App {
 	fileUC := fileusecase.NewFileUsecase(fileRepo)
 	commentUC := commentusecase.NewCommentUsecase(commentRepo)
 	ticketUC := ticketusecase.NewTicketUsecase(ticketRepo, catsecUC, regfilUC, fileUC, permUC, userUC, suppUC, commentUC)
+	schedulerUC := schedulerusecase.NewSchedulerUsecase(schedulerRepo)
 
 	constsUC := constsusecase.NewConstsUsecase(constsRepo)
 
@@ -183,6 +192,9 @@ func NewApp() *App {
 
 		ticketRepo: ticketRepo,
 		ticketUC:   ticketUC,
+
+		schedulerRepo: schedulerRepo,
+		schedulerUC:   schedulerUC,
 
 		constsRepo: constsRepo,
 		constsUC:   constsUC,
@@ -221,6 +233,9 @@ func (a *App) Run(port string) error {
 
 	supportMiddleware := supporthttp.NewPermissionMiddleware(a.permUC)
 	supporthttp.RegisterHTTPEndpoints(apiRouter, a.suppUC, authMiddlware, supportMiddleware)
+
+	schedulerMiddleware := schedulerhttp.NewPermissionMiddleware(a.permUC)
+	schedulerhttp.RegisterHTTPEndpoints(apiRouter, a.schedulerUC, schedulerMiddleware)
 
 	ticketMiddleware := tickethttp.NewPermissionMiddleware(a.permUC)
 	tickethttp.RegisterHTTPEndpoints(apiRouter, a.ticketUC, authMiddlware, ticketMiddleware)
@@ -347,6 +362,7 @@ func (a *App) close() {
 	a.fileRepo.Close()
 	a.commentRepo.Close()
 	a.ticketRepo.Close()
+	a.schedulerRepo.Close()
 }
 
 func moveFileFromDBtoFolder(db *sql.DB) {
