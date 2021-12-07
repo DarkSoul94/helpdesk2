@@ -26,6 +26,7 @@ type dbTicket struct {
 	NeedResolve    bool            `db:"need_resolve"`
 	Text           string          `db:"ticket_text"`
 	Status         *dbTicketStatus `db:""`
+	WasReturned    bool            `db:"was_returned"`
 	Filial         sql.NullString  `db:"filial"`
 	IP             sql.NullString  `db:"ip"`
 	AuthorID       sql.NullInt64   `db:"ticket_author_id"`

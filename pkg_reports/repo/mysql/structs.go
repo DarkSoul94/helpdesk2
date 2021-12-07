@@ -31,6 +31,18 @@ type dbTicketsGrade struct {
 	Department string `db:"department"`
 }
 
+type dbReturnedTicket struct {
+	TicketID    uint64        `db:"ticket_id"`
+	TicketDate  time.Time     `db:"ticket_date"`
+	Category    string        `db:"category"`
+	Section     string        `db:"section"`
+	TicketText  string        `db:"ticket_text"`
+	Status      string        `db:"status"`
+	Author      string        `db:"author"`
+	Support     string        `db:"support"`
+	TicketGrade sql.NullInt64 `db:"ticket_grade"`
+}
+
 type dbTicketCount struct {
 	Day   time.Time `db:"day"`
 	Hour  time.Time `db:"hour"`

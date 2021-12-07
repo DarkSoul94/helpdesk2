@@ -179,6 +179,51 @@ func (r *ReportsRepo) formUserIDList(usersID []uint64, departments []string) ([]
 	return list, nil
 }
 
+func (r *ReportsRepo) GetReturnedTickets(startDate, endDate time.Time) ([]internal_models.ReturnedTicket, error) {
+	var (
+		dbTicekts []dbReturnedTicket
+		mTickets  []internal_models.ReturnedTicket
+		query     string
+		err       error
+	)
+
+	query = `SELECT 
+						ticket_id, 
+						ticket_date, 
+						category_section_name AS section, 
+						category_name AS category, ticket_text, 
+						ticket_status_name AS status, 
+						author.user_name AS author, 
+						supp.user_name AS support, 
+						ticket_grade 
+					FROM tickets
+				INNER JOIN category_section USING(section_id)
+				INNER JOIN category USING(category_id)
+				INNER JOIN ticket_status USING(ticket_status_id)
+				INNER JOIN users AS author ON author.user_id = ticket_author_id
+				INNER JOIN users AS supp ON supp.user_id = support_id
+				WHERE ticket_date BETWEEN ? AND ?
+				AND was_returned = 1`
+
+	err = r.db.Select(&dbTicekts, query, startDate, endDate)
+	if err != nil {
+		logger.LogError(
+			"Failed read returned ticekts",
+			"pkg_reports/repo/mysql",
+			fmt.Sprintf("start date: %s; end date: %s;", startDate, endDate),
+			err,
+		)
+
+		return nil, err
+	}
+
+	for _, ticket := range dbTicekts {
+		mTickets = append(mTickets, r.toModelsReturnedTicket(ticket))
+	}
+
+	return mTickets, nil
+}
+
 func (r *ReportsRepo) GetTicketsCountByDaysHours(startDate, endDate time.Time) (map[string]map[string]uint, error) {
 	var (
 		ticketCount  []dbTicketCount

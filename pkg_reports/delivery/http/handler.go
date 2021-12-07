@@ -127,7 +127,21 @@ func (h *ReportsHandler) GetTicketsGrades(c *gin.Context) {
 }
 
 func (h *ReportsHandler) GetReturnedTickets(c *gin.Context) {
+	startDate := c.Request.URL.Query().Get("start_date")
+	endDate := c.Request.URL.Query().Get("end_date")
 
+	tickets, err := h.uc.GetReturnedTickets(startDate, endDate)
+	if err != nil {
+		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+
+	outTickets := make([]dto.OutReturnedTicket, 0)
+	for _, ticket := range tickets {
+		outTickets = append(outTickets, dto.ToOutReturnedTickets(ticket))
+	}
+
+	c.JSON(http.StatusOK, outTickets)
 }
 
 func (h *ReportsHandler) GetTicketsCountByDaysHours(c *gin.Context) {

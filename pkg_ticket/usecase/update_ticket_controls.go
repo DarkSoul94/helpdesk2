@@ -146,6 +146,7 @@ func (u *TicketUsecase) checkRules(fields []string, ticket, existTicket *interna
 
 func (u *TicketUsecase) prepareTicket(fields []string, ticket, existTicket *internal_models.Ticket, user *models.User) models.Err {
 	var err models.Err
+	ticket.WasReturned = existTicket.WasReturned
 	for _, key := range fields {
 		switch key {
 		case fieldStatus:
@@ -243,6 +244,11 @@ func (u *TicketUsecase) changeStatus(ticket, existTicket *internal_models.Ticket
 	}
 
 	switch ticket.Status.ID {
+	case internal_models.TSWaitID:
+		if existTicket.Status.ID == internal_models.TSCompletedID || existTicket.Status.ID == internal_models.TSRejectedID {
+			ticket.WasReturned = true
+		}
+
 	case internal_models.TSInWorkID:
 		err := u.suppUC.UpdateSupportActivity(ticket.Support.ID, ticket.ID)
 		if err != nil {
