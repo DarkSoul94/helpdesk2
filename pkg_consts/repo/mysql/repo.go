@@ -27,11 +27,16 @@ func (r *ConstsRepo) SetConst(key string, data interface{}) error {
 
 	constant.ToConst(key, data)
 
-	query = `UPDATE consts SET
-				data = :data,
-				data_type = :data_type,
-				table_name = :table_name
-				WHERE name = :name`
+	query = `
+		INSERT INTO consts SET
+			name = :name,
+			data = :data,
+			data_type = :data_type,
+			table_name = :table_name
+		ON DUPLICATE KEY UPDATE
+			data = :data,
+			data_type = :data_type,
+			table_name = :table_name`
 
 	_, err = r.db.NamedExec(query, constant)
 	if err != nil {
@@ -41,7 +46,6 @@ func (r *ConstsRepo) SetConst(key string, data interface{}) error {
 			fmt.Sprintf("name: %s;", key),
 			err,
 		)
-		return err
 	}
 	return err
 }
@@ -78,6 +82,30 @@ func (r *ConstsRepo) GetConst(key string, target interface{}) error {
 		return err
 	}
 
+	return nil
+}
+
+func (r *ConstsRepo) CreateHistory(name string, data interface{}) error {
+	var history dbHistory
+	history.ToHistory(name, data)
+	query := `
+		INSERT INTO const_change_history SET
+			date = :date,
+			name = :name,
+			val = :val,
+			val_type = :val_type
+		ON DUPLICATE KEY UPDATE
+			val = :val,
+			val_type = :val_type`
+	if _, err := r.db.NamedExec(query, history); err != nil {
+		logger.LogError(
+			"Failed modify const",
+			"pkg_consts/repo/mysql",
+			fmt.Sprintf("name: %s;", name),
+			err,
+		)
+		return err
+	}
 	return nil
 }
 

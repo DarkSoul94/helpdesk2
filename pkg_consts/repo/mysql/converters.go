@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"time"
 )
 
 func (c *dBConst) ToConst(name string, data interface{}) {
@@ -15,6 +16,15 @@ func (c *dBConst) ToConst(name string, data interface{}) {
 		TableName: sql.NullString{
 			Valid: false,
 		},
+	}
+}
+
+func (c *dbHistory) ToHistory(name string, data interface{}) {
+	*c = dbHistory{
+		Date:    time.Now().Format("2006-01") + "-01",
+		Name:    name,
+		Val:     fmt.Sprintf("%v", data),
+		ValType: fmt.Sprintf("%T", data),
 	}
 }
 

@@ -19,37 +19,27 @@ func NewConstsUsecase(repo pkg_consts.IConstsRepo) *ConstsUsecase {
 
 func (u *ConstsUsecase) SetConst(key string, data map[string]interface{}) models.Err {
 	switch key {
-	case pkg_consts.DBKeyBanner:
-		if val, ok := data["text"]; ok {
-			if err := u.repo.SetConst(key, val); err != nil {
-				return models.InternalError("Ошибка заполнения новым значением")
-			}
+	case pkg_consts.KeyBanner:
+		return u.setBanner(data)
 
-			return nil
-		} else {
-			return models.BadRequest("Поле данных 'text' пустое")
-		}
+	case pkg_consts.KeyConfig:
+		return u.setSettings(data)
+
 	default:
 		return models.BadRequest(fmt.Sprintf("Константы '%s' не существует", key))
 	}
 }
 
 func (u *ConstsUsecase) GetConst(key string) (map[string]interface{}, models.Err) {
-	data := make(map[string]interface{})
 
 	switch key {
-	case pkg_consts.DBKeyBanner:
-		var text string
+	case pkg_consts.KeyBanner:
+		return u.getBanner()
 
-		err := u.repo.GetConst(key, &text)
-		if err != nil {
-			return nil, models.InternalError(fmt.Sprintf("Не удалось получить значение константы '%s'", key))
-		}
+	case pkg_consts.KeyConfig:
+		return u.getSettings()
 
-		data["text"] = text
 	default:
 		return nil, models.BadRequest(fmt.Sprintf("Константы '%s' не существует", key))
 	}
-
-	return data, nil
 }

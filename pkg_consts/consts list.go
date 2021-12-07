@@ -1,5 +1,6 @@
 package pkg_consts
 
 const (
-	DBKeyBanner = "banner"
+	KeyBanner = "banner"
+	KeyConfig = "config"
 )

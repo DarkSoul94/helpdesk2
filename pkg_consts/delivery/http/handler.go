@@ -43,6 +43,30 @@ func (h *ConstsHandler) GetConst(c *gin.Context) {
 		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
 		return
 	}
-
 	c.JSON(http.StatusOK, data)
+}
+
+func (h *ConstsHandler) GetSettings(c *gin.Context) {
+	data, err := h.uc.GetConst(pkg_consts.KeyConfig)
+	if err != nil {
+		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, data)
+}
+
+func (h *ConstsHandler) SetSettings(c *gin.Context) {
+	var data = make(map[string]interface{})
+
+	if err := c.BindJSON(&data); err != nil {
+		c.JSON(http.StatusBadRequest, map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+
+	if err := h.uc.SetConst(pkg_consts.KeyConfig, data); err != nil {
+		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, map[string]interface{}{"status": "ok"})
+
 }

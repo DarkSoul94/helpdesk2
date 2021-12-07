@@ -14,6 +14,15 @@ type PermissionMiddleware struct {
 	usecase group_manager.IPermManager
 }
 
+var (
+	constList []string = []string{
+		"banner",
+	}
+	suppConst []string = []string{
+		"banner",
+	}
+)
+
 func NewPermissionMiddleware(usecase group_manager.IPermManager) gin.HandlerFunc {
 	return (&PermissionMiddleware{
 		usecase: usecase,
@@ -30,14 +39,7 @@ func (p *PermissionMiddleware) CheckPermissions(c *gin.Context) {
 }
 
 func (p *PermissionMiddleware) constsCheck(c *gin.Context, user *models.User) {
-	var (
-		constList []string = []string{
-			"banner",
-		}
-		suppConst []string = []string{
-			"banner",
-		}
-	)
+
 	constant := c.Param("const")
 
 	if !p.contains(constant, constList) {
