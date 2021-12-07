@@ -56,7 +56,8 @@ func (u *ConstsUsecase) setSettings(data map[string]interface{}) models.Err {
 	if val, ok := data[key_Penalty]; ok {
 		u.repo.GetConst(key_Penalty, &penalty)
 		if val != penalty {
-			if err := u.repo.SetConst(key_Penalty, decimal.NewFromFloat(val.(float64))); err != nil {
+			temp, _ := decimal.NewFromString(val.(string))
+			if err := u.repo.SetConst(key_Penalty, temp); err != nil {
 				return models.InternalError("Ошибка заполнения новым значением")
 			}
 			u.repo.CreateHistory(key_Penalty, penalty)

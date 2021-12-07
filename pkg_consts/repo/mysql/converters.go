@@ -62,6 +62,8 @@ func (c *dBConst) FromConst(target interface{}) error {
 			temp, _ := decimal.NewFromString(c.Data)
 			v.Elem().Set(reflect.ValueOf(temp))
 
+		default:
+			return errors.New("Тип контстанты не определен в системе")
 		}
 
 	}
