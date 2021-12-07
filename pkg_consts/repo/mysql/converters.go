@@ -5,7 +5,17 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strconv"
 	"time"
+
+	"github.com/shopspring/decimal"
+)
+
+var (
+	decimalType = reflect.TypeOf(decimal.Zero)
+	float64Type = reflect.TypeOf(float64(0))
+	uint64Type  = reflect.TypeOf(uint64(0))
+	stringType  = reflect.TypeOf("")
 )
 
 func (c *dBConst) ToConst(name string, data interface{}) {
@@ -35,7 +45,25 @@ func (c *dBConst) FromConst(target interface{}) error {
 		if fmt.Sprintf("%v", v.Elem().Type()) != c.DataType {
 			return errors.New("invalid destination type")
 		}
-		v.Elem().Set(reflect.ValueOf(c.Data))
+
+		switch v.Elem().Type() {
+		case stringType:
+			v.Elem().Set(reflect.ValueOf(c.Data))
+
+		case float64Type:
+			temp, _ := strconv.ParseFloat(c.Data, 64)
+			v.Elem().Set(reflect.ValueOf(temp))
+
+		case uint64Type:
+			temp, _ := strconv.ParseUint(c.Data, 10, 64)
+			v.Elem().Set(reflect.ValueOf(temp))
+
+		case decimalType:
+			temp, _ := decimal.NewFromString(c.Data)
+			v.Elem().Set(reflect.ValueOf(temp))
+
+		}
+
 	}
 	return nil
 }

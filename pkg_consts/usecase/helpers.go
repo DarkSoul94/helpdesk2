@@ -56,7 +56,7 @@ func (u *ConstsUsecase) setSettings(data map[string]interface{}) models.Err {
 	if val, ok := data[key_Penalty]; ok {
 		u.repo.GetConst(key_Penalty, &penalty)
 		if val != penalty {
-			if err := u.repo.SetConst(key_Penalty, val); err != nil {
+			if err := u.repo.SetConst(key_Penalty, decimal.NewFromFloat(val.(float64))); err != nil {
 				return models.InternalError("Ошибка заполнения новым значением")
 			}
 			u.repo.CreateHistory(key_Penalty, penalty)
@@ -66,9 +66,10 @@ func (u *ConstsUsecase) setSettings(data map[string]interface{}) models.Err {
 	if val, ok := data[key_Grace]; ok {
 		u.repo.GetConst(key_Grace, &graceTime)
 		if val != graceTime {
-			if err := u.repo.SetConst(key_Grace, val); err != nil {
+			if err := u.repo.SetConst(key_Grace, uint64(val.(float64))); err != nil {
 				return models.InternalError("Ошибка заполнения новым значением")
 			}
+
 			u.repo.CreateHistory(key_Grace, graceTime)
 		}
 	}
