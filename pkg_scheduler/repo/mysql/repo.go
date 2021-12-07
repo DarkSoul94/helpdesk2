@@ -307,50 +307,6 @@ func (r *SchedulerRepo) CheckNewLateness() bool {
 	return result
 }
 
-func (r *SchedulerRepo) GetCurrentLatenessConf() (*internal_models.Config, models.Err) {
-	var (
-		conf                   internal_models.Config
-		LatePenalty, GraceTime dbConst
-		query                  string
-		err                    error
-	)
-
-	query = `SELECT * FROM consts WHERE name = ?`
-	if err = r.db.Get(&LatePenalty, query, internal_models.ConfKey_Penalty); err != nil {
-		logger.LogError("Failed read const from db", "pkg_scheduler/repo/mysql", internal_models.ConfKey_Penalty, err)
-	}
-	if err = r.db.Get(&GraceTime, query, internal_models.ConfKey_GraceTime); err != nil {
-		logger.LogError("Failed read const from db", "pkg_scheduler/repo/mysql", internal_models.ConfKey_GraceTime, err)
-	}
-	LatePenalty.FromConst(conf.Penalty)
-	GraceTime.FromConst(conf.GraceTime)
-	return &conf, nil
-}
-
-func (r *SchedulerRepo) ConstHistory(name string, data interface{}) models.Err {
-	history := createConstHistory(name, data)
-	query := `
-	INSERT INTO const_change_history SET
-		date = :date,
-		name = :name,
-		val = :val,
-		val_type = :val_type
-	ON DUPLICATE KEY UPDATE
-		val = :val,
-		val_type := val_type`
-
-	if _, err := r.db.NamedExec(query, history); err != nil {
-		logger.LogError("Failed write const change history to db", "pkg_scheduler/repo/mysql", name, err)
-		return models.InternalError("Не удалось записать историю изменения настроек графика")
-	}
-	return nil
-}
-
-func (r *SchedulerRepo) SetLatenessConf(conf *internal_models.Config) models.Err {
-
-	return nil
-}
-
 func (r *SchedulerRepo) Close() {
 	r.db.Close()
 }

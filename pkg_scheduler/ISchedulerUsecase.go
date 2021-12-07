@@ -26,3 +26,7 @@ type ISuppSchedulerUsecase interface {
 	IsSupportLate(supportID uint64) bool
 	CheckShiftInScheduler(supportID uint64) models.Err
 }
+
+type IReportsSchedulerUsecase interface {
+	SupportsShiftsMotivation(startDate, endDate string) ([]*internal_models.Motivation, models.Err)
+}

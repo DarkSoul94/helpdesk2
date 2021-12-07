@@ -157,11 +157,12 @@ func NewApp() *App {
 	fileUC := fileusecase.NewFileUsecase(fileRepo)
 	commentUC := commentusecase.NewCommentUsecase(commentRepo)
 	ticketUC := ticketusecase.NewTicketUsecase(ticketRepo, catsecUC, regfilUC, fileUC, permUC, userUC, suppUC, commentUC)
-	schedulerUC := schedulerusecase.NewSchedulerUsecase(schedulerRepo, schedulerSupp)
-
 	constsUC := constsusecase.NewConstsUsecase(constsRepo)
 
-	reportsUC := reportsusecase.NewReportsUsecase(reportsRepo)
+	schedulerUC := schedulerusecase.NewSchedulerUsecase(schedulerRepo, schedulerSupp)
+	schedReports := schedulerusecase.NewShedulerForReports(schedulerRepo, constsUC)
+
+	reportsUC := reportsusecase.NewReportsUsecase(reportsRepo, schedReports)
 
 	return &App{
 		dbConnect: db,

@@ -65,7 +65,6 @@ func (c *dBConst) FromConst(target interface{}) error {
 		default:
 			return errors.New("Тип контстанты не определен в системе")
 		}
-
 	}
 	return nil
 }

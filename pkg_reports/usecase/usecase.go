@@ -7,15 +7,18 @@ import (
 	"github.com/DarkSoul94/helpdesk2/pkg/logger"
 	"github.com/DarkSoul94/helpdesk2/pkg_reports"
 	"github.com/DarkSoul94/helpdesk2/pkg_reports/internal_models"
+	"github.com/DarkSoul94/helpdesk2/pkg_scheduler"
 )
 
 type ReportsUsecase struct {
-	repo pkg_reports.IReportsRepo
+	repo      pkg_reports.IReportsRepo
+	scheduler pkg_scheduler.IReportsSchedulerUsecase
 }
 
-func NewReportsUsecase(repo pkg_reports.IReportsRepo) *ReportsUsecase {
+func NewReportsUsecase(repo pkg_reports.IReportsRepo, scheduler pkg_scheduler.IReportsSchedulerUsecase) *ReportsUsecase {
 	return &ReportsUsecase{
-		repo: repo,
+		repo:      repo,
+		scheduler: scheduler,
 	}
 }
 
