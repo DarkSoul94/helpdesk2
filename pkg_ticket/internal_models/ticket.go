@@ -18,6 +18,7 @@ type Ticket struct {
 	NeedResolve    bool
 	Text           string
 	Status         *TicketStatus
+	WasReturned    bool
 	Filial         string
 	IP             string
 	Author         *models.User

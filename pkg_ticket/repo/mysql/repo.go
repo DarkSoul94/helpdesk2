@@ -126,6 +126,7 @@ func (r *TicketRepo) UpdateTicket(ticket *internal_models.Ticket) error {
 				section_id = :section_id,
 				need_resolve = :need_resolve,
 				ticket_status_id = :ticket_status_id,
+				was_returned = :was_returned,
 				support_id = :support_id,
 				resolved_user_id = :resolved_user_id,
 				service_comment = :service_comment

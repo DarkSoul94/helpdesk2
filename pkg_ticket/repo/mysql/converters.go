@@ -29,6 +29,7 @@ func (r *TicketRepo) toDbTicket(ticket *internal_models.Ticket) dbTicket {
 		NeedResolve: ticket.NeedResolve,
 		Text:        ticket.Text,
 		Status:      r.toDbTicketStatus(ticket.Status),
+		WasReturned: ticket.WasReturned,
 		Grade:       sql.NullInt32{Int32: int32(ticket.Grade), Valid: true},
 	}
 
@@ -85,6 +86,7 @@ func (r *TicketRepo) toModelTicket(dbTick dbTicket) *internal_models.Ticket {
 		CatSect:     &internal_models.SectionWithCategory{ID: dbTick.SectionID},
 		NeedResolve: dbTick.NeedResolve,
 		Status:      r.toModelTicketStatus(*dbTick.Status),
+		WasReturned: dbTick.WasReturned,
 	}
 
 	if dbTick.Filial.Valid {

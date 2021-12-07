@@ -1,6 +1,7 @@
 package dto
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/DarkSoul94/helpdesk2/pkg_reports/internal_models"
@@ -69,6 +70,32 @@ type OutDepartmentTicketGrade struct {
 type OutAverageGrade struct {
 	Name         string  `json:"support"`
 	AverageGrade float64 `json:"average_grade_by_support"`
+}
+
+type OutReturnedTicket struct {
+	TicketID    uint64 `json:"ticket_id"`
+	TicketDate  string `json:"ticket_date"`
+	Category    string `json:"category"`
+	Section     string `json:"section"`
+	TicketText  string `json:"ticket_text"`
+	Status      string `json:"status"`
+	Author      string `json:"author"`
+	Support     string `json:"support"`
+	TicketGrade uint64 `json:"ticket_grade"`
+}
+
+func ToOutReturnedTickets(tick internal_models.ReturnedTicket) OutReturnedTicket {
+	return OutReturnedTicket{
+		TicketID:    tick.TicketID,
+		TicketDate:  fmt.Sprint(tick.TicketDate.Format("2006-01-02 15:04:05")),
+		Category:    tick.Category,
+		Section:     tick.Section,
+		TicketText:  tick.TicketText,
+		Status:      tick.Status,
+		Author:      tick.Author,
+		Support:     tick.Support,
+		TicketGrade: tick.TicketGrade,
+	}
 }
 
 type OutTicketsCountByHour struct {

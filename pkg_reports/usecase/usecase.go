@@ -78,6 +78,20 @@ func (u *ReportsUsecase) GetTicketsGrade(startDate, endDate string, usersID []ui
 	return grades, nil
 }
 
+func (u *ReportsUsecase) GetReturnedTickets(startDate, endDate string) ([]internal_models.ReturnedTicket, models.Err) {
+	start, end, err := u.parseTime(startDate, endDate)
+	if err != nil {
+		return nil, err
+	}
+
+	tickets, er := u.repo.GetReturnedTickets(start, end)
+	if er != nil {
+		return nil, models.InternalError(er.Error())
+	}
+
+	return tickets, nil
+}
+
 func (u *ReportsUsecase) GetSupportsStatusesByWeekDay(startDate, endDate string) (map[uint]map[string][]internal_models.SupportStatus, models.Err) {
 	start, end, err := u.parseTime(startDate, endDate)
 	if err != nil {
