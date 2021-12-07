@@ -220,6 +220,46 @@ func (r *ReportsRepo) GetTicketsCountByDaysHours(startDate, endDate time.Time) (
 	return mTicketCount, nil
 }
 
+func (r *ReportsRepo) GetSupportsStatusesByWeekDay(startDate, endDate time.Time) (map[uint]map[string][]internal_models.SupportStatus, error) {
+	var (
+		dbHistory []dbSupportStatusesHistoryPerWeekDays
+		mHistory  map[uint]map[string][]internal_models.SupportStatus = make(map[uint]map[string][]internal_models.SupportStatus)
+		query     string
+		err       error
+	)
+
+	query = `SELECT WEEKDAY(sh.select_time) AS week_day, SUM(sh.duration) AS duration, u.user_name AS support_name, ss.support_status_name AS status_name FROM support_status_history AS sh
+				INNER JOIN users AS u ON support_id = user_id
+				INNER JOIN support_status AS ss ON status_id = support_status_id
+				WHERE select_time BETWEEN ? AND ?
+				GROUP BY sh.support_id, week_day, status_id
+				ORDER BY week_day, sh.support_id, status_id`
+
+	err = r.db.Select(&dbHistory, query, startDate, endDate)
+	if err != nil {
+		logger.LogError(
+			"Failed read support status history by week day",
+			"pkg_reports/repo/mysql",
+			fmt.Sprintf("start date: %s; end date: %s;", startDate, endDate),
+			err,
+		)
+		return nil, err
+	}
+
+	for _, history := range dbHistory {
+		if mHistory[history.WeekDay] == nil {
+			mHistory[history.WeekDay] = make(map[string][]internal_models.SupportStatus)
+		}
+
+		mHistory[history.WeekDay][history.SupportName] = append(mHistory[history.WeekDay][history.SupportName], internal_models.SupportStatus{
+			StatusName: history.StatusName,
+			Duration:   history.Duration,
+		})
+	}
+
+	return mHistory, nil
+}
+
 func (r *ReportsRepo) GetSupportsShifts(startDate, endDate time.Time) ([]internal_models.SupportsShifts, error) {
 	var (
 		dbShifts     []dbSupportsShifts
