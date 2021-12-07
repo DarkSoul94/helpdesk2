@@ -11,6 +11,7 @@ type IReportsRepo interface {
 	GetAverageGradesBySupport(startDate, endDate time.Time) (map[string]float64, error)
 	GetTicketsGrade(startDate, endDate time.Time, usersID []uint64, departments []string) (map[string]map[string][]internal_models.TicketGrade, error)
 	GetTicketsCountByDaysHours(startDate, endDate time.Time) (map[string]map[string]uint, error)
+	GetSupportsStatusesByWeekDay(startDate, endDate time.Time) (map[uint]map[string][]internal_models.SupportStatus, error)
 	GetSupportsShifts(startDate, endDate time.Time) ([]internal_models.SupportsShifts, error)
 	GetSupportsStatusHistory(startDate, endDate time.Time) (map[string][]internal_models.SupportStatusHistory, error)
 	GetConstVal(date time.Time, name string) uint64

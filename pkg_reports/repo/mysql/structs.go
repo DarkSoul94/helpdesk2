@@ -37,6 +37,13 @@ type dbTicketCount struct {
 	Count uint      `db:"count"`
 }
 
+type dbSupportStatusesHistoryPerWeekDays struct {
+	WeekDay     uint          `db:"week_day"`
+	StatusName  string        `db:"status_name"`
+	SupportName string        `db:"support_name"`
+	Duration    time.Duration `db:"duration"`
+}
+
 type dbSupportsShifts struct {
 	Support            string        `db:"support"`
 	OpeningDate        time.Time     `db:"opening_time"`

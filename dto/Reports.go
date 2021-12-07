@@ -102,16 +102,62 @@ func ToOutTicketsCountByDay(counts map[string]map[string]uint) []OutTicketsCount
 	return outCounts
 }
 
-type outOpeningDayTime struct {
-	OpeningDate        string `json:"opening_date"`
-	ClosingDate        string `json:"closing_date"`
-	CountOfMinutesLate uint64 `json:"count_of_minutes_late"`
+type OutSupportStatusesHistory struct {
+	WeekDay      uint             `json:"week_day"`
+	SupportsList []OutSupportList `json:"supports_list"`
+}
+
+type OutSupportList struct {
+	SupportName string               `json:"support_name"`
+	Statuses    []OutSupportStatuses `json:"statuses"`
+}
+
+type OutSupportStatuses struct {
+	StatusName string `json:"status_name"`
+	Duration   string `json:"duration"`
+}
+
+func ToOutSupportStatusesHistory(history map[uint]map[string][]internal_models.SupportStatus) []OutSupportStatusesHistory {
+	var outHistory []OutSupportStatusesHistory = make([]OutSupportStatusesHistory, 0)
+
+	for day, supportStatuses := range history {
+		outHist := OutSupportStatusesHistory{
+			WeekDay:      day,
+			SupportsList: make([]OutSupportList, 0),
+		}
+
+		for support, statusList := range supportStatuses {
+			outSupp := OutSupportList{
+				SupportName: support,
+				Statuses:    make([]OutSupportStatuses, 0),
+			}
+
+			for _, status := range statusList {
+				outSupp.Statuses = append(outSupp.Statuses, OutSupportStatuses{
+					StatusName: status.StatusName,
+					Duration:   (status.Duration * time.Second).String(),
+				})
+			}
+
+			outHist.SupportsList = append(outHist.SupportsList, outSupp)
+		}
+
+		outHistory = append(outHistory, outHist)
+	}
+
+	return outHistory
 }
 
 type OutSupportsShift struct {
 	Support          string              `json:"support"`
 	WithOutGraceTime string              `json:"with_out_grace_time"`
 	SupportShifts    []outOpeningDayTime `json:"shifts"`
+}
+
+type outOpeningDayTime struct {
+	OpeningDate        string `json:"opening_date"`
+	ClosingDate        string `json:"closing_date"`
+	CountOfMinutesLate uint64 `json:"count_of_minutes_late"`
 }
 
 func ToOutSupportShift(shift internal_models.SupportsShifts) OutSupportsShift {
