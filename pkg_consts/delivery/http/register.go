@@ -21,8 +21,8 @@ func RegisterHTTPEndpoints(router *gin.RouterGroup, uc pkg_consts.IConstsUsecase
 	settingsEndpoints.Use(middlewares...)
 	{
 		//http://localhost:8888/helpdesk/table/lateness_conf
-		constEndpoints.POST("/lateness_conf", h.SetSettings)
+		settingsEndpoints.POST("/lateness_conf", h.SetSettings)
 		//http://localhost:8888/helpdesk/table/lateness_conf
-		constEndpoints.GET("/lateness_conf", h.GetSettings)
+		settingsEndpoints.GET("/lateness_conf", h.GetSettings)
 	}
 }
