@@ -1,2 +1,2 @@
 ALTER TABLE `consts`
-DROP INDEX `name`;
+ADD UNIQUE `name` (`name`);
