@@ -41,6 +41,7 @@ type ISupportRepo interface {
 	UpdateCard(card *internal_models.Card) models.Err
 	GetCardBySupportID(supportID uint64) (*internal_models.Card, models.Err)
 	ResetSenior(seniorID uint64) models.Err
+	SetSeniorsColor(color string, seniorID uint64) models.Err
 
 	Close() error
 }

@@ -264,9 +264,15 @@ func (u *SupportUsecase) UpdateCard(card *internal_models.Card) models.Err {
 	if err != nil {
 		return err
 	}
-	if currentCard.IsSenior && !card.IsSenior {
-		if err := u.repo.ResetSenior(card.Support.ID); err != nil {
-			return err
+	if currentCard.IsSenior {
+		if !card.IsSenior {
+			if err := u.repo.ResetSenior(card.Support.ID); err != nil {
+				return err
+			}
+		} else if currentCard.Color != card.Color {
+			if err := u.repo.SetSeniorsColor(card.Color, card.Support.ID); err != nil {
+				return err
+			}
 		}
 	}
 	if card.IsSenior {

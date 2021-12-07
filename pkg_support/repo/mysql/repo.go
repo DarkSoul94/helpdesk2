@@ -480,6 +480,18 @@ func (r *Repo) ResetSenior(seniorID uint64) models.Err {
 	return nil
 }
 
+func (r *Repo) SetSeniorsColor(color string, seniorID uint64) models.Err {
+	query := `
+	UPDATE support_cards SET
+		color = ?
+		WHERE senior_id = ?`
+	if _, err := r.db.Exec(query, color, seniorID); err != nil {
+		logger.LogError("Failed update support cards", "pkg_support/repo/mysql", fmt.Sprintf("senior id: %d", seniorID), err)
+		return errCardUpdate
+	}
+	return nil
+}
+
 func (r *Repo) GetSupportListForToday() ([]*internal_models.Support, models.Err) {
 	list := make([]dbSupport, 0)
 	mList := make([]*internal_models.Support, 0)
