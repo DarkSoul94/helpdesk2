@@ -48,8 +48,7 @@ func (ss *ShedulerForSupport) CheckShiftInScheduler(supportID uint64) models.Err
 
 func (ss *ShedulerForSupport) CreateLateness(supportID uint64, cause string) (time.Time, models.Err) {
 	var lateness = new(internal_models.Lateness)
-
-	if err := ss.store.Get(strconv.Itoa(int(supportID)), &lateness); err != nil {
+	if err := ss.store.Get(strconv.Itoa(int(supportID)), lateness); err != nil {
 		return time.Time{}, models.BadRequest("По саппорту нет опозданий") //TODO вынести в отдельный error
 	}
 	lateness.Cause = cause
