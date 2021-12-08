@@ -30,19 +30,34 @@ func (sr *ShedulerForReports) SupportsShiftsMotivation(startDate, endDate time.T
 	regularsMap := make(map[uint64][]internal_models.Motivation)
 
 	seniors, regulars, _ := sr.support.GetSupportGroups()
+	penaltyMap, err := sr.latenessHelper(startDate)
+	if err != nil {
+		return nil, err
+	}
+
 	shifts, err := sr.repo.GetShiftsCount(startDate, endDate)
 	if err != nil {
 		return nil, err
 	}
-	for _, val := range regulars {
-		regularsMap[val.Senior.ID] = append(regularsMap[val.Senior.ID], internal_models.Motivation{
-			SupportID:   val.Support.ID,
-			SupportName: val.Support.Name,
-			Color:       val.Color,
-			Motivation:  val.Wager.Mul(decimal.New(shifts[val.Support.ID], 0)),
+
+	for _, support := range regulars {
+		motiv := support.Wager.Mul(decimal.New(shifts[support.Support.ID], 0))
+		if penalty, ok := penaltyMap[support.Support.ID]; ok {
+			motiv = motiv.Sub(penalty)
+		}
+		regularsMap[support.Senior.ID] = append(regularsMap[support.Senior.ID], internal_models.Motivation{
+			SupportID:   support.Support.ID,
+			SupportName: support.Support.Name,
+			Color:       support.Color,
+			Motivation:  motiv,
 		})
 	}
 	for _, support := range seniors {
+		motiv := support.Wager.Mul(decimal.New(shifts[support.Support.ID], 0))
+		if penalty, ok := penaltyMap[support.Support.ID]; ok {
+			motiv = motiv.Sub(penalty)
+		}
+
 		motivations = append(motivations, internal_models.Motivation{
 			SupportID:   support.Support.ID,
 			SupportName: support.Support.Name,

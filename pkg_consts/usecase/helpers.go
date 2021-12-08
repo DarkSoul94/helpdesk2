@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/DarkSoul94/helpdesk2/models"
 	"github.com/shopspring/decimal"
@@ -45,6 +46,24 @@ func (u *ConstsUsecase) getSettings() (map[string]interface{}, models.Err) {
 	data[key_Grace] = graceTime
 
 	return data, nil
+}
+
+func (u *ConstsUsecase) getSettingsHistory(date time.Time) map[string]interface{} {
+	data := make(map[string]interface{})
+	var (
+		penalty   decimal.Decimal
+		graceTime uint64
+	)
+
+	if err := u.repo.GetHistory(date, key_Penalty, &penalty); err == nil {
+		data[key_Penalty] = penalty
+	}
+
+	if err := u.repo.GetHistory(date, key_Grace, &graceTime); err == nil {
+		data[key_Grace] = graceTime
+	}
+
+	return data
 }
 
 func (u *ConstsUsecase) setSettings(data map[string]interface{}) models.Err {

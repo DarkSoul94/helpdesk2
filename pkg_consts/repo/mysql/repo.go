@@ -3,6 +3,7 @@ package mysql
 import (
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/DarkSoul94/helpdesk2/pkg/logger"
 	"github.com/jmoiron/sqlx"
@@ -106,6 +107,26 @@ func (r *ConstsRepo) CreateHistory(name string, data interface{}) error {
 		)
 		return err
 	}
+	return nil
+}
+
+func (r *ConstsRepo) GetHistory(date time.Time, key string, target interface{}) error {
+	var history dbHistory
+	query := `SELECT * FROM const_change_history
+	WHERE name = ? 
+	AND EXTRACT(YEAR FROM date) >= EXTRACT(YEAR FROM ?)
+	AND EXTRACT(MONTH FROM date) > EXTRACT(MONTH FROM ?)
+	LIMIT 1`
+	err := r.db.Get(&history, query, key, date, date)
+	if err != nil {
+		return err
+	}
+	constant := dBConst{
+		Name:     history.Name,
+		Data:     history.Val,
+		DataType: history.ValType,
+	}
+	constant.FromConst(target)
 	return nil
 }
 
