@@ -5,6 +5,7 @@ import (
 
 	"github.com/DarkSoul94/helpdesk2/global_const/actions"
 	"github.com/DarkSoul94/helpdesk2/models"
+	"github.com/DarkSoul94/helpdesk2/pkg_scheduler"
 	"github.com/DarkSoul94/helpdesk2/pkg_support"
 	"github.com/DarkSoul94/helpdesk2/pkg_support/internal_models"
 	"github.com/DarkSoul94/helpdesk2/pkg_ticket"
@@ -12,20 +13,23 @@ import (
 )
 
 type SupportUsecase struct {
-	repo   pkg_support.ISupportRepo
-	ticket pkg_ticket.IUCForSupport
-	perm   group_manager.IPermManager
+	repo     pkg_support.ISupportRepo
+	ticket   pkg_ticket.IUCForSupport
+	schedule pkg_scheduler.ISuppSchedulerUsecase
+	perm     group_manager.IPermManager
 }
 
 func NewSupportUsecase(
 	repo pkg_support.ISupportRepo,
 	perm group_manager.IPermManager,
 	ticket pkg_ticket.IUCForSupport,
+	schedule pkg_scheduler.ISuppSchedulerUsecase,
 ) *SupportUsecase {
 	return &SupportUsecase{
-		repo:   repo,
-		perm:   perm,
-		ticket: ticket,
+		repo:     repo,
+		perm:     perm,
+		ticket:   ticket,
+		schedule: schedule,
 	}
 }
 
@@ -168,10 +172,25 @@ func (u *SupportUsecase) OpenShift(supportID uint64, user *models.User) models.E
 			return u.updateShift(shift)
 		}
 		//TODO добавить проверку на опоздание по графику и можно ли вообще открывать смену
+		if err := u.schedule.CheckShiftInScheduler(supportID); err != nil {
+			return err
+		}
+
 		shift.Open(supportID, time.Now())
 		return u.updateShift(shift)
 	}
 	return supportErr_AlreadyOpen
+}
+
+func (u *SupportUsecase) CreateLateness(supportID uint64, cause string) models.Err {
+	var shift = new(internal_models.Shift)
+
+	time, err := u.schedule.CreateLateness(supportID, cause)
+	if err != nil {
+		return err
+	}
+	shift.Open(supportID, time)
+	return u.updateShift(shift)
 }
 
 func (u *SupportUsecase) CloseShift(supportID uint64, user *models.User) models.Err {
@@ -213,13 +232,6 @@ func (u *SupportUsecase) updateShift(shift *internal_models.Shift) models.Err {
 		if err := u.changePriority(shift.Support); err != nil {
 			return err
 		}
-		/*
-			forUpdate := u.priorityHelper(shift.Support)
-			for _, support := range forUpdate {
-				if err := u.repo.UpdateSupport(support); err != nil {
-					return err
-				}
-			}*/
 		if err := u.statusHistoryHelper(shift.Support, shift.ID); err != nil {
 			return err
 		}

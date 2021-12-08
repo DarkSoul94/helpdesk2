@@ -27,7 +27,9 @@ type ISchedulerRepo interface {
 	DeleteCells(actualCellsIDs map[string][]uint64) models.Err
 	//Получает массив ячеек графика за определенную дату
 	GetSchedule(date string) ([]*internal_models.Cell, models.Err)
-	//Получаеи количество смен по всем суппортам
+	//Получить ячейку с графиком по саппорту за сегодня
+	GetTodayShift(supportID uint64) (*internal_models.Cell, models.Err)
+	//Получает количество смен по всем суппортам
 	GetShiftsCount(startDate, endDate time.Time) (map[uint64]int64, models.Err)
 
 	//Создание запизаписи об опоздании

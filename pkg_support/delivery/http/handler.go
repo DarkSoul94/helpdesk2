@@ -83,6 +83,30 @@ func (h *Handler) OpenShift(c *gin.Context) {
 	c.JSON(http.StatusOK, map[string]string{"status": "ok"})
 }
 
+func (h *Handler) CreateLateness(c *gin.Context) {
+	type lateCause struct {
+		SupportID uint64 `json:"support_id"`
+		Cause     string `json:"cause"`
+	}
+
+	var cause lateCause
+
+	if err := c.BindJSON(&cause); err != nil {
+		c.JSON(http.StatusBadRequest, map[string]string{"status": "error", "error": err.Error()})
+		return
+	}
+	if cause.SupportID == 0 || len(cause.Cause) == 0 {
+		c.JSON(errBlankField.Code(), map[string]interface{}{"status": "error", "error": errBlankField.Error()})
+		return
+	}
+
+	if err := h.uc.CreateLateness(cause.SupportID, cause.Cause); err != nil {
+		c.JSON(err.Code(), map[string]string{"status": "error", "error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, map[string]string{"status": "ok"})
+}
+
 func (h *Handler) CloseShift(c *gin.Context) {
 	type support struct {
 		SupportID uint64 `json:"support_id"`

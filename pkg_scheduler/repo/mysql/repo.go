@@ -202,6 +202,32 @@ func (r *SchedulerRepo) GetSchedule(date string) ([]*internal_models.Cell, model
 	return mShiftsSchedule, nil
 }
 
+func (r *SchedulerRepo) GetTodayShift(supportID uint64) (*internal_models.Cell, models.Err) {
+	var (
+		err   error
+		query string
+		cell  dbCell
+	)
+	query = `
+		SELECT * FROM shifts_schedule
+		WHERE support_id = ?
+			AND date = CURDATE()
+		LIMIT 1`
+	err = r.db.Get(&cell, query, supportID)
+	if err != nil {
+		if !strings.Contains(err.Error(), "sql: no rows in result set") {
+			logger.LogError(
+				"Failed read shift from db",
+				"helpdesk/repo/mysql",
+				fmt.Sprintf("supportID: %d", supportID),
+				err)
+			return nil, models.InternalError("Не удалось получить сегодняшнюю смену")
+		}
+		return nil, nil
+	}
+	return r.toModelShiftsScheduleCell(cell), nil
+}
+
 func (r *SchedulerRepo) GetShiftsCount(startDate, endDate time.Time) (map[uint64]int64, models.Err) {
 	type count struct {
 		SupportID  uint64 `db:"support_id"`

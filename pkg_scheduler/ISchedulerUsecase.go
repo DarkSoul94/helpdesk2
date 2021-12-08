@@ -22,9 +22,8 @@ type ISchedulerUsecase interface {
 }
 
 type ISuppSchedulerUsecase interface {
-	CreateLateness(supportID uint64, cause string, time time.Time)
-	IsSupportLate(supportID uint64) bool
 	CheckShiftInScheduler(supportID uint64) models.Err
+	CreateLateness(supportID uint64, cause string) (time.Time, models.Err)
 }
 
 type IReportsSchedulerUsecase interface {

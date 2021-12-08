@@ -90,7 +90,7 @@ type App struct {
 	ticketUCForSupp pkg_ticket.IUCForSupport
 	suppRepo        pkg_support.ISupportRepo
 	suppUC          pkg_support.ISupportUsecase
-	schedulerSupp   pkg_support.ISuppForScheduler
+	suppScheduler   pkg_support.ISuppForScheduler
 
 	permUC group_manager.IPermManager
 
@@ -144,8 +144,9 @@ func NewApp() *App {
 	grpUC := groupusecase.NewGroupManager(grpRepo)
 	permUC := permusecase.NewPermManager(grpRepo)
 	ticketUCForSupp := ticketucforsupp.NewTicketUCForSupport(ticketRepo)
-	suppUC := supportusecase.NewSupportUsecase(suppRepo, permUC, ticketUCForSupp)
-	schedulerSupp := supportusecase.NewSuppForSchedulerUsecase(suppRepo)
+	schedulerSupp := schedulerusecase.NewScheduleForSupport(schedulerRepo)
+	suppUC := supportusecase.NewSupportUsecase(suppRepo, permUC, ticketUCForSupp, schedulerSupp)
+	suppScheduler := supportusecase.NewSuppForSchedulerUsecase(suppRepo)
 	userUC := userusecase.NewUsecase(userRepo, grpUC, permUC, suppUC)
 	authUC := authusecase.NewUsecase(userUC,
 		viper.GetString("app.auth.secret_key"),
@@ -159,8 +160,8 @@ func NewApp() *App {
 	ticketUC := ticketusecase.NewTicketUsecase(ticketRepo, catsecUC, regfilUC, fileUC, permUC, userUC, suppUC, commentUC)
 	constsUC := constsusecase.NewConstsUsecase(constsRepo)
 
-	schedulerUC := schedulerusecase.NewSchedulerUsecase(schedulerRepo, schedulerSupp)
-	schedReports := schedulerusecase.NewShedulerForReports(schedulerRepo, constsUC, schedulerSupp)
+	schedulerUC := schedulerusecase.NewSchedulerUsecase(schedulerRepo, suppScheduler)
+	schedReports := schedulerusecase.NewShedulerForReports(schedulerRepo, constsUC, suppScheduler)
 
 	reportsUC := reportsusecase.NewReportsUsecase(catsecUC, schedReports, reportsRepo)
 
@@ -173,7 +174,6 @@ func NewApp() *App {
 		ticketUCForSupp: ticketUCForSupp,
 		suppRepo:        suppRepo,
 		suppUC:          suppUC,
-		schedulerSupp:   schedulerSupp,
 
 		permUC: permUC,
 
@@ -199,6 +199,7 @@ func NewApp() *App {
 
 		schedulerRepo: schedulerRepo,
 		schedulerUC:   schedulerUC,
+		suppScheduler: suppScheduler,
 
 		constsRepo: constsRepo,
 		constsUC:   constsUC,

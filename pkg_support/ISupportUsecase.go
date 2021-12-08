@@ -8,6 +8,8 @@ import (
 type ISupportUsecase interface {
 	//Открытие/переоткрытие смены саппорту.
 	OpenShift(supportID uint64, user *models.User) models.Err
+	//Создание опоздания по указанному саппорту с указанной причиной
+	CreateLateness(supportID uint64, cause string) models.Err
 	//Закрытие смены саппорта. Если смену закрывает администратор - отправляет запросы у этого саппорта на распределение
 	CloseShift(supportID uint64, user *models.User) models.Err
 	//Получение последней смены по суппорту
