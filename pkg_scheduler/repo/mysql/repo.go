@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/DarkSoul94/helpdesk2/models"
 	"github.com/DarkSoul94/helpdesk2/pkg/logger"
@@ -199,6 +200,39 @@ func (r *SchedulerRepo) GetSchedule(date string) ([]*internal_models.Cell, model
 	}
 
 	return mShiftsSchedule, nil
+}
+
+func (r *SchedulerRepo) GetShiftsCount(startDate, endDate time.Time) (map[uint64]int64, models.Err) {
+	type count struct {
+		SupportID  uint64 `db:"support_id"`
+		ShiftCount int64  `db:"shift_count"`
+	}
+	var (
+		dbCount []count
+		res     = make(map[uint64]int64)
+	)
+	query := `
+	SELECT S.support_id, IFNULL(C.shift_count,0) AS shift_count FROM support AS S
+	LEFT JOIN (
+		 SELECT support_id, COUNT(*) AS shift_count FROM shifts_schedule
+		 WHERE date BETWEEN ? AND ?
+		 GROUP BY support_id
+		 ) AS C ON S.support_id = C.support_id`
+
+	err := r.db.Select(&dbCount, query, startDate, endDate)
+	if err != nil {
+		logger.LogError(
+			"Failed read shifts count from db",
+			"pkg_scheduler/repo/mysql",
+			fmt.Sprintf("period: %s - %s", startDate.String(), endDate.String()),
+			err)
+		return nil, models.InternalError("Не удалось получить график смен")
+	}
+
+	for _, val := range dbCount {
+		res[val.SupportID] = val.ShiftCount
+	}
+	return res, nil
 }
 
 func (r *SchedulerRepo) CreateLateness(lateness *internal_models.Lateness) models.Err {

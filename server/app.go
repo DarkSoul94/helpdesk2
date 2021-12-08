@@ -160,7 +160,7 @@ func NewApp() *App {
 	constsUC := constsusecase.NewConstsUsecase(constsRepo)
 
 	schedulerUC := schedulerusecase.NewSchedulerUsecase(schedulerRepo, schedulerSupp)
-	schedReports := schedulerusecase.NewShedulerForReports(schedulerRepo, constsUC)
+	schedReports := schedulerusecase.NewShedulerForReports(schedulerRepo, constsUC, schedulerSupp)
 
 	reportsUC := reportsusecase.NewReportsUsecase(reportsRepo, schedReports)
 

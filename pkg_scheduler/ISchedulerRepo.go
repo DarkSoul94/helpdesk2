@@ -1,6 +1,8 @@
 package pkg_scheduler
 
 import (
+	"time"
+
 	"github.com/DarkSoul94/helpdesk2/models"
 	"github.com/DarkSoul94/helpdesk2/pkg_scheduler/internal_models"
 )
@@ -25,6 +27,8 @@ type ISchedulerRepo interface {
 	DeleteCells(actualCellsIDs map[string][]uint64) models.Err
 	//Получает массив ячеек графика за определенную дату
 	GetSchedule(date string) ([]*internal_models.Cell, models.Err)
+	//Получаеи количество смен по всем суппортам
+	GetShiftsCount(startDate, endDate time.Time) (map[uint64]int64, models.Err)
 
 	//Создание запизаписи об опоздании
 	CreateLateness(lateness *internal_models.Lateness) models.Err

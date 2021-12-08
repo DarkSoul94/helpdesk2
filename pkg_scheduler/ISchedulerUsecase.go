@@ -28,5 +28,5 @@ type ISuppSchedulerUsecase interface {
 }
 
 type IReportsSchedulerUsecase interface {
-	SupportsShiftsMotivation(startDate, endDate string) ([]*internal_models.Motivation, models.Err)
+	SupportsShiftsMotivation(startDate, endDate time.Time) ([]internal_models.Motivation, models.Err)
 }
