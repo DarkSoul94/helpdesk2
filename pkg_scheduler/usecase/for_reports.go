@@ -62,7 +62,7 @@ func (sr *ShedulerForReports) SupportsShiftsMotivation(startDate, endDate time.T
 			SupportID:   support.Support.ID,
 			SupportName: support.Support.Name,
 			Color:       support.Color,
-			Motivation:  support.Wager.Mul(decimal.New(shifts[support.Support.ID], 0)),
+			Motivation:  motiv,
 		})
 		motivations = append(motivations, regularsMap[support.Support.ID]...)
 	}

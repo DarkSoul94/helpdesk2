@@ -25,7 +25,6 @@ func (sr *ShedulerForReports) latenessHelper(date time.Time) (map[uint64]decimal
 	if err != nil {
 		return nil, err
 	}
-
 	for _, late := range lateness {
 		lateTime[late.SupportID] += late.Difference
 	}
