@@ -28,7 +28,7 @@ func NewReportsUsecase(catSecUC cat_sec_manager.ICatSecUsecase, scheduler pkg_sc
 
 func (u *ReportsUsecase) GetMotivation(startDate, endDate string) (map[string][]internal_models.Motivation, models.Err) {
 	var (
-		motivationByPeriod map[string][]internal_models.Motivation = make(map[string][]internal_models.Motivation)
+		motivByPer map[string][]internal_models.Motivation = make(map[string][]internal_models.Motivation)
 	)
 
 	inpPeriod, er := internal_models.ParceString(startDate, endDate)
@@ -51,7 +51,7 @@ func (u *ReportsUsecase) GetMotivation(startDate, endDate string) (map[string][]
 		}
 
 		for _, shift := range shiftMotivation {
-			supportMotivation := internal_models.Motivation{
+			suppMotiv := internal_models.Motivation{
 				Support: &internal_models.MotivSupport{
 					ID:    shift.SupportID,
 					Name:  shift.SupportName,
@@ -78,22 +78,22 @@ func (u *ReportsUsecase) GetMotivation(startDate, endDate string) (map[string][]
 					count = 0
 				}
 
-				categoryMotivation := &internal_models.MotivCategory{
+				catMotiv := &internal_models.MotivCategory{
 					ID:    category.ID,
 					Name:  category.Name,
 					Count: count,
 				}
-				supportMotivation.TotalMotivation = supportMotivation.TotalMotivation.Add(category.Price.Mul(decimal.New(int64(count), 0)))
-				supportMotivation.ByCategory = append(supportMotivation.ByCategory, categoryMotivation)
-				supportMotivation.TotalTicketsCount += count
+				suppMotiv.TotalMotivation = suppMotiv.TotalMotivation.Add(catMotiv.CalcMotiv(category.Price))
+				suppMotiv.ByCategory = append(suppMotiv.ByCategory, catMotiv)
+				suppMotiv.TotalTicketsCount += count
 			}
 
-			supportMotivation.Total = supportMotivation.TotalByShifts.Add(supportMotivation.TotalMotivation)
-			motivationByPeriod[index] = append(motivationByPeriod[index], supportMotivation)
+			suppMotiv.Total = suppMotiv.TotalByShifts.Add(suppMotiv.TotalMotivation)
+			motivByPer[index] = append(motivByPer[index], suppMotiv)
 		}
 	}
 
-	return motivationByPeriod, nil
+	return motivByPer, nil
 }
 
 func (u *ReportsUsecase) GetTicketStatusDifference(startDate, endDate string) (map[internal_models.TicketDifference][]internal_models.StatusDifference, models.Err) {

@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"time"
+
 	"github.com/DarkSoul94/helpdesk2/models"
 	"github.com/DarkSoul94/helpdesk2/pkg_consts"
 	"github.com/DarkSoul94/helpdesk2/pkg_scheduler"
@@ -19,6 +21,6 @@ func NewShedulerForReports(repo pkg_scheduler.ISchedulerRepo, consts pkg_consts.
 	}
 }
 
-func (sr *ShedulerForReports) SupportsShiftsMotivation(startDate, endDate string) ([]*internal_models.Motivation, models.Err) {
+func (sr *ShedulerForReports) SupportsShiftsMotivation(startDate, endDate time.Time) ([]*internal_models.Motivation, models.Err) {
 	return nil, nil
 }
