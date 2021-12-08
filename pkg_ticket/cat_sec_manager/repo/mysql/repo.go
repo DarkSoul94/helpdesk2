@@ -102,6 +102,34 @@ func (r *CatSecRepo) UpdateCategory(cat *internal_models.Category) error {
 	return nil
 }
 
+func (r *CatSecRepo) GetCategoryList() ([]*internal_models.Category, error) {
+	var (
+		dbCategoryList []dbCategory
+		mCategoryList  []*internal_models.Category
+		query          string
+		err            error
+	)
+
+	query = `SELECT * FROM category`
+
+	err = r.db.Select(&dbCategoryList, query)
+	if err != nil {
+		logger.LogError(
+			"Failed read category list",
+			"pkg_ticket/cat_sec_manager/repo/mysql",
+			"",
+			err,
+		)
+		return nil, err
+	}
+
+	for _, category := range dbCategoryList {
+		mCategoryList = append(mCategoryList, r.toModelsCategory(category))
+	}
+
+	return mCategoryList, nil
+}
+
 func (r *CatSecRepo) CheckCategorySectionExist(id, cat_id uint64, name string) bool {
 	var (
 		db_id uint64
@@ -153,6 +181,15 @@ func (r *CatSecRepo) updateApprovalBindings(sec_id uint64, groups_id []uint64) {
 	r.db.Exec(q, arg...)
 }
 
+func (r *CatSecRepo) dropApprovalBindings(sec_id uint64) {
+	var (
+		query string
+	)
+
+	query = `DELETE FROM approval_bindings WHERE section_id = ?`
+	r.db.Exec(query, sec_id)
+}
+
 func (r *CatSecRepo) CreateCategorySection(sec *internal_models.CategorySection) (uint64, error) {
 	var (
 		res   sql.Result
@@ -181,7 +218,9 @@ func (r *CatSecRepo) CreateCategorySection(sec *internal_models.CategorySection)
 
 	id, _ := res.LastInsertId()
 
-	r.updateApprovalBindings(uint64(id), sec.ApprovalGroups)
+	if sec.NeedApproval {
+		r.updateApprovalBindings(uint64(id), sec.ApprovalGroups)
+	}
 
 	return uint64(id), nil
 }
@@ -212,7 +251,11 @@ func (r *CatSecRepo) UpdateCategorySection(sec *internal_models.CategorySection)
 		return err
 	}
 
-	r.updateApprovalBindings(sec.ID, sec.ApprovalGroups)
+	if sec.NeedApproval {
+		r.updateApprovalBindings(sec.ID, sec.ApprovalGroups)
+	} else {
+		r.dropApprovalBindings(sec.ID)
+	}
 
 	return nil
 }

@@ -6,6 +6,7 @@ import (
 )
 
 type IReportsUsecase interface {
+	GetMotivation(startDate, endDate string) (map[string][]internal_models.Motivation, models.Err)
 	GetTicketStatusDifference(startDate, endDate string) (map[internal_models.TicketDifference][]internal_models.StatusDifference, models.Err)
 	GetAverageGradesBySupport(startDate, endDate string) (map[string]float64, models.Err)
 	GetTicketsGrade(startDate, endDate string, usersID []uint64, departments []string) (map[string]map[string][]internal_models.TicketGrade, models.Err)

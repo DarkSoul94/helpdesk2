@@ -11,6 +11,11 @@ type ReportsRepo struct {
 	db *sqlx.DB
 }
 
+type dbTicketCountByCategory struct {
+	CategoryID uint64 `db:"category_id"`
+	Count      uint64 `db:"count"`
+}
+
 type dbTicketStatusDifference struct {
 	TicketID    uint64        `db:"ticket_id"`
 	SupportName string        `db:"support_name"`

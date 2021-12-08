@@ -7,6 +7,64 @@ import (
 	"github.com/DarkSoul94/helpdesk2/pkg_reports/internal_models"
 )
 
+type OutMotivation struct {
+	Support           *motivSupp         `json:"support"`
+	Categories        []*motivCategories `json:"categories"`
+	TotalTicketsCount uint64             `json:"total_tickets_count"`
+	TotalMotivation   float64            `json:"total_motivation"`
+	TotalByShifts     float64            `json:"total_by_shifts"`
+	TotalPayment      float64            `json:"total_payment"`
+}
+
+func ToOutMotivation(inpMotiv []internal_models.Motivation) []OutMotivation {
+	outMotiv := make([]OutMotivation, 0)
+	for _, motivation := range inpMotiv {
+		totalMotivation, _ := motivation.TotalMotivation.Float64()
+		totalShifts, _ := motivation.TotalByShifts.Float64()
+		total, _ := motivation.Total.Float64()
+		outMotiv = append(outMotiv, OutMotivation{
+			Support:         toMotivationSupport(motivation.Support),
+			Categories:      toMotivationCategories(motivation.ByCategory),
+			TotalMotivation: totalMotivation,
+			TotalByShifts:   totalShifts,
+			TotalPayment:    total,
+		})
+	}
+	return outMotiv
+}
+
+type motivSupp struct {
+	ID    uint64 `json:"id"`
+	Name  string `json:"name"`
+	Color string `json:"color"`
+}
+
+func toMotivationSupport(mSupport *internal_models.MotivSupport) *motivSupp {
+	return &motivSupp{
+		ID:    mSupport.ID,
+		Name:  mSupport.Name,
+		Color: mSupport.Color,
+	}
+}
+
+type motivCategories struct {
+	ID           uint64 `json:"id"`
+	Name         string `json:"name"`
+	TicketsCount uint64 `json:"tickets_count"`
+}
+
+func toMotivationCategories(byCategories []*internal_models.MotivCategory) []*motivCategories {
+	outCategories := make([]*motivCategories, 0)
+	for _, category := range byCategories {
+		outCategories = append(outCategories, &motivCategories{
+			ID:           category.ID,
+			Name:         category.Name,
+			TicketsCount: category.Count,
+		})
+	}
+	return outCategories
+}
+
 type OutStatusDifference struct {
 	Status   string `json:"status"`
 	DiffTime string `json:"diff_time"`

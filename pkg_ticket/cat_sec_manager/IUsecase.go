@@ -8,6 +8,7 @@ import (
 type ICatSecUsecase interface {
 	CreateCategory(cat *internal_models.Category) (uint64, models.Err)
 	UpdateCategory(cat *internal_models.Category) models.Err
+	GetCategoryList() ([]*internal_models.Category, models.Err)
 
 	CreateCategorySection(sec *internal_models.CategorySection) (uint64, models.Err)
 	UpdateCategorySection(sec *internal_models.CategorySection) models.Err

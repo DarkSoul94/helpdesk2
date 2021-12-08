@@ -20,7 +20,21 @@ func NewReportsHandler(uc pkg_reports.IReportsUsecase) *ReportsHandler {
 }
 
 func (h *ReportsHandler) GetMotivation(c *gin.Context) {
+	startDate := c.Request.URL.Query().Get("start_date")
+	endDate := c.Request.URL.Query().Get("end_date")
 
+	motivation, err := h.uc.GetMotivation(startDate, endDate)
+	if err != nil {
+		c.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+
+	outMotivation := make(map[string][]dto.OutMotivation)
+	for period, motiv := range motivation {
+		outMotivation[period] = dto.ToOutMotivation(motiv)
+	}
+
+	c.JSON(http.StatusOK, outMotivation)
 }
 
 func (h *ReportsHandler) GetTicketStatusDifference(c *gin.Context) {

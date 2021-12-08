@@ -482,7 +482,7 @@ func (r *Repo) ResetSenior(seniorID uint64) models.Err {
 
 func (r *Repo) SetSeniorsColor(color string, seniorID uint64) models.Err {
 	query := `
-	UPDATE support_cards SET
+	UPDATE supports_cards SET
 		color = ?
 		WHERE senior_id = ?`
 	if _, err := r.db.Exec(query, color, seniorID); err != nil {

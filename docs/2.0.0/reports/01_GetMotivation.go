@@ -18,20 +18,20 @@ package docs
 * @apiExample  Example usage:
 * http://localhost:8888/helpdesk/reports/motivation?start_date=2021-03-01&end_date=2021-05-01
 *
-* @apiSuccess (Success 200) {[]Period} 						period 																			Результат за указанный период разделенный по месяцам
-* @apiSuccess (Success 200) {[]Motivation} 				period.motivation														Массив мотиваций по сотрудникам тех. поддержки
-* @apiSuccess (Success 200) {Support} 						period.motivation.support										Объект с информацией по сотруднику тех. поддержки
-* @apiSuccess (Success 200) {Uint64} 							period.motivation.support.id								ID сотрудника тех. поддержки
-* @apiSuccess (Success 200) {String} 							period.motivation.support.name							Имя сотрудника тех. поддержки
-* @apiSuccess (Success 200) {String} 							period.motivation.support.color							Цвет для отображения сотрудника тех. поддержки в графике
-* @apiSuccess (Success 200) {[]Categories} 				period.motivation.categories								Массив объектов с информацией по количеству запросов выполненных сотрудником в разрезе категорий запросов
-* @apiSuccess (Success 200) {Uint64} 							period.motivation.categories.id							ID категории запроса
-* @apiSuccess (Success 200) {String} 							period.motivation.categories.name						Название категории
-* @apiSuccess (Success 200) {Uint64} 							period.motivation.categories.tickets_count	Количество запросов по категории
-* @apiSuccess (Success 200) {Uint64} 							period.motivation.total_tickets_count				Общее количество запросов по категории
-* @apiSuccess (Success 200) {Float64} 						period.motivation.total_motivation					Общая мотивация по сотруднику тех. поддержки
-* @apiSuccess (Success 200) {Float64} 						period.motivation.total_by_shifts						Общая сумма оплаты по открытым сменам сотрудника за указанный период.
-* @apiSuccess (Success 200) {Float64} 						period.motivation.total_payment							Общая сумма оплаты с учетом мотивации и оплаты смен.
+* @apiSuccess (Success 200) {[]Period} 			period 											Результат за указанный период разделенный по месяцам
+* @apiSuccess (Success 200) {[]Motivation} 		period.motivation								Массив мотиваций по сотрудникам тех. поддержки
+* @apiSuccess (Success 200) {Support} 			period.motivation.support						Объект с информацией по сотруднику тех. поддержки
+* @apiSuccess (Success 200) {Uint64} 			period.motivation.support.id					ID сотрудника тех. поддержки
+* @apiSuccess (Success 200) {String} 			period.motivation.support.name					Имя сотрудника тех. поддержки
+* @apiSuccess (Success 200) {String} 			period.motivation.support.color					Цвет для отображения сотрудника тех. поддержки в графике
+* @apiSuccess (Success 200) {[]Categories} 		period.motivation.categories					Массив объектов с информацией по количеству запросов выполненных сотрудником в разрезе категорий запросов
+* @apiSuccess (Success 200) {Uint64} 			period.motivation.categories.id					ID категории запроса
+* @apiSuccess (Success 200) {String} 			period.motivation.categories.name				Название категории
+* @apiSuccess (Success 200) {Uint64} 			period.motivation.categories.tickets_count		Количество запросов по категории
+* @apiSuccess (Success 200) {Uint64} 			period.motivation.total_tickets_count			Общее количество запросов по категории
+* @apiSuccess (Success 200) {Float64} 			period.motivation.total_motivation				Общая мотивация по сотруднику тех. поддержки
+* @apiSuccess (Success 200) {Float64} 			period.motivation.total_by_shifts				Общая сумма оплаты по открытым сменам сотрудника за указанный период.
+* @apiSuccess (Success 200) {Float64} 			period.motivation.total_payment					Общая сумма оплаты с учетом мотивации и оплаты смен.
 *
 * @apiSuccessExample {json} Success-Response:
 * {

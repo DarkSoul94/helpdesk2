@@ -646,7 +646,17 @@ func (u *TicketUsecase) TicketGrade(ticketID uint64, grade uint, user *models.Us
 }
 
 func (u *TicketUsecase) CheckNeedApprovalTicketExist(groupID uint64) bool {
-	exist, err := u.repo.CheckNeedApprovalTicketExist(groupID, u.permUC.CheckPermission(groupID, actions.TicketTA_Resolve))
+	var (
+		exist bool
+		err   error
+	)
+
+	if u.permUC.CheckPermission(groupID, actions.AdminTA) || u.permUC.CheckPermission(groupID, actions.TicketTA_Work) {
+		exist, err = u.repo.CheckNeedApprovalTicketExist(groupID, false)
+
+	} else if u.permUC.CheckPermission(groupID, actions.TicketTA_Resolve) {
+		exist, err = u.repo.CheckNeedApprovalTicketExist(groupID, true)
+	}
 	if err != nil {
 		return false
 	}
@@ -655,7 +665,17 @@ func (u *TicketUsecase) CheckNeedApprovalTicketExist(groupID uint64) bool {
 }
 
 func (u *TicketUsecase) GetApprovalTicketList(groupID uint64, limit, offset int) ([]*internal_models.Ticket, []string, models.Err) {
-	list, err := u.repo.GetTicketListForApproval(groupID, limit, offset, u.permUC.CheckPermission(groupID, actions.TicketTA_Resolve))
+	var (
+		list []*internal_models.Ticket
+		err  error
+	)
+	if u.permUC.CheckPermission(groupID, actions.AdminTA) || u.permUC.CheckPermission(groupID, actions.TicketTA_Work) {
+		list, err = u.repo.GetTicketListForApproval(groupID, limit, offset, false)
+
+	} else if u.permUC.CheckPermission(groupID, actions.TicketTA_Resolve) {
+		list, err = u.repo.GetTicketListForApproval(groupID, limit, offset, true)
+	}
+
 	if err != nil {
 		return nil, nil, models.InternalError(err.Error())
 	}
