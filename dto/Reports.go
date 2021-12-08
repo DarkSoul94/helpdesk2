@@ -23,11 +23,12 @@ func ToOutMotivation(inpMotiv []internal_models.Motivation) []OutMotivation {
 		totalShifts, _ := motivation.TotalByShifts.Float64()
 		total, _ := motivation.Total.Float64()
 		outMotiv = append(outMotiv, OutMotivation{
-			Support:         toMotivationSupport(motivation.Support),
-			Categories:      toMotivationCategories(motivation.ByCategory),
-			TotalMotivation: totalMotivation,
-			TotalByShifts:   totalShifts,
-			TotalPayment:    total,
+			Support:           toMotivationSupport(motivation.Support),
+			Categories:        toMotivationCategories(motivation.ByCategory),
+			TotalMotivation:   totalMotivation,
+			TotalByShifts:     totalShifts,
+			TotalPayment:      total,
+			TotalTicketsCount: motivation.TotalTicketsCount,
 		})
 	}
 	return outMotiv
