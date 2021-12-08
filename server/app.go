@@ -162,7 +162,7 @@ func NewApp() *App {
 	schedulerUC := schedulerusecase.NewSchedulerUsecase(schedulerRepo, schedulerSupp)
 	schedReports := schedulerusecase.NewShedulerForReports(schedulerRepo, constsUC)
 
-	reportsUC := reportsusecase.NewReportsUsecase(reportsRepo, schedReports)
+	reportsUC := reportsusecase.NewReportsUsecase(catsecUC, schedReports, reportsRepo)
 
 	return &App{
 		dbConnect: db,

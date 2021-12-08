@@ -8,18 +8,92 @@ import (
 	"github.com/DarkSoul94/helpdesk2/pkg_reports"
 	"github.com/DarkSoul94/helpdesk2/pkg_reports/internal_models"
 	"github.com/DarkSoul94/helpdesk2/pkg_scheduler"
+	"github.com/DarkSoul94/helpdesk2/pkg_ticket/cat_sec_manager"
+	"github.com/shopspring/decimal"
 )
 
 type ReportsUsecase struct {
-	repo      pkg_reports.IReportsRepo
+	catSecUC  cat_sec_manager.ICatSecUsecase
 	scheduler pkg_scheduler.IReportsSchedulerUsecase
+	repo      pkg_reports.IReportsRepo
 }
 
-func NewReportsUsecase(repo pkg_reports.IReportsRepo, scheduler pkg_scheduler.IReportsSchedulerUsecase) *ReportsUsecase {
+func NewReportsUsecase(catSecUC cat_sec_manager.ICatSecUsecase, scheduler pkg_scheduler.IReportsSchedulerUsecase, repo pkg_reports.IReportsRepo) *ReportsUsecase {
 	return &ReportsUsecase{
-		repo:      repo,
+		catSecUC:  catSecUC,
 		scheduler: scheduler,
+		repo:      repo,
 	}
+}
+
+func (u *ReportsUsecase) GetMotivation(startDate, endDate string) (map[string][]internal_models.Motivation, models.Err) {
+	var (
+		motivationByPeriod map[string][]internal_models.Motivation = make(map[string][]internal_models.Motivation)
+	)
+
+	inpPeriod, er := internal_models.ParceString(startDate, endDate)
+	if er != nil {
+		return nil, models.InternalError(er.Error())
+	}
+
+	categoryList, err := u.catSecUC.GetCategoryList()
+	if err != nil {
+		return nil, err
+	}
+
+	periods := inpPeriod.SplitByMonth()
+	for _, period := range periods {
+		index := period.FormLabel()
+
+		shiftMotivation, err := u.scheduler.SupportsShiftsMotivation(period.StartDate, period.EndDate)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, shift := range shiftMotivation {
+			supportMotivation := internal_models.Motivation{
+				Support: &internal_models.MotivSupport{
+					ID:    shift.SupportID,
+					Name:  shift.SupportName,
+					Color: shift.Color,
+				},
+				ByCategory:        make([]*internal_models.MotivCategory, 0),
+				TotalTicketsCount: 0,
+				TotalMotivation:   decimal.Zero,
+				TotalByShifts:     shift.Motivation,
+				Total:             decimal.Zero,
+			}
+
+			ticketCount, er := u.repo.GetSupportTicketCountByCategory(period.StartDate, period.EndDate, shift.SupportID)
+			if er != nil {
+				return nil, models.InternalError(er.Error())
+			}
+
+			for _, category := range categoryList {
+				count, ok := ticketCount[category.ID]
+				if category.Old && !ok {
+					continue
+				}
+				if !ok {
+					count = 0
+				}
+
+				categoryMotivation := &internal_models.MotivCategory{
+					ID:    category.ID,
+					Name:  category.Name,
+					Count: count,
+				}
+				supportMotivation.TotalMotivation = supportMotivation.TotalMotivation.Add(category.Price.Mul(decimal.New(int64(count), 0)))
+				supportMotivation.ByCategory = append(supportMotivation.ByCategory, categoryMotivation)
+				supportMotivation.TotalTicketsCount += count
+			}
+
+			supportMotivation.Total = supportMotivation.TotalByShifts.Add(supportMotivation.TotalMotivation)
+			motivationByPeriod[index] = append(motivationByPeriod[index], supportMotivation)
+		}
+	}
+
+	return motivationByPeriod, nil
 }
 
 func (u *ReportsUsecase) GetTicketStatusDifference(startDate, endDate string) (map[internal_models.TicketDifference][]internal_models.StatusDifference, models.Err) {

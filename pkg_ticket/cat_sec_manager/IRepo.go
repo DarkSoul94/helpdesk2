@@ -6,6 +6,7 @@ type ICatSecRepo interface {
 	CheckCategoryExist(id uint64, name string) bool
 	CreateCategory(cat *internal_models.Category) (uint64, error)
 	UpdateCategory(cat *internal_models.Category) error
+	GetCategoryList() ([]*internal_models.Category, error)
 
 	CheckCategorySectionExist(id, cat_id uint64, name string) bool
 	CreateCategorySection(sec *internal_models.CategorySection) (uint64, error)

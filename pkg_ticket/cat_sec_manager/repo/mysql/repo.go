@@ -102,6 +102,34 @@ func (r *CatSecRepo) UpdateCategory(cat *internal_models.Category) error {
 	return nil
 }
 
+func (r *CatSecRepo) GetCategoryList() ([]*internal_models.Category, error) {
+	var (
+		dbCategoryList []dbCategory
+		mCategoryList  []*internal_models.Category
+		query          string
+		err            error
+	)
+
+	query = `SELECT * FROM category`
+
+	err = r.db.Select(&dbCategoryList, query)
+	if err != nil {
+		logger.LogError(
+			"Failed read category list",
+			"pkg_ticket/cat_sec_manager/repo/mysql",
+			"",
+			err,
+		)
+		return nil, err
+	}
+
+	for _, category := range dbCategoryList {
+		mCategoryList = append(mCategoryList, r.toModelsCategory(category))
+	}
+
+	return mCategoryList, nil
+}
+
 func (r *CatSecRepo) CheckCategorySectionExist(id, cat_id uint64, name string) bool {
 	var (
 		db_id uint64

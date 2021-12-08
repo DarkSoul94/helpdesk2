@@ -17,6 +17,40 @@ func NewReportsRepo(db *sql.DB) *ReportsRepo {
 	}
 }
 
+func (r *ReportsRepo) GetSupportTicketCountByCategory(startDate, endDate time.Time, support_id uint64) (map[uint64]uint64, error) {
+	var (
+		dbTicketCount []dbTicketCountByCategory
+		mTicketCount  map[uint64]uint64 = make(map[uint64]uint64)
+		query         string
+		err           error
+	)
+
+	query = `SELECT CS.category_id, COUNT(*) AS count FROM tickets AS T 
+	LEFT JOIN category_section AS CS ON CS.section_id = T.section_id
+	WHERE  ticket_status_id = 9
+	AND ticket_date BETWEEN ? AND ?
+	AND support_id = ?
+	GROUP BY CS.category_id, T.support_id`
+
+	err = r.db.Select(&dbTicketCount, query, startDate, endDate, support_id)
+	if err != nil {
+		logger.LogError(
+			"Failed read support ticket count by category",
+			"pkg_reports/repo/mysql",
+			fmt.Sprintf("start date: %s; end date: %s; support id: %d", startDate, endDate, support_id),
+			err,
+		)
+
+		return nil, err
+	}
+
+	for _, count := range dbTicketCount {
+		mTicketCount[count.CategoryID] = count.Count
+	}
+
+	return mTicketCount, nil
+}
+
 func (r *ReportsRepo) GetTicketStatusDifference(startDate, endDate time.Time) (map[internal_models.TicketDifference][]internal_models.StatusDifference, error) {
 	var (
 		dbStatusDifference []dbTicketStatusDifference
