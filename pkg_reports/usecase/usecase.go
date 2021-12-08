@@ -91,6 +91,8 @@ func (u *ReportsUsecase) GetMotivation(startDate, endDate string) (map[string][]
 			suppMotiv.Total = suppMotiv.TotalByShifts.Add(suppMotiv.TotalMotivation)
 			motivByPer[index] = append(motivByPer[index], suppMotiv)
 		}
+
+		motivByPer[index] = append(motivByPer[index], internal_models.Total(motivByPer[index]))
 	}
 
 	return motivByPer, nil
