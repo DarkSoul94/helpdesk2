@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/DarkSoul94/helpdesk2/pkg/logger"
@@ -160,9 +161,9 @@ func (r *TicketRepo) GetLastTicketStatusHistory(ticketID uint64) (*internal_mode
 				ORDER BY TH.id DESC LIMIT 1`
 
 	err = r.db.Get(&history, query, ticketID)
-	if err != nil {
+	if err != nil && !strings.Contains(err.Error(), "sql: no rows in result set") {
 		logger.LogError(
-			"Failed read ticket status history",
+			"Failed read last ticket status history",
 			"pkg_ticket/repo/mysql",
 			fmt.Sprintf("ticket id: %d;", ticketID),
 			err,
