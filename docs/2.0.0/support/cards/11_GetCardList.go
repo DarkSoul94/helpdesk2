@@ -5,7 +5,7 @@ package docs
  * @api {GET} /support/card/list 11. Получить список карточек суппорта
  * @apiName GetCardList
  * @apiGroup 05. Сотрудник ТП
- * @apiVersion  0.1.1
+ * @apiVersion  2.0.0
  * @apiSampleRequest off
  *
  *

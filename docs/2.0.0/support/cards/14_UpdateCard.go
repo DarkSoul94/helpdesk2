@@ -5,7 +5,7 @@ package docs
  * @api {POST} /support/card/update 14. Обновить карточку суппорта
  * @apiName UpdateSupportCard
  * @apiGroup 05. Сотрудник ТП
- * @apiVersion  0.1.1
+ * @apiVersion  2.0.0
  * @apiSampleRequest off
  *
  * @apiParam  {Uint64} 	id 								ИД карточки

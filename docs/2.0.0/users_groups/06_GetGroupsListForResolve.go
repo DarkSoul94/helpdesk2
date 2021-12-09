@@ -1,8 +1,8 @@
-package docs
+package users
 
 /**
  *
- * @api {GET} /helpdesk/group/for_resolve Получение списка груп пользователей с правами согласовывать запросы
+ * @api {GET} /helpdesk/group/for_resolve 06. Получение списка груп пользователей с правами согласовывать запросы
  * @apiName GetGroupsListForResolve
  * @apiGroup 04. Пользователи
  * @apiVersion  2.0.0
