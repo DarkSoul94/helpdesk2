@@ -2,7 +2,7 @@ package cat_end_sec
 
 /**
 *
-* @api {post} /helpdesk/section/update 04. Обновление разделов категории
+* @api {post} /helpdesk/section/update 05. Обновление разделов категории
 * @apiSampleRequest off
 * @apiName UpdateCategorySection
 * @apiGroup 02. Категории и разделы категорий

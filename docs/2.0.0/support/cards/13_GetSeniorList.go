@@ -5,7 +5,7 @@ package docs
  * @api {GET} /support/card/seniors 13. Получить список старших суппортов
  * @apiName GetSeniorSupportsList
  * @apiGroup 05. Сотрудник ТП
- * @apiVersion  0.1.1
+ * @apiVersion  2.0.0
  * @apiSampleRequest off
  *
  *

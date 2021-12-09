@@ -2,7 +2,7 @@ package cat_end_sec
 
 /**
 *
-* @api {POST} /helpdesk/section/create 03. Создание раздела категории
+* @api {POST} /helpdesk/section/create 04. Создание раздела категории
 * @apiName CreateSection
 * @apiGroup 02. Категории и разделы категорий
 * @apiVersion  2.0.0
