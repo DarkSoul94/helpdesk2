@@ -3,6 +3,7 @@ package mysql
 import (
 	"database/sql"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -132,7 +133,7 @@ func (r *FileRepo) GetFile(fileID uint64) (*internal_models.File, error) {
 				"Failed open file in directory",
 				"pkg_ticket/file_manager/repo/mysql",
 				fmt.Sprintf("file path: %s; file id: %d;", dbFile.Path.String, fileID),
-				err,
+				errors.New("Файл удален с сервера"),
 			)
 			return nil, err
 		}

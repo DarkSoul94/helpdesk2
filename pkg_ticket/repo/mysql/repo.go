@@ -373,6 +373,7 @@ func (r *TicketRepo) GetTicketListForApproval(groupID uint64, limit, offset int,
 						WHERE group_id = ?
 						AND T.section_id = approval_bindings.section_id
 					) AND T.ticket_status_id != 8
+					AND T.need_resolve = true
 					ORDER BY T.ticket_id
 					DESC LIMIT ? OFFSET ?`
 

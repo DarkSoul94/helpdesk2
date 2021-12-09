@@ -39,3 +39,7 @@ func checkSeeAdditionalInfo(group *models.Group) bool {
 func checkCreateTicket(group *models.Group) bool {
 	return group.CreateTicket
 }
+
+func checkReportGet(group *models.Group) bool {
+	return group.CanReports
+}

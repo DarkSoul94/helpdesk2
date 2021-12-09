@@ -14,7 +14,7 @@ type IReportsRepo interface {
 	GetReturnedTickets(startDate, endDate time.Time) ([]internal_models.ReturnedTicket, error)
 	GetTicketsCountByDaysHours(startDate, endDate time.Time) (map[string]map[string]uint, error)
 	GetSupportsStatusesByWeekDay(startDate, endDate time.Time) (map[uint]map[string][]internal_models.SupportStatus, error)
-	GetSupportsShifts(startDate, endDate time.Time) ([]internal_models.SupportsShifts, error)
+	GetSupportsShifts(startDate, endDate time.Time) ([]*internal_models.SupportsShifts, error)
 	GetSupportsStatusHistory(startDate, endDate time.Time) (map[string][]internal_models.SupportStatusHistory, error)
 	GetConstVal(date time.Time, name string) uint64
 	Close() error

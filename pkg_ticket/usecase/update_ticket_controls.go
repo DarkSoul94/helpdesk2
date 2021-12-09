@@ -147,6 +147,8 @@ func (u *TicketUsecase) checkRules(fields []string, ticket, existTicket *interna
 func (u *TicketUsecase) prepareTicket(fields []string, ticket, existTicket *internal_models.Ticket, user *models.User) models.Err {
 	var err models.Err
 	ticket.WasReturned = existTicket.WasReturned
+	ticket.NeedResolve = existTicket.NeedResolve
+
 	for _, key := range fields {
 		switch key {
 		case fieldStatus:

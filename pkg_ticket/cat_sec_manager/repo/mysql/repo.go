@@ -255,9 +255,19 @@ func (r *CatSecRepo) UpdateCategorySection(sec *internal_models.CategorySection)
 		r.updateApprovalBindings(sec.ID, sec.ApprovalGroups)
 	} else {
 		r.dropApprovalBindings(sec.ID)
+		r.resetNeedApproval(sec.ID)
 	}
 
 	return nil
+}
+
+func (r *CatSecRepo) resetNeedApproval(secID uint64) {
+	query := `UPDATE tickets SET
+				need_resolve = false
+				WHERE need_resolve = true
+				AND section_id = ?`
+
+	r.db.Exec(query, secID)
 }
 
 func (r *CatSecRepo) GetCategorySection(forSearch bool) ([]*internal_models.SectionWithCategory, error) {

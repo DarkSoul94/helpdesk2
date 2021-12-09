@@ -470,7 +470,7 @@ func (r *Repo) GetCardBySupportID(supportID uint64) (*internal_models.Card, mode
 func (r *Repo) ResetSenior(seniorID uint64) models.Err {
 	query := `
 	UPDATE supports_cards SET
-		support_id = NULL,
+		senior_id = NULL,
 		color = "#FFFFFF"
 	WHERE senior_id = ?`
 	if _, err := r.db.Exec(query, seniorID); err != nil {
