@@ -281,7 +281,7 @@ func (a *App) Run(port string) error {
 		}
 	}(l)
 
-	go moveFileFromDBtoFolder(a.dbConnect)
+	go moveFileFromDBtoFolder()
 
 	ctx1, shutdown1 := context.WithCancel(context.Background())
 	defer shutdown1()
@@ -368,9 +368,11 @@ func (a *App) close() {
 	a.commentRepo.Close()
 	a.ticketRepo.Close()
 	a.schedulerRepo.Close()
+
+	a.dbConnect.Close()
 }
 
-func moveFileFromDBtoFolder(db *sql.DB) {
+func moveFileFromDBtoFolder() {
 	type dbFile struct {
 		FileID        uint64         `db:"file_id"`
 		FileName      string         `db:"file_name"`
@@ -381,49 +383,60 @@ func moveFileFromDBtoFolder(db *sql.DB) {
 		Path          sql.NullString `db:"path"`
 	}
 
-	var (
-		files []dbFile
-		query string
-	)
-
+	db := initDB()
+	defer db.Close()
 	dbx := sqlx.NewDb(db, "mysql")
 	defaultPath := viper.GetString("app.store.path")
 
-	query = `SELECT * FROM files 
-				WHERE path IS NULL`
-	dbx.Select(&files, query)
+	for {
+		var (
+			files []dbFile
+			query string
+		)
 
-	for _, f := range files {
-		year, month, day := f.FileDate.Date()
-		pathToFolder := fmt.Sprintf("%s/%d-%d-%d", defaultPath, day, month, year)
-		if _, err := os.Stat(pathToFolder); os.IsNotExist(err) {
-			os.Mkdir(pathToFolder, 0777)
+		query = `SELECT * FROM files 
+				WHERE path IS NULL
+				LIMIT 10`
+		dbx.Select(&files, query)
+		if len(files) == 0 {
+			return
 		}
 
-		f.Path.String = fmt.Sprintf("%s/%s", pathToFolder, f.FileName)
-		f.Path.Valid = true
+		for _, f := range files {
+			year, month, day := f.FileDate.Date()
+			pathToFolder := fmt.Sprintf("%s/%d/%d/%d", defaultPath, year, month, day)
+			if _, err := os.Stat(pathToFolder); os.IsNotExist(err) {
+				os.Mkdir(pathToFolder, 0777)
+			}
 
-		newFile, err := os.Create(f.Path.String)
-		if err != nil {
-			logger.LogError("Failed create file", "server/app", f.FileName, err)
-			continue
-		}
-		defer newFile.Close()
-		split := strings.Split(f.FileData.String, ",")
-		data, err := base64.StdEncoding.DecodeString(split[1])
+			f.Path.String = fmt.Sprintf("%s/%s", pathToFolder, f.FileName)
+			f.Path.Valid = true
 
-		newFile.Write(data)
+			newFile, err := os.Create(f.Path.String)
+			if err != nil {
+				logger.LogError("Failed create file", "server/app", f.FileName, err)
+				continue
+			}
+			split := strings.Split(f.FileData.String, ",")
+			data, err := base64.StdEncoding.DecodeString(split[1])
 
-		f.FileData.String = split[0]
+			newFile.Write(data)
 
-		query = `UPDATE files SET 
+			f.FileData.String = split[0]
+
+			query = `UPDATE files SET 
 					file_data = :file_data,
 					path = :path
 					WHERE file_id = :file_id`
-		_, err = dbx.NamedExec(query, f)
-		if err != nil {
-			logger.LogError("Failed update file", "server/app", f.FileName, err)
-			continue
+			_, err = dbx.NamedExec(query, f)
+			if err != nil {
+				logger.LogError("Failed update file", "server/app", f.FileName, err)
+				continue
+			}
+
+			newFile.Close()
 		}
+
+		time.Sleep(1 * time.Second)
 	}
 }

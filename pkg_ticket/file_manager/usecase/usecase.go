@@ -26,7 +26,7 @@ func NewFileUsecase(repo file_manager.IFileRepo) *FileUsecase {
 func (u *FileUsecase) CreateFiles(files []*internal_models.File, ticketID uint64) models.Err {
 	defaultPath := viper.GetString("app.store.path")
 	year, month, day := time.Now().Date()
-	pathToFolder := fmt.Sprintf("%s/%d-%d-%d", defaultPath, day, month, year)
+	pathToFolder := fmt.Sprintf("%s/%d/%d/%d", defaultPath, year, month, day)
 
 	if _, err := os.Stat(pathToFolder); os.IsNotExist(err) {
 		os.Mkdir(pathToFolder, 0777)
