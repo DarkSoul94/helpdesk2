@@ -45,12 +45,21 @@ func (sr *ShedulerForReports) SupportsShiftsMotivation(startDate, endDate time.T
 		if penalty, ok := penaltyMap[support.Support.ID]; ok {
 			motiv = motiv.Sub(penalty)
 		}
-		regularsMap[support.Senior.ID] = append(regularsMap[support.Senior.ID], internal_models.Motivation{
-			SupportID:   support.Support.ID,
-			SupportName: support.Support.Name,
-			Color:       support.Color,
-			Motivation:  motiv,
-		})
+		if support.Senior != nil {
+			regularsMap[support.Senior.ID] = append(regularsMap[support.Senior.ID], internal_models.Motivation{
+				SupportID:   support.Support.ID,
+				SupportName: support.Support.Name,
+				Color:       support.Color,
+				Motivation:  motiv,
+			})
+		} else {
+			regularsMap[0] = append(regularsMap[0], internal_models.Motivation{
+				SupportID:   support.Support.ID,
+				SupportName: support.Support.Name,
+				Color:       support.Color,
+				Motivation:  motiv,
+			})
+		}
 	}
 	for _, support := range seniors {
 		motiv := support.Wager.Mul(decimal.New(shifts[support.Support.ID], 0))
@@ -65,6 +74,9 @@ func (sr *ShedulerForReports) SupportsShiftsMotivation(startDate, endDate time.T
 			Motivation:  motiv,
 		})
 		motivations = append(motivations, regularsMap[support.Support.ID]...)
+	}
+	if val, ok := regularsMap[0]; ok {
+		motivations = append(motivations, val...)
 	}
 	return motivations, nil
 }
