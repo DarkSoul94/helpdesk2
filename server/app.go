@@ -409,7 +409,7 @@ func moveFileFromDBtoFolder() {
 				os.Mkdir(pathToFolder, 0777)
 			}
 
-			f.Path.String = fmt.Sprintf("%s/%s", pathToFolder, f.FileName)
+			f.Path.String = fmt.Sprintf("%s/%s%s", pathToFolder, f.FileName, f.FileExtension)
 			f.Path.Valid = true
 
 			newFile, err := os.Create(f.Path.String)

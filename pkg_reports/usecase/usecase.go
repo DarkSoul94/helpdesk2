@@ -184,11 +184,11 @@ func (u *ReportsUsecase) GetSupportsStatusesByWeekDay(startDate, endDate string)
 	return history, nil
 }
 
-func (u ReportsUsecase) GetSupportsShifts(startDate, endDate string) (map[string][]internal_models.SupportsShifts, models.Err) {
+func (u ReportsUsecase) GetSupportsShifts(startDate, endDate string) (map[string][]*internal_models.SupportsShifts, models.Err) {
 	var (
 		period       internal_models.Period
 		rangeByMonth []internal_models.Period
-		result       map[string][]internal_models.SupportsShifts = make(map[string][]internal_models.SupportsShifts)
+		result       map[string][]*internal_models.SupportsShifts = make(map[string][]*internal_models.SupportsShifts)
 	)
 
 	period, err := internal_models.ParceString(startDate, endDate)
@@ -205,11 +205,20 @@ func (u ReportsUsecase) GetSupportsShifts(startDate, endDate string) (map[string
 		if err != nil {
 			return nil, models.InternalError(err.Error())
 		}
-
+		completeSupportShifts(report)
 		result[index] = report
 	}
 
 	return result, nil
+}
+
+func completeSupportShifts(list []*internal_models.SupportsShifts) {
+	for _, val := range list {
+		val.ShiftsCount = len(val.DayTime)
+		for _, shift := range val.DayTime {
+			val.MinutesCount += shift.CountOfMinutesLate
+		}
+	}
 }
 
 func (u *ReportsUsecase) GetSupportsStatusHistory(date string) (map[string][]internal_models.SupportStatusHistory, models.Err) {

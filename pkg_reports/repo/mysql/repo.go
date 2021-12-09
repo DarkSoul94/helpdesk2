@@ -339,23 +339,26 @@ func (r *ReportsRepo) GetSupportsStatusesByWeekDay(startDate, endDate time.Time)
 	return mHistory, nil
 }
 
-func (r *ReportsRepo) GetSupportsShifts(startDate, endDate time.Time) ([]internal_models.SupportsShifts, error) {
+func (r *ReportsRepo) GetSupportsShifts(startDate, endDate time.Time) ([]*internal_models.SupportsShifts, error) {
 	var (
 		dbShifts     []dbSupportsShifts
 		openingTimes map[string][]internal_models.OpeningDayTime = make(map[string][]internal_models.OpeningDayTime)
-		mShifts      []internal_models.SupportsShifts
+		mShifts      []*internal_models.SupportsShifts
 		query        string
 		err          error
 	)
 
 	query = `SELECT user_name AS support, opening_time, closing_time, difference AS count_of_minutes_late FROM supports_shifts AS shift
-	LEFT JOIN support_lateness AS late ON (
-		shift.support_id = late.support_id 
-		AND EXTRACT(DAY FROM shift.opening_time) = EXTRACT(DAY FROM late.date) 
-		AND EXTRACT(MONTH FROM shift.opening_time) = EXTRACT(MONTH FROM late.date)
-	)
-	INNER JOIN users ON shift.support_id = user_id
-	WHERE opening_time BETWEEN ? AND ?`
+				LEFT JOIN (
+					SELECT * FROM support_lateness  
+					WHERE decision IS NOT true
+				) AS late ON (
+					shift.support_id = late.support_id 
+					AND	EXTRACT(DAY FROM shift.opening_time) = EXTRACT(DAY FROM late.date) 
+					AND EXTRACT(MONTH FROM shift.opening_time) = EXTRACT(MONTH FROM late.date)
+				)
+				INNER JOIN users ON shift.support_id = user_id
+				WHERE opening_time BETWEEN ? AND ?`
 
 	err = r.db.Select(&dbShifts, query, startDate, endDate)
 	if err != nil {
@@ -405,7 +408,7 @@ func (r *ReportsRepo) GetSupportsShifts(startDate, endDate time.Time) ([]interna
 		} else {
 			shift.WithOutGraceTime = 0
 		}
-		mShifts = append(mShifts, shift)
+		mShifts = append(mShifts, &shift)
 	}
 	return mShifts, nil
 }

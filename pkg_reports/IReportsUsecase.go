@@ -13,6 +13,6 @@ type IReportsUsecase interface {
 	GetReturnedTickets(startDate, endDate string) ([]internal_models.ReturnedTicket, models.Err)
 	GetTicketsCountByDaysHours(startDate, endDate string) (map[string]map[string]uint, models.Err)
 	GetSupportsStatusesByWeekDay(startDate, endDate string) (map[uint]map[string][]internal_models.SupportStatus, models.Err)
-	GetSupportsShifts(startDate, endDate string) (map[string][]internal_models.SupportsShifts, models.Err)
+	GetSupportsShifts(startDate, endDate string) (map[string][]*internal_models.SupportsShifts, models.Err)
 	GetSupportsStatusHistory(date string) (map[string][]internal_models.SupportStatusHistory, models.Err)
 }

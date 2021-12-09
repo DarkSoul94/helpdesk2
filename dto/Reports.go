@@ -235,9 +235,11 @@ func ToOutSupportStatusesHistory(history map[uint]map[string][]internal_models.S
 }
 
 type OutSupportsShift struct {
-	Support          string              `json:"support"`
-	WithOutGraceTime string              `json:"with_out_grace_time"`
-	SupportShifts    []outOpeningDayTime `json:"shifts"`
+	Support           string              `json:"support"`
+	WithOutGraceTime  string              `json:"with_out_grace_time"`
+	ShiftsCount       int                 `json:"shifts_count"`
+	TotalMinutesCount string              `json:"total_minutes_count"`
+	SupportShifts     []outOpeningDayTime `json:"shifts"`
 }
 
 type outOpeningDayTime struct {
@@ -246,10 +248,12 @@ type outOpeningDayTime struct {
 	CountOfMinutesLate uint64 `json:"count_of_minutes_late"`
 }
 
-func ToOutSupportShift(shift internal_models.SupportsShifts) OutSupportsShift {
+func ToOutSupportShift(shift *internal_models.SupportsShifts) OutSupportsShift {
 	outShift := OutSupportsShift{
-		Support:          shift.Support,
-		WithOutGraceTime: time.Duration(shift.WithOutGraceTime * uint64(time.Minute)).String(),
+		Support:           shift.Support,
+		TotalMinutesCount: time.Duration(shift.MinutesCount * uint64(time.Minute)).String(),
+		ShiftsCount:       shift.ShiftsCount,
+		WithOutGraceTime:  time.Duration(shift.WithOutGraceTime * uint64(time.Minute)).String(),
 	}
 
 	for _, val := range shift.DayTime {
