@@ -325,11 +325,11 @@ func (r *ReportsRepo) GetSupportsStatusesByWeekDay(startDate, endDate time.Time)
 		return nil, err
 	}
 
-	for _, history := range dbHistory {
-		if mHistory[history.WeekDay] == nil {
-			mHistory[history.WeekDay] = make(map[string][]internal_models.SupportStatus)
-		}
+	for i := 0; i < 7; i++ {
+		mHistory[uint(i)] = make(map[string][]internal_models.SupportStatus)
+	}
 
+	for _, history := range dbHistory {
 		mHistory[history.WeekDay][history.SupportName] = append(mHistory[history.WeekDay][history.SupportName], internal_models.SupportStatus{
 			StatusName: history.StatusName,
 			Duration:   history.Duration,
