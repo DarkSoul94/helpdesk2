@@ -25,3 +25,7 @@ const (
 	TicketTA_Resolve           string = "ticket.resolve"             //согласование запроса
 	TicketTA_SeeAdditionalInfo string = "ticket.see_additional_info" //смотреть доп инфо по запросу
 )
+
+const (
+	ReportTA_Get string = "report.get"
+)
