@@ -43,7 +43,7 @@ func (p *PermissionMiddleware) CheckPermissions(c *gin.Context) {
 		"/helpdesk/support/get_support_status":
 		res1 := p.usecase.CheckPermission(user.(*models.User).Group.ID, actions.AdminTA)
 		res2 := p.usecase.CheckPermission(user.(*models.User).Group.ID, actions.TicketTA_Work)
-		if !res1 || !res2 {
+		if !(res1 || res2) {
 			c.AbortWithStatus(http.StatusForbidden)
 		}
 	}

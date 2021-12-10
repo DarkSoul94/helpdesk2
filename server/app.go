@@ -404,17 +404,23 @@ func moveFileFromDBtoFolder() {
 
 		for _, f := range files {
 			year, month, day := f.FileDate.Date()
-			pathToFolder := fmt.Sprintf("%s/%d/%d/%d", defaultPath, year, month, day)
-			if _, err := os.Stat(pathToFolder); os.IsNotExist(err) {
-				os.Mkdir(pathToFolder, 0777)
+			pathToFolder := buildPathToFolder(defaultPath, year, int(month), day)
+
+			if f.FileName == "." {
+				f.FileName = "wrong name"
 			}
 
-			f.Path.String = fmt.Sprintf("%s/%s%s", pathToFolder, f.FileName, f.FileExtension)
+			f.Path.String = fmt.Sprintf("%s/%s", pathToFolder, f.FileName)
 			f.Path.Valid = true
 
 			newFile, err := os.Create(f.Path.String)
 			if err != nil {
-				logger.LogError("Failed create file", "server/app", f.FileName, err)
+				logger.LogError(
+					"Failed create file",
+					"server/app",
+					fmt.Sprintf("file id: %d; file name: %s;", f.FileID, f.FileName),
+					err,
+				)
 				continue
 			}
 			split := strings.Split(f.FileData.String, ",")
@@ -439,4 +445,25 @@ func moveFileFromDBtoFolder() {
 
 		time.Sleep(1 * time.Second)
 	}
+}
+
+func buildPathToFolder(defaultPath string, year, month, day int) string {
+	pathToDay := fmt.Sprintf("%s/%d/%d/%d", defaultPath, year, month, day)
+	if _, err := os.Stat(pathToDay); os.IsNotExist(err) {
+		pathToMonth := fmt.Sprintf("%s/%d/%d", defaultPath, year, month)
+		if _, err := os.Stat(pathToMonth); os.IsExist(err) {
+			os.Mkdir(pathToDay, 0777)
+		} else {
+			pathToYear := fmt.Sprintf("%s/%d", defaultPath, year)
+			if _, err := os.Stat(pathToYear); os.IsExist(err) {
+				os.Mkdir(pathToMonth, 0777)
+				os.Mkdir(pathToDay, 0777)
+			} else {
+				os.Mkdir(pathToYear, 0777)
+				os.Mkdir(pathToMonth, 0777)
+				os.Mkdir(pathToDay, 0777)
+			}
+		}
+	}
+	return pathToDay
 }

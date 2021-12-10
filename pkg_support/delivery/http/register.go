@@ -19,7 +19,7 @@ func RegisterHTTPEndpoints(router *gin.RouterGroup, uc pkg_support.ISupportUseca
 		//http://localhost:5555/helpdesk/support/open_shift
 		supportEndpoints.POST("/open_shift", h.OpenShift)
 		//http://localhost:5555/helpdesk/support/create_lateness
-		supportEndpoints.POST("/create_lateness", h.CreateLateness) //TODO Создание опоздания при открытии смены
+		supportEndpoints.POST("/create_lateness", h.CreateLateness)
 		//http://localhost:5555/helpdesk/support/close_shift
 		supportEndpoints.POST("/close_shift", h.CloseShift)
 		//http://localhost:5555/helpdesk/support/shift_status

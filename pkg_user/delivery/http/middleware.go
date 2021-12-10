@@ -37,7 +37,7 @@ func (p *PermissionMiddleware) CheckPermissions(c *gin.Context) {
 	case "/helpdesk/user/":
 		res1 := p.usecase.CheckPermission(user.(*models.User).Group.ID, actions.AdminTA)
 		res2 := p.usecase.CheckPermission(user.(*models.User).Group.ID, actions.TicketTA_FullSearch)
-		if !res1 || !res2 {
+		if !(res1 || res2) {
 			c.AbortWithStatus(http.StatusForbidden)
 		}
 	}

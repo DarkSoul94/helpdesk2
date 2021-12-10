@@ -26,11 +26,7 @@ func NewFileUsecase(repo file_manager.IFileRepo) *FileUsecase {
 func (u *FileUsecase) CreateFiles(files []*internal_models.File, ticketID uint64) models.Err {
 	defaultPath := viper.GetString("app.store.path")
 	year, month, day := time.Now().Date()
-	pathToFolder := fmt.Sprintf("%s/%d/%d/%d", defaultPath, year, month, day)
-
-	if _, err := os.Stat(pathToFolder); os.IsNotExist(err) {
-		os.Mkdir(pathToFolder, 0777)
-	}
+	pathToFolder := buildPathToFolder(defaultPath, year, int(month), day)
 
 	for _, file := range files {
 		file.TicketId = ticketID
@@ -46,6 +42,27 @@ func (u *FileUsecase) CreateFiles(files []*internal_models.File, ticketID uint64
 	}
 
 	return nil
+}
+
+func buildPathToFolder(defaultPath string, year, month, day int) string {
+	pathToDay := fmt.Sprintf("%s/%d/%d/%d", defaultPath, year, month, day)
+	if _, err := os.Stat(pathToDay); os.IsNotExist(err) {
+		pathToMonth := fmt.Sprintf("%s/%d/%d", defaultPath, year, month)
+		if _, err := os.Stat(pathToMonth); os.IsExist(err) {
+			os.Mkdir(pathToDay, 0777)
+		} else {
+			pathToYear := fmt.Sprintf("%s/%d", defaultPath, year)
+			if _, err := os.Stat(pathToYear); os.IsExist(err) {
+				os.Mkdir(pathToMonth, 0777)
+				os.Mkdir(pathToDay, 0777)
+			} else {
+				os.Mkdir(pathToYear, 0777)
+				os.Mkdir(pathToMonth, 0777)
+				os.Mkdir(pathToDay, 0777)
+			}
+		}
+	}
+	return pathToDay
 }
 
 func (u *FileUsecase) GetFile(fileID uint64) (*internal_models.File, models.Err) {
