@@ -94,7 +94,9 @@ func (u *ReportsUsecase) GetMotivation(startDate, endDate string) (map[string][]
 
 		motivByPer[index] = append(motivByPer[index], internal_models.Total(motivByPer[index]))
 	}
-
+	if len(motivByPer) > 1 {
+		return u.summaryMotivation(motivByPer), nil
+	}
 	return motivByPer, nil
 }
 
