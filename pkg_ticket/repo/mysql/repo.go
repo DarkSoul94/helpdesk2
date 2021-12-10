@@ -684,7 +684,8 @@ func (r *TicketRepo) CheckNeedApprovalTicketExist(groupID uint64, forResolver bo
 			SELECT * FROM approval_bindings
 			WHERE group_id = ?
 			AND tickets.section_id = approval_bindings.section_id
-		) AND ticket_status_id != 8`
+		) AND ticket_status_id != 8
+		AND need_resolve = true`
 
 		err = r.db.Get(&count, query, groupID)
 		if err != nil {

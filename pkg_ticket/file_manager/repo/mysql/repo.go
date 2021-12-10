@@ -53,7 +53,7 @@ func (r *FileRepo) CreateFile(file *internal_models.File) error {
 				fmt.Sprintf("path: %s", file.Path),
 				err,
 			)
-			return err
+			return errors.New("Ошибка создания файла " + file.Name)
 		}
 	} else {
 		query = `UPDATE files SET
@@ -70,7 +70,7 @@ func (r *FileRepo) CreateFile(file *internal_models.File) error {
 				fmt.Sprintf("path: %s", file.Path),
 				err,
 			)
-			return err
+			return errors.New("Ошибка открытия файла " + file.Name)
 		}
 	}
 
