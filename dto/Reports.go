@@ -2,6 +2,7 @@ package dto
 
 import (
 	"fmt"
+	"sort"
 	"time"
 
 	"github.com/DarkSoul94/helpdesk2/pkg_reports/internal_models"
@@ -186,6 +187,20 @@ func ToOutTicketsCountByDay(counts map[string]map[string]uint) []OutTicketsCount
 	}
 
 	return outCounts
+}
+
+func sortMap(countByDay map[string]uint) map[string]uint {
+	hours := make([]string, 0, len(countByDay))
+	for hour := range countByDay {
+		hours = append(hours, hour)
+	}
+	sort.Strings(hours)
+
+	sortedMap := make(map[string]uint)
+	for _, k := range hours {
+		sortedMap[k] = countByDay[k]
+	}
+	return sortedMap
 }
 
 type OutSupportStatusesHistory struct {

@@ -261,6 +261,7 @@ func (r *ReportsRepo) GetReturnedTickets(startDate, endDate time.Time) ([]intern
 func (r *ReportsRepo) GetTicketsCountByDaysHours(startDate, endDate time.Time) (map[string]map[string]uint, error) {
 	var (
 		ticketCount  []dbTicketCount
+		total        map[string]uint            = make(map[string]uint)
 		mTicketCount map[string]map[string]uint = make(map[string]map[string]uint)
 		query        string
 		err          error
@@ -294,7 +295,10 @@ func (r *ReportsRepo) GetTicketsCountByDaysHours(startDate, endDate time.Time) (
 		hour := fmt.Sprint(count.Hour.Local().Format("15:00:00"), " - ", count.Hour.Local().Format("15"), ":59:59")
 
 		mTicketCount[day][hour] = count.Count
+		total[hour] += count.Count
 	}
+
+	mTicketCount["Итого"] = total
 
 	return mTicketCount, nil
 }
