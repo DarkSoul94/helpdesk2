@@ -9,12 +9,12 @@ import (
 )
 
 type OutMotivation struct {
-	Support           *motivSupp         `json:"support"`
-	Categories        []*motivCategories `json:"categories"`
-	TotalTicketsCount uint64             `json:"total_tickets_count"`
-	TotalMotivation   float64            `json:"total_motivation"`
-	TotalByShifts     float64            `json:"total_by_shifts"`
-	TotalPayment      float64            `json:"total_payment"`
+	Support           *motivSupp        `json:"support"`
+	Categories        []motivCategories `json:"categories"`
+	TotalTicketsCount uint64            `json:"total_tickets_count"`
+	TotalMotivation   float64           `json:"total_motivation"`
+	TotalByShifts     float64           `json:"total_by_shifts"`
+	TotalPayment      float64           `json:"total_payment"`
 }
 
 func ToOutMotivation(inpMotiv []internal_models.Motivation) []OutMotivation {
@@ -55,10 +55,10 @@ type motivCategories struct {
 	TicketsCount uint64 `json:"tickets_count"`
 }
 
-func toMotivationCategories(byCategories []*internal_models.MotivCategory) []*motivCategories {
-	outCategories := make([]*motivCategories, 0)
+func toMotivationCategories(byCategories []internal_models.MotivCategory) []motivCategories {
+	outCategories := make([]motivCategories, 0)
 	for _, category := range byCategories {
-		outCategories = append(outCategories, &motivCategories{
+		outCategories = append(outCategories, motivCategories{
 			ID:           category.ID,
 			Name:         category.Name,
 			TicketsCount: category.Count,

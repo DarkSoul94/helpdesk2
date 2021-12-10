@@ -9,7 +9,6 @@ import (
 	"github.com/DarkSoul94/helpdesk2/pkg_reports/internal_models"
 	"github.com/DarkSoul94/helpdesk2/pkg_scheduler"
 	"github.com/DarkSoul94/helpdesk2/pkg_ticket/cat_sec_manager"
-	"github.com/shopspring/decimal"
 )
 
 type ReportsUsecase struct {
@@ -27,8 +26,9 @@ func NewReportsUsecase(catSecUC cat_sec_manager.ICatSecUsecase, scheduler pkg_sc
 }
 
 func (u *ReportsUsecase) GetMotivation(startDate, endDate string) (map[string][]internal_models.Motivation, models.Err) {
+	const total_motiv string = "Общая мотивация за период"
 	var (
-		motivByPer map[string][]internal_models.Motivation = make(map[string][]internal_models.Motivation)
+		motivByPer = make(map[string][]internal_models.Motivation)
 	)
 
 	inpPeriod, er := internal_models.ParceString(startDate, endDate)
@@ -42,60 +42,31 @@ func (u *ReportsUsecase) GetMotivation(startDate, endDate string) (map[string][]
 	}
 
 	periods := inpPeriod.SplitByMonth()
+
 	for _, period := range periods {
 		index := period.FormLabel()
-
+		//начало расчета мотивации по одному саппорту за интервал времени (до одного месяца)
 		shiftMotivation, err := u.scheduler.SupportsShiftsMotivation(period.StartDate, period.EndDate)
 		if err != nil {
 			return nil, err
 		}
 
 		for _, shift := range shiftMotivation {
-			suppMotiv := internal_models.Motivation{
-				Support: &internal_models.MotivSupport{
-					ID:    shift.SupportID,
-					Name:  shift.SupportName,
-					Color: shift.Color,
-				},
-				ByCategory:        make([]*internal_models.MotivCategory, 0),
-				TotalTicketsCount: 0,
-				TotalMotivation:   decimal.Zero,
-				TotalByShifts:     shift.Motivation,
-				Total:             decimal.Zero,
+
+			suppMotiv := internal_models.NewMotivation(
+				shift.SupportID,
+				shift.SupportName,
+				shift.Color,
+				shift.Motivation,
+			)
+			suppMotiv, err := u.calculateSupportMotivation(period, suppMotiv, categoryList)
+			if err != nil {
+				return nil, err
 			}
 
-			ticketCount, er := u.repo.GetSupportTicketCountByCategory(period.StartDate, period.EndDate, shift.SupportID)
-			if er != nil {
-				return nil, models.InternalError(er.Error())
-			}
-
-			for _, category := range categoryList {
-				count, ok := ticketCount[category.ID]
-				if category.Old && !ok {
-					continue
-				}
-				if !ok {
-					count = 0
-				}
-
-				catMotiv := &internal_models.MotivCategory{
-					ID:    category.ID,
-					Name:  category.Name,
-					Count: count,
-				}
-				suppMotiv.TotalMotivation = suppMotiv.TotalMotivation.Add(catMotiv.CalcMotiv(category.Price))
-				suppMotiv.ByCategory = append(suppMotiv.ByCategory, catMotiv)
-				suppMotiv.TotalTicketsCount += count
-			}
-
-			suppMotiv.Total = suppMotiv.TotalByShifts.Add(suppMotiv.TotalMotivation)
 			motivByPer[index] = append(motivByPer[index], suppMotiv)
 		}
-
 		motivByPer[index] = append(motivByPer[index], internal_models.Total(motivByPer[index]))
-	}
-	if len(motivByPer) > 1 {
-		return u.summaryMotivation(motivByPer), nil
 	}
 	return motivByPer, nil
 }

@@ -1,35 +1,46 @@
 package usecase
 
-import "github.com/DarkSoul94/helpdesk2/pkg_reports/internal_models"
+import (
+	"fmt"
 
-func (u *ReportsUsecase) summaryMotivation(motivation map[string][]internal_models.Motivation) map[string][]internal_models.Motivation {
-	const total_motiv string = "Общая мотивация за период"
+	"github.com/DarkSoul94/helpdesk2/models"
+	"github.com/DarkSoul94/helpdesk2/pkg_reports/internal_models"
+	report_models "github.com/DarkSoul94/helpdesk2/pkg_reports/internal_models"
+	ticket_models "github.com/DarkSoul94/helpdesk2/pkg_ticket/internal_models"
+	"github.com/shopspring/decimal"
+)
 
-	resultMap := make(map[string][]internal_models.Motivation)
-	resultMap[total_motiv] = make([]internal_models.Motivation, 0)
+func (u *ReportsUsecase) calculateSupportMotivation(
+	period report_models.Period,
+	suppMotiv report_models.Motivation,
+	categories []*ticket_models.Category,
+) (report_models.Motivation, models.Err) {
 
-	result := make(map[uint64]internal_models.Motivation)
+	counts, err := u.repo.GetSupportTicketCountByCategory(period.StartDate, period.EndDate, suppMotiv.Support.ID)
+	if err != nil {
+		text := fmt.Sprintf("Не удалось получить количество запросов в разрезе категорий по саппорту: %s", suppMotiv.Support.Name)
+		return report_models.Motivation{}, models.InternalError(text)
+	}
 
-	for period, motiv := range motivation {
-		for _, supp := range motiv {
-			resMotiv, ok := result[supp.Support.ID]
-			if !ok {
-				result[supp.Support.ID] = supp
+	for _, category := range categories {
+		count, ok := counts[category.ID]
+		if !ok {
+			if category.Old {
 				continue
 			}
-			for index, categoryMotiv := range supp.ByCategory {
-				resMotiv.ByCategory[index].Count += categoryMotiv.Count
-			}
-
-			resMotiv.TotalTicketsCount += supp.TotalTicketsCount
-			resMotiv.TotalMotivation = supp.TotalMotivation.Add(resMotiv.TotalMotivation)
-			resMotiv.TotalByShifts = supp.TotalByShifts.Add(resMotiv.TotalByShifts)
-			resMotiv.Total = supp.Total.Add(resMotiv.Total)
+			count = 0
 		}
-		resultMap[period] = motiv
+
+		suppMotiv.ByCategory = append(suppMotiv.ByCategory, internal_models.MotivCategory{
+			ID:    category.ID,
+			Name:  category.Name,
+			Count: count,
+		})
+		suppMotiv.TotalTicketsCount += count
+		suppMotiv.TotalMotivation = suppMotiv.TotalMotivation.Add(category.Price.Mul(decimal.New(int64(count), 0)))
 	}
-	for _, val := range result {
-		resultMap[total_motiv] = append(resultMap[total_motiv], val)
-	}
-	return resultMap
+
+	suppMotiv.Total = suppMotiv.TotalMotivation.Add(suppMotiv.TotalByShifts)
+
+	return suppMotiv, nil
 }
