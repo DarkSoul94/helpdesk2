@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/DarkSoul94/helpdesk2/models"
-	"github.com/DarkSoul94/helpdesk2/pkg_reports/internal_models"
 	report_models "github.com/DarkSoul94/helpdesk2/pkg_reports/internal_models"
 	ticket_models "github.com/DarkSoul94/helpdesk2/pkg_ticket/internal_models"
 	"github.com/shopspring/decimal"
@@ -31,7 +30,7 @@ func (u *ReportsUsecase) calculateSupportMotivation(
 			count = 0
 		}
 
-		suppMotiv.ByCategory = append(suppMotiv.ByCategory, internal_models.MotivCategory{
+		suppMotiv.ByCategory = append(suppMotiv.ByCategory, report_models.MotivCategory{
 			ID:    category.ID,
 			Name:  category.Name,
 			Count: count,

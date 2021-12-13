@@ -75,7 +75,14 @@ func NewMotivation(supportID uint64, supportName, color string, motivation decim
 	}
 }
 
-func SummaryMotiv(c, c2 Motivation) Motivation {
+func (c Motivation) SummaryMotiv(c2 Motivation) Motivation {
+	var res = Motivation{
+		Support: &MotivSupport{
+			ID:    c.Support.ID,
+			Name:  c.Support.Name,
+			Color: c.Support.Color,
+		},
+	}
 	categories := make(map[uint64]MotivCategory)
 
 	for _, category := range c2.ByCategory {
@@ -86,14 +93,18 @@ func SummaryMotiv(c, c2 Motivation) Motivation {
 		}
 	}
 
-	for index, val := range c.ByCategory {
-		c.ByCategory[index].Count = val.Count + categories[val.ID].Count
+	for _, val := range c.ByCategory {
+		res.ByCategory = append(res.ByCategory, MotivCategory{
+			ID:    val.ID,
+			Name:  val.Name,
+			Count: val.Count + categories[val.ID].Count,
+		})
 	}
 
-	c.TotalTicketsCount += c2.TotalTicketsCount
-	c.TotalByShifts = c.TotalByShifts.Add(c2.TotalByShifts)
-	c.TotalMotivation = c.TotalMotivation.Add(c2.TotalMotivation)
-	c.Total = c.Total.Add(c2.Total)
+	res.TotalTicketsCount = c.TotalTicketsCount + c2.TotalTicketsCount
+	res.TotalByShifts = c.TotalByShifts.Add(c2.TotalByShifts)
+	res.TotalMotivation = c.TotalMotivation.Add(c2.TotalMotivation)
+	res.Total = c.Total.Add(c2.Total)
 
-	return c
+	return res
 }

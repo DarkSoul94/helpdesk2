@@ -26,9 +26,11 @@ func NewReportsUsecase(catSecUC cat_sec_manager.ICatSecUsecase, scheduler pkg_sc
 }
 
 func (u *ReportsUsecase) GetMotivation(startDate, endDate string) (map[string][]internal_models.Motivation, models.Err) {
-	const total_motiv string = "Общая мотивация за период"
+	const total_motiv string = "01. Общая мотивация за период"
 	var (
 		motivByPer = make(map[string][]internal_models.Motivation)
+		totalMap   = make(map[uint64]internal_models.Motivation)
+		idOrder    = make([]uint64, 0)
 	)
 
 	inpPeriod, er := internal_models.ParceString(startDate, endDate)
@@ -42,16 +44,15 @@ func (u *ReportsUsecase) GetMotivation(startDate, endDate string) (map[string][]
 	}
 
 	periods := inpPeriod.SplitByMonth()
-
+	cPeriods := len(periods)
 	for _, period := range periods {
 		index := period.FormLabel()
-		//начало расчета мотивации по одному саппорту за интервал времени (до одного месяца)
-		shiftMotivation, err := u.scheduler.SupportsShiftsMotivation(period.StartDate, period.EndDate)
+		shiftsMotiv, err := u.scheduler.SupportsShiftsMotivation(period.StartDate, period.EndDate)
 		if err != nil {
 			return nil, err
 		}
 
-		for _, shift := range shiftMotivation {
+		for _, shift := range shiftsMotiv {
 
 			suppMotiv := internal_models.NewMotivation(
 				shift.SupportID,
@@ -65,8 +66,22 @@ func (u *ReportsUsecase) GetMotivation(startDate, endDate string) (map[string][]
 			}
 
 			motivByPer[index] = append(motivByPer[index], suppMotiv)
+
+			if cPeriods > 1 {
+				if val, ok := totalMap[shift.SupportID]; !ok {
+					totalMap[shift.SupportID] = suppMotiv
+					idOrder = append(idOrder, shift.SupportID)
+				} else {
+					totalMap[shift.SupportID] = val.SummaryMotiv(suppMotiv)
+				}
+			}
 		}
 		motivByPer[index] = append(motivByPer[index], internal_models.Total(motivByPer[index]))
+	}
+	if len(totalMap) > 0 {
+		for _, id := range idOrder {
+			motivByPer[total_motiv] = append(motivByPer[total_motiv], totalMap[id])
+		}
 	}
 	return motivByPer, nil
 }
