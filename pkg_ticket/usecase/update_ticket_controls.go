@@ -230,11 +230,7 @@ func (u *TicketUsecase) checkChangeStatus(ticket, existTicket *internal_models.T
 			return errCannotSelectStatus
 		}
 	case internal_models.TSCompletedID:
-		supportInTicket := (existTicket.Support != nil && existTicket.Support.ID == user.ID)
 		if !workOnTicket || existTicket.Author.ID == user.ID {
-			return errCannotSelectStatus
-		}
-		if workOnTicket && !supportInTicket {
 			return errCannotSelectStatus
 		}
 	}

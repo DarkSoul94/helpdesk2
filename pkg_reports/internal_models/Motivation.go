@@ -1,6 +1,8 @@
 package internal_models
 
 import (
+	"sync"
+
 	"github.com/shopspring/decimal"
 )
 
@@ -63,8 +65,12 @@ func MotivByPeriod(suppMotivation []*Motivation) *Motivation {
 }
 
 func CalcMotivByAllPeriod(totalMotiv map[uint64]*Motivation, motivBySupport *Motivation) {
-	categories := make(map[uint64]uint64)
+	var (
+		mutex      sync.Mutex
+		categories = make(map[uint64]uint64)
+	)
 
+	mutex.Lock()
 	if motiv, ok := totalMotiv[motivBySupport.Support.ID]; ok {
 		motiv.TotalTicketsCount += motivBySupport.TotalTicketsCount
 		motiv.TotalByShifts = motiv.TotalByShifts.Add(motivBySupport.TotalByShifts)
@@ -102,6 +108,7 @@ func CalcMotivByAllPeriod(totalMotiv map[uint64]*Motivation, motivBySupport *Mot
 
 		totalMotiv[motivBySupport.Support.ID] = suppMotiv
 	}
+	mutex.Unlock()
 }
 
 type MotivSupport struct {

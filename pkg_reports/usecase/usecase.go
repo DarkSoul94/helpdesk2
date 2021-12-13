@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"sync"
 	"time"
 
 	"github.com/DarkSoul94/helpdesk2/models"
@@ -9,7 +10,6 @@ import (
 	"github.com/DarkSoul94/helpdesk2/pkg_reports/internal_models"
 	"github.com/DarkSoul94/helpdesk2/pkg_scheduler"
 	"github.com/DarkSoul94/helpdesk2/pkg_ticket/cat_sec_manager"
-	ticket_models "github.com/DarkSoul94/helpdesk2/pkg_ticket/internal_models"
 )
 
 type ReportsUsecase struct {
@@ -26,13 +26,13 @@ func NewReportsUsecase(catSecUC cat_sec_manager.ICatSecUsecase, scheduler pkg_sc
 	}
 }
 
-func (u *ReportsUsecase) GetMotivation(startDate, endDate string) ([]internal_models.MotivationByPeriod, models.Err) {
+func (u *ReportsUsecase) GetMotivation(startDate, endDate string) (map[string][]*internal_models.Motivation, models.Err) {
 	var (
+		wg               sync.WaitGroup
+		mutex            sync.Mutex
 		motivByPer              = make(map[string][]*internal_models.Motivation)
 		motivByAllPeriod        = make(map[uint64]*internal_models.Motivation)
-		resultMap               = make([]internal_models.MotivationByPeriod, 0)
 		key              string = "01. Итого за период"
-		periodkeys              = make([]string, 0)
 		supportKeys             = make([]uint64, 0)
 	)
 
@@ -43,9 +43,8 @@ func (u *ReportsUsecase) GetMotivation(startDate, endDate string) ([]internal_mo
 
 	periods := inpPeriod.SplitByMonth()
 	periodCount := len(periods)
-	if periodCount > 1 {
-		periodkeys = append(periodkeys, key)
-	}
+
+	wg.Add(periodCount)
 
 	categoryList, err := u.catSecUC.GetCategoryList()
 	if err != nil {
@@ -53,14 +52,13 @@ func (u *ReportsUsecase) GetMotivation(startDate, endDate string) ([]internal_mo
 	}
 
 	for _, period := range periods {
-		periodkeys = append(periodkeys, period.FormLabel())
-		u.calcMotivationByPeriod(period, periodCount, supportKeys, categoryList, motivByPer, motivByAllPeriod)
-		/*
+		go func(period internal_models.Period) {
+			defer wg.Done()
 			index := period.FormLabel()
 			//начало расчета мотивации по одному саппорту за интервал времени (до одного месяца)
 			shiftMotivation, err := u.scheduler.SupportsShiftsMotivation(period.StartDate, period.EndDate)
 			if err != nil {
-				return nil, err
+				return
 			}
 
 			for _, shift := range shiftMotivation {
@@ -73,10 +71,12 @@ func (u *ReportsUsecase) GetMotivation(startDate, endDate string) ([]internal_mo
 				)
 				err := u.calculateSupportMotivation(period, suppMotiv, categoryList)
 				if err != nil {
-					return nil, err
+					return
 				}
 
+				mutex.Lock()
 				motivByPer[index] = append(motivByPer[index], suppMotiv)
+				mutex.Unlock()
 
 				if periodCount > 1 {
 					if _, ok := motivByAllPeriod[shift.SupportID]; !ok {
@@ -86,9 +86,13 @@ func (u *ReportsUsecase) GetMotivation(startDate, endDate string) ([]internal_mo
 					internal_models.CalcMotivByAllPeriod(motivByAllPeriod, suppMotiv)
 				}
 			}
+			mutex.Lock()
 			motivByPer[index] = append(motivByPer[index], internal_models.MotivByPeriod(motivByPer[index]))
-		*/
+			mutex.Unlock()
+		}(period)
 	}
+
+	wg.Wait()
 
 	if periodCount > 1 {
 		for _, id := range supportKeys {
@@ -98,48 +102,7 @@ func (u *ReportsUsecase) GetMotivation(startDate, endDate string) ([]internal_mo
 		motivByPer[key] = append(motivByPer[key], internal_models.MotivByPeriod(motivByPer[key]))
 	}
 
-	for _, periodKey := range periodkeys {
-		resultMap = append(resultMap, internal_models.MotivationByPeriod{
-			Period:      periodKey,
-			Motivations: motivByPer[periodKey],
-		})
-	}
-
-	return resultMap, nil
-}
-
-func (u *ReportsUsecase) calcMotivationByPeriod(period internal_models.Period, periodCount int, supportKeys []uint64, categoryList []*ticket_models.Category, motivByPer map[string][]*internal_models.Motivation, motivByAllPeriod map[uint64]*internal_models.Motivation) {
-	index := period.FormLabel()
-	//начало расчета мотивации по одному саппорту за интервал времени (до одного месяца)
-	shiftMotivation, err := u.scheduler.SupportsShiftsMotivation(period.StartDate, period.EndDate)
-	if err != nil {
-		return
-	}
-
-	for _, shift := range shiftMotivation {
-
-		suppMotiv := internal_models.NewMotivation(
-			shift.SupportID,
-			shift.SupportName,
-			shift.Color,
-			shift.Motivation,
-		)
-		err := u.calculateSupportMotivation(period, suppMotiv, categoryList)
-		if err != nil {
-			return
-		}
-
-		motivByPer[index] = append(motivByPer[index], suppMotiv)
-
-		if periodCount > 1 {
-			if _, ok := motivByAllPeriod[shift.SupportID]; !ok {
-				supportKeys = append(supportKeys, shift.SupportID)
-			}
-
-			internal_models.CalcMotivByAllPeriod(motivByAllPeriod, suppMotiv)
-		}
-	}
-	motivByPer[index] = append(motivByPer[index], internal_models.MotivByPeriod(motivByPer[index]))
+	return motivByPer, nil
 }
 
 func (u *ReportsUsecase) GetTicketStatusDifference(startDate, endDate string) (map[internal_models.TicketDifference][]internal_models.StatusDifference, models.Err) {

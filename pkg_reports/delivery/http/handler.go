@@ -30,8 +30,8 @@ func (h *ReportsHandler) GetMotivation(c *gin.Context) {
 	}
 
 	outMotivation := make(map[string][]dto.OutMotivation)
-	for _, motivByPer := range motivation {
-		outMotivation[motivByPer.Period] = dto.ToOutMotivation(motivByPer.Motivations)
+	for period, motivByPer := range motivation {
+		outMotivation[period] = dto.ToOutMotivation(motivByPer)
 	}
 
 	c.JSON(http.StatusOK, outMotivation)
