@@ -4,16 +4,35 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+type MotivationByPeriod struct {
+	Period      string
+	Motivations []*Motivation
+}
 type Motivation struct {
 	Support           *MotivSupport
-	ByCategory        []MotivCategory
+	ByCategory        []*MotivCategory
 	TotalTicketsCount uint64
 	TotalMotivation   decimal.Decimal
 	TotalByShifts     decimal.Decimal
 	Total             decimal.Decimal
 }
 
-func Total(suppMotivation []Motivation) Motivation {
+func NewMotivation(supportID uint64, supportName, color string, motivation decimal.Decimal) *Motivation {
+	return &Motivation{
+		Support: &MotivSupport{
+			ID:    supportID,
+			Name:  supportName,
+			Color: color,
+		},
+		ByCategory:        make([]*MotivCategory, 0),
+		TotalTicketsCount: 0,
+		TotalMotivation:   decimal.Zero,
+		TotalByShifts:     motivation,
+		Total:             decimal.Zero,
+	}
+}
+
+func MotivByPeriod(suppMotivation []*Motivation) *Motivation {
 	categories := make(map[uint64]*MotivCategory)
 	totalMotiv := NewMotivation(0, "Итого", "", decimal.Zero)
 
@@ -27,17 +46,62 @@ func Total(suppMotivation []Motivation) Motivation {
 			if cat, ok := categories[category.ID]; ok {
 				cat.Count += category.Count
 			} else {
-				temp := category
-				categories[category.ID] = &temp
+				categories[category.ID] = &MotivCategory{
+					ID:    category.ID,
+					Name:  category.Name,
+					Count: category.Count,
+				}
 			}
 		}
 	}
 
 	for _, category := range categories {
-		totalMotiv.ByCategory = append(totalMotiv.ByCategory, *category)
+		totalMotiv.ByCategory = append(totalMotiv.ByCategory, category)
 	}
 
 	return totalMotiv
+}
+
+func CalcMotivByAllPeriod(totalMotiv map[uint64]*Motivation, motivBySupport *Motivation) {
+	categories := make(map[uint64]uint64)
+
+	if motiv, ok := totalMotiv[motivBySupport.Support.ID]; ok {
+		motiv.TotalTicketsCount += motivBySupport.TotalTicketsCount
+		motiv.TotalByShifts = motiv.TotalByShifts.Add(motivBySupport.TotalByShifts)
+		motiv.TotalMotivation = motiv.TotalMotivation.Add(motivBySupport.TotalMotivation)
+		motiv.Total = motiv.Total.Add(motivBySupport.Total)
+
+		for _, catMotiv := range motivBySupport.ByCategory {
+			categories[catMotiv.ID] = catMotiv.Count
+		}
+
+		for _, catMotiv := range motiv.ByCategory {
+			catMotiv.Count += categories[catMotiv.ID]
+		}
+
+	} else {
+		suppMotiv := &Motivation{
+			Support: &MotivSupport{
+				ID:    motivBySupport.Support.ID,
+				Name:  motivBySupport.Support.Name,
+				Color: motivBySupport.Support.Color,
+			},
+			TotalTicketsCount: motivBySupport.TotalTicketsCount,
+			TotalMotivation:   motivBySupport.TotalMotivation,
+			TotalByShifts:     motivBySupport.TotalByShifts,
+			Total:             motivBySupport.Total,
+		}
+
+		for _, catMotiv := range motivBySupport.ByCategory {
+			suppMotiv.ByCategory = append(suppMotiv.ByCategory, &MotivCategory{
+				ID:    catMotiv.ID,
+				Name:  catMotiv.Name,
+				Count: catMotiv.Count,
+			})
+		}
+
+		totalMotiv[motivBySupport.Support.ID] = suppMotiv
+	}
 }
 
 type MotivSupport struct {
@@ -58,53 +122,4 @@ func (c *MotivCategory) countToDecimal() decimal.Decimal {
 
 func (c *MotivCategory) CalcMotiv(price decimal.Decimal) decimal.Decimal {
 	return price.Mul(c.countToDecimal())
-}
-
-func NewMotivation(supportID uint64, supportName, color string, motivation decimal.Decimal) Motivation {
-	return Motivation{
-		Support: &MotivSupport{
-			ID:    supportID,
-			Name:  supportName,
-			Color: color,
-		},
-		ByCategory:        make([]MotivCategory, 0),
-		TotalTicketsCount: 0,
-		TotalMotivation:   decimal.Zero,
-		TotalByShifts:     motivation,
-		Total:             decimal.Zero,
-	}
-}
-
-func (c Motivation) SummaryMotiv(c2 Motivation) Motivation {
-	var res = Motivation{
-		Support: &MotivSupport{
-			ID:    c.Support.ID,
-			Name:  c.Support.Name,
-			Color: c.Support.Color,
-		},
-	}
-	categories := make(map[uint64]MotivCategory)
-
-	for _, category := range c2.ByCategory {
-		if cat, ok := categories[category.ID]; ok {
-			cat.Count += category.Count
-		} else {
-			categories[category.ID] = category
-		}
-	}
-
-	for _, val := range c.ByCategory {
-		res.ByCategory = append(res.ByCategory, MotivCategory{
-			ID:    val.ID,
-			Name:  val.Name,
-			Count: val.Count + categories[val.ID].Count,
-		})
-	}
-
-	res.TotalTicketsCount = c.TotalTicketsCount + c2.TotalTicketsCount
-	res.TotalByShifts = c.TotalByShifts.Add(c2.TotalByShifts)
-	res.TotalMotivation = c.TotalMotivation.Add(c2.TotalMotivation)
-	res.Total = c.Total.Add(c2.Total)
-
-	return res
 }

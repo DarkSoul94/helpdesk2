@@ -9,6 +9,7 @@ import (
 	"github.com/DarkSoul94/helpdesk2/pkg_reports/internal_models"
 	"github.com/DarkSoul94/helpdesk2/pkg_scheduler"
 	"github.com/DarkSoul94/helpdesk2/pkg_ticket/cat_sec_manager"
+	ticket_models "github.com/DarkSoul94/helpdesk2/pkg_ticket/internal_models"
 )
 
 type ReportsUsecase struct {
@@ -25,12 +26,14 @@ func NewReportsUsecase(catSecUC cat_sec_manager.ICatSecUsecase, scheduler pkg_sc
 	}
 }
 
-func (u *ReportsUsecase) GetMotivation(startDate, endDate string) (map[string][]internal_models.Motivation, models.Err) {
-	const total_motiv string = "01. Общая мотивация за период"
+func (u *ReportsUsecase) GetMotivation(startDate, endDate string) ([]internal_models.MotivationByPeriod, models.Err) {
 	var (
-		motivByPer = make(map[string][]internal_models.Motivation)
-		totalMap   = make(map[uint64]internal_models.Motivation)
-		idOrder    = make([]uint64, 0)
+		motivByPer              = make(map[string][]*internal_models.Motivation)
+		motivByAllPeriod        = make(map[uint64]*internal_models.Motivation)
+		resultMap               = make([]internal_models.MotivationByPeriod, 0)
+		key              string = "01. Итого за период"
+		periodkeys              = make([]string, 0)
+		supportKeys             = make([]uint64, 0)
 	)
 
 	inpPeriod, er := internal_models.ParceString(startDate, endDate)
@@ -38,52 +41,105 @@ func (u *ReportsUsecase) GetMotivation(startDate, endDate string) (map[string][]
 		return nil, models.InternalError(er.Error())
 	}
 
+	periods := inpPeriod.SplitByMonth()
+	periodCount := len(periods)
+	if periodCount > 1 {
+		periodkeys = append(periodkeys, key)
+	}
+
 	categoryList, err := u.catSecUC.GetCategoryList()
 	if err != nil {
 		return nil, err
 	}
 
-	periods := inpPeriod.SplitByMonth()
-	cPeriods := len(periods)
 	for _, period := range periods {
-		index := period.FormLabel()
-		shiftsMotiv, err := u.scheduler.SupportsShiftsMotivation(period.StartDate, period.EndDate)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, shift := range shiftsMotiv {
-
-			suppMotiv := internal_models.NewMotivation(
-				shift.SupportID,
-				shift.SupportName,
-				shift.Color,
-				shift.Motivation,
-			)
-			suppMotiv, err := u.calculateSupportMotivation(period, suppMotiv, categoryList)
+		periodkeys = append(periodkeys, period.FormLabel())
+		u.calcMotivationByPeriod(period, periodCount, supportKeys, categoryList, motivByPer, motivByAllPeriod)
+		/*
+			index := period.FormLabel()
+			//начало расчета мотивации по одному саппорту за интервал времени (до одного месяца)
+			shiftMotivation, err := u.scheduler.SupportsShiftsMotivation(period.StartDate, period.EndDate)
 			if err != nil {
 				return nil, err
 			}
 
-			motivByPer[index] = append(motivByPer[index], suppMotiv)
+			for _, shift := range shiftMotivation {
 
-			if cPeriods > 1 {
-				if val, ok := totalMap[shift.SupportID]; !ok {
-					totalMap[shift.SupportID] = suppMotiv
-					idOrder = append(idOrder, shift.SupportID)
-				} else {
-					totalMap[shift.SupportID] = val.SummaryMotiv(suppMotiv)
+				suppMotiv := internal_models.NewMotivation(
+					shift.SupportID,
+					shift.SupportName,
+					shift.Color,
+					shift.Motivation,
+				)
+				err := u.calculateSupportMotivation(period, suppMotiv, categoryList)
+				if err != nil {
+					return nil, err
+				}
+
+				motivByPer[index] = append(motivByPer[index], suppMotiv)
+
+				if periodCount > 1 {
+					if _, ok := motivByAllPeriod[shift.SupportID]; !ok {
+						supportKeys = append(supportKeys, shift.SupportID)
+					}
+
+					internal_models.CalcMotivByAllPeriod(motivByAllPeriod, suppMotiv)
 				}
 			}
-		}
-		motivByPer[index] = append(motivByPer[index], internal_models.Total(motivByPer[index]))
+			motivByPer[index] = append(motivByPer[index], internal_models.MotivByPeriod(motivByPer[index]))
+		*/
 	}
-	if len(totalMap) > 0 {
-		for _, id := range idOrder {
-			motivByPer[total_motiv] = append(motivByPer[total_motiv], totalMap[id])
+
+	if periodCount > 1 {
+		for _, id := range supportKeys {
+			motivByPer[key] = append(motivByPer[key], motivByAllPeriod[id])
+		}
+
+		motivByPer[key] = append(motivByPer[key], internal_models.MotivByPeriod(motivByPer[key]))
+	}
+
+	for _, periodKey := range periodkeys {
+		resultMap = append(resultMap, internal_models.MotivationByPeriod{
+			Period:      periodKey,
+			Motivations: motivByPer[periodKey],
+		})
+	}
+
+	return resultMap, nil
+}
+
+func (u *ReportsUsecase) calcMotivationByPeriod(period internal_models.Period, periodCount int, supportKeys []uint64, categoryList []*ticket_models.Category, motivByPer map[string][]*internal_models.Motivation, motivByAllPeriod map[uint64]*internal_models.Motivation) {
+	index := period.FormLabel()
+	//начало расчета мотивации по одному саппорту за интервал времени (до одного месяца)
+	shiftMotivation, err := u.scheduler.SupportsShiftsMotivation(period.StartDate, period.EndDate)
+	if err != nil {
+		return
+	}
+
+	for _, shift := range shiftMotivation {
+
+		suppMotiv := internal_models.NewMotivation(
+			shift.SupportID,
+			shift.SupportName,
+			shift.Color,
+			shift.Motivation,
+		)
+		err := u.calculateSupportMotivation(period, suppMotiv, categoryList)
+		if err != nil {
+			return
+		}
+
+		motivByPer[index] = append(motivByPer[index], suppMotiv)
+
+		if periodCount > 1 {
+			if _, ok := motivByAllPeriod[shift.SupportID]; !ok {
+				supportKeys = append(supportKeys, shift.SupportID)
+			}
+
+			internal_models.CalcMotivByAllPeriod(motivByAllPeriod, suppMotiv)
 		}
 	}
-	return motivByPer, nil
+	motivByPer[index] = append(motivByPer[index], internal_models.MotivByPeriod(motivByPer[index]))
 }
 
 func (u *ReportsUsecase) GetTicketStatusDifference(startDate, endDate string) (map[internal_models.TicketDifference][]internal_models.StatusDifference, models.Err) {

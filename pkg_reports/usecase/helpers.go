@@ -4,21 +4,20 @@ import (
 	"fmt"
 
 	"github.com/DarkSoul94/helpdesk2/models"
-	report_models "github.com/DarkSoul94/helpdesk2/pkg_reports/internal_models"
+	"github.com/DarkSoul94/helpdesk2/pkg_reports/internal_models"
 	ticket_models "github.com/DarkSoul94/helpdesk2/pkg_ticket/internal_models"
-	"github.com/shopspring/decimal"
 )
 
 func (u *ReportsUsecase) calculateSupportMotivation(
-	period report_models.Period,
-	suppMotiv report_models.Motivation,
+	period internal_models.Period,
+	suppMotiv *internal_models.Motivation,
 	categories []*ticket_models.Category,
-) (report_models.Motivation, models.Err) {
+) models.Err {
 
 	counts, err := u.repo.GetSupportTicketCountByCategory(period.StartDate, period.EndDate, suppMotiv.Support.ID)
 	if err != nil {
 		text := fmt.Sprintf("Не удалось получить количество запросов в разрезе категорий по саппорту: %s", suppMotiv.Support.Name)
-		return report_models.Motivation{}, models.InternalError(text)
+		return models.InternalError(text)
 	}
 
 	for _, category := range categories {
@@ -30,16 +29,18 @@ func (u *ReportsUsecase) calculateSupportMotivation(
 			count = 0
 		}
 
-		suppMotiv.ByCategory = append(suppMotiv.ByCategory, report_models.MotivCategory{
+		catMotiv := &internal_models.MotivCategory{
 			ID:    category.ID,
 			Name:  category.Name,
 			Count: count,
-		})
+		}
+
 		suppMotiv.TotalTicketsCount += count
-		suppMotiv.TotalMotivation = suppMotiv.TotalMotivation.Add(category.Price.Mul(decimal.New(int64(count), 0)))
+		suppMotiv.TotalMotivation = suppMotiv.TotalMotivation.Add(catMotiv.CalcMotiv(category.Price))
+		suppMotiv.ByCategory = append(suppMotiv.ByCategory, catMotiv)
 	}
 
 	suppMotiv.Total = suppMotiv.TotalMotivation.Add(suppMotiv.TotalByShifts)
 
-	return suppMotiv, nil
+	return nil
 }

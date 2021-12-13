@@ -17,7 +17,7 @@ type OutMotivation struct {
 	TotalPayment      float64           `json:"total_payment"`
 }
 
-func ToOutMotivation(inpMotiv []internal_models.Motivation) []OutMotivation {
+func ToOutMotivation(inpMotiv []*internal_models.Motivation) []OutMotivation {
 	outMotiv := make([]OutMotivation, 0)
 	for _, motivation := range inpMotiv {
 		totalMotivation, _ := motivation.TotalMotivation.Float64()
@@ -55,7 +55,7 @@ type motivCategories struct {
 	TicketsCount uint64 `json:"tickets_count"`
 }
 
-func toMotivationCategories(byCategories []internal_models.MotivCategory) []motivCategories {
+func toMotivationCategories(byCategories []*internal_models.MotivCategory) []motivCategories {
 	outCategories := make([]motivCategories, 0)
 	for _, category := range byCategories {
 		outCategories = append(outCategories, motivCategories{
