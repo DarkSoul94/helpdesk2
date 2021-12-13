@@ -3,22 +3,69 @@ package server
 import (
 	"context"
 	"database/sql"
+	"encoding/base64"
 	"fmt"
 	"log"
 	"net"
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 
 	"github.com/DarkSoul94/helpdesk2/pkg/logger"
+	"github.com/DarkSoul94/helpdesk2/pkg_support"
 	"github.com/DarkSoul94/helpdesk2/pkg_user"
 	userhttp "github.com/DarkSoul94/helpdesk2/pkg_user/delivery/http"
 	userrepo "github.com/DarkSoul94/helpdesk2/pkg_user/repo/mysql"
 	userusecase "github.com/DarkSoul94/helpdesk2/pkg_user/usecase"
+	"github.com/jmoiron/sqlx"
+
+	"github.com/DarkSoul94/helpdesk2/pkg_ticket"
+	tickethttp "github.com/DarkSoul94/helpdesk2/pkg_ticket/delivery/http"
+	ticketrepo "github.com/DarkSoul94/helpdesk2/pkg_ticket/repo/mysql"
+	ticketucforsupp "github.com/DarkSoul94/helpdesk2/pkg_ticket/tickets_for_support"
+	ticketusecase "github.com/DarkSoul94/helpdesk2/pkg_ticket/usecase"
+
+	"github.com/DarkSoul94/helpdesk2/pkg_ticket/cat_sec_manager"
+	catsecrepo "github.com/DarkSoul94/helpdesk2/pkg_ticket/cat_sec_manager/repo/mysql"
+	catsecusecase "github.com/DarkSoul94/helpdesk2/pkg_ticket/cat_sec_manager/usecase"
+
+	"github.com/DarkSoul94/helpdesk2/pkg_ticket/comment_manager"
+	commentrepo "github.com/DarkSoul94/helpdesk2/pkg_ticket/comment_manager/repo/mysql"
+	commentusecase "github.com/DarkSoul94/helpdesk2/pkg_ticket/comment_manager/usecase"
+
+	"github.com/DarkSoul94/helpdesk2/pkg_ticket/reg_fil_manager"
+	regfilrepo "github.com/DarkSoul94/helpdesk2/pkg_ticket/reg_fil_manager/repo/mysql"
+	regfilusecase "github.com/DarkSoul94/helpdesk2/pkg_ticket/reg_fil_manager/usecase"
+
+	"github.com/DarkSoul94/helpdesk2/pkg_ticket/file_manager"
+	filerepo "github.com/DarkSoul94/helpdesk2/pkg_ticket/file_manager/repo/mysql"
+	fileusecase "github.com/DarkSoul94/helpdesk2/pkg_ticket/file_manager/usecase"
 
 	"github.com/DarkSoul94/helpdesk2/pkg_user/group_manager"
 	grouprepo "github.com/DarkSoul94/helpdesk2/pkg_user/group_manager/standart/repo/mysql"
+	groupusecase "github.com/DarkSoul94/helpdesk2/pkg_user/group_manager/standart/usecase/group"
+	permusecase "github.com/DarkSoul94/helpdesk2/pkg_user/group_manager/standart/usecase/permissions"
+
+	supporthttp "github.com/DarkSoul94/helpdesk2/pkg_support/delivery/http"
+	supportrepo "github.com/DarkSoul94/helpdesk2/pkg_support/repo/mysql"
+	supportusecase "github.com/DarkSoul94/helpdesk2/pkg_support/usecase"
+
+	"github.com/DarkSoul94/helpdesk2/pkg_scheduler"
+	schedulerhttp "github.com/DarkSoul94/helpdesk2/pkg_scheduler/delivery/http"
+	schedulerrepo "github.com/DarkSoul94/helpdesk2/pkg_scheduler/repo/mysql"
+	schedulerusecase "github.com/DarkSoul94/helpdesk2/pkg_scheduler/usecase"
+
+	"github.com/DarkSoul94/helpdesk2/pkg_consts"
+	constshttp "github.com/DarkSoul94/helpdesk2/pkg_consts/delivery/http"
+	constsrepo "github.com/DarkSoul94/helpdesk2/pkg_consts/repo/mysql"
+	constsusecase "github.com/DarkSoul94/helpdesk2/pkg_consts/usecase"
+
+	"github.com/DarkSoul94/helpdesk2/pkg_reports"
+	reportshttp "github.com/DarkSoul94/helpdesk2/pkg_reports/delivery/http"
+	reportsrepo "github.com/DarkSoul94/helpdesk2/pkg_reports/repo/mysql"
+	reportsusecase "github.com/DarkSoul94/helpdesk2/pkg_reports/usecase"
 
 	"github.com/DarkSoul94/helpdesk2/auth"
 	authhttp "github.com/DarkSoul94/helpdesk2/auth/delivery/http"
@@ -35,11 +82,45 @@ import (
 
 // App ...
 type App struct {
-	userUC    pkg_user.UserManagerUC
-	userRepo  pkg_user.UserManagerRepo
-	groupRepo group_manager.GroupRepo
+	dbConnect *sql.DB
+
+	groupRepo group_manager.IGroupRepo
+	groupUC   group_manager.IGroupUsecase
+
+	ticketUCForSupp pkg_ticket.IUCForSupport
+	suppRepo        pkg_support.ISupportRepo
+	suppUC          pkg_support.ISupportUsecase
+	suppScheduler   pkg_support.ISuppForScheduler
+
+	permUC group_manager.IPermManager
+
+	userUC   pkg_user.IUserUsecase
+	userRepo pkg_user.IUserRepo
 
 	authUC auth.AuthUC
+
+	catSecRepo cat_sec_manager.ICatSecRepo
+	catSecUC   cat_sec_manager.ICatSecUsecase
+
+	regFilRepo reg_fil_manager.IRegFilRepo
+	regFilUC   reg_fil_manager.IRegFilUsecase
+
+	fileRepo file_manager.IFileRepo
+	fileUC   file_manager.IFileUsecase
+
+	commentRepo comment_manager.ICommentRepo
+	commentUC   comment_manager.ICommentUsecase
+
+	ticketRepo pkg_ticket.ITicketRepo
+	ticketUC   pkg_ticket.ITicketUsecase
+
+	schedulerRepo pkg_scheduler.ISchedulerRepo
+	schedulerUC   pkg_scheduler.ISchedulerUsecase
+	constsRepo    pkg_consts.IConstsRepo
+	constsUC      pkg_consts.IConstsUsecase
+
+	reportsRepo pkg_reports.IReportsRepo
+	reportsUC   pkg_reports.IReportsUsecase
 
 	httpServer *http.Server
 }
@@ -48,23 +129,92 @@ type App struct {
 func NewApp() *App {
 	db := initDB()
 
-	userRepo := userrepo.NewRepo(db)
 	grpRepo := grouprepo.NewGroupRepo(db)
-	userUC := userusecase.NewUsecase(userRepo, grpRepo)
+	suppRepo := supportrepo.NewSupportRepo(db)
+	userRepo := userrepo.NewRepo(db)
+	fileRepo := filerepo.NewFileRepo(db)
+	catsecRepo := catsecrepo.NewCatSecRepo(db)
+	regfilRepo := regfilrepo.NewRegFilRepo(db)
+	ticketRepo := ticketrepo.NewTicketRepo(db)
+	commentRepo := commentrepo.NewCommentRepo(db)
+	schedulerRepo := schedulerrepo.NewShedulerRepo(db)
+	constsRepo := constsrepo.NewConstsRepo(db)
+	reportsRepo := reportsrepo.NewReportsRepo(db)
 
-	authUC := authusecase.NewUsecase(userUC, viper.GetString("app.auth.secret_key"), []byte(viper.GetString("app.auth.signing_key")), viper.GetDuration("app.auth.ttl"))
+	grpUC := groupusecase.NewGroupManager(grpRepo)
+	permUC := permusecase.NewPermManager(grpRepo)
+	ticketUCForSupp := ticketucforsupp.NewTicketUCForSupport(ticketRepo)
+	schedulerSupp := schedulerusecase.NewScheduleForSupport(schedulerRepo)
+	suppUC := supportusecase.NewSupportUsecase(suppRepo, permUC, ticketUCForSupp, schedulerSupp)
+	suppScheduler := supportusecase.NewSuppForSchedulerUsecase(suppRepo)
+	userUC := userusecase.NewUsecase(userRepo, grpUC, permUC, suppUC)
+	authUC := authusecase.NewUsecase(userUC,
+		viper.GetString("app.auth.secret_key"),
+		[]byte(viper.GetString("app.auth.signing_key")),
+		viper.GetDuration("app.auth.ttl"))
+
+	catsecUC := catsecusecase.NewCatSecUsecase(catsecRepo)
+	regfilUC := regfilusecase.NewRegFilUsecase(regfilRepo)
+	fileUC := fileusecase.NewFileUsecase(fileRepo)
+	commentUC := commentusecase.NewCommentUsecase(commentRepo)
+	ticketUC := ticketusecase.NewTicketUsecase(ticketRepo, catsecUC, regfilUC, fileUC, permUC, userUC, suppUC, commentUC)
+	constsUC := constsusecase.NewConstsUsecase(constsRepo)
+
+	schedulerUC := schedulerusecase.NewSchedulerUsecase(schedulerRepo, suppScheduler)
+	schedReports := schedulerusecase.NewShedulerForReports(schedulerRepo, constsUC, suppScheduler)
+
+	reportsUC := reportsusecase.NewReportsUsecase(catsecUC, schedReports, reportsRepo)
 
 	return &App{
-		userRepo:  userRepo,
+		dbConnect: db,
+
 		groupRepo: grpRepo,
-		userUC:    userUC,
+		groupUC:   grpUC,
+
+		ticketUCForSupp: ticketUCForSupp,
+		suppRepo:        suppRepo,
+		suppUC:          suppUC,
+
+		permUC: permUC,
+
+		userRepo: userRepo,
+		userUC:   userUC,
 
 		authUC: authUC,
+
+		catSecRepo: catsecRepo,
+		catSecUC:   catsecUC,
+
+		regFilRepo: regfilRepo,
+		regFilUC:   regfilUC,
+
+		fileRepo: fileRepo,
+		fileUC:   fileUC,
+
+		commentRepo: commentRepo,
+		commentUC:   commentUC,
+
+		ticketRepo: ticketRepo,
+		ticketUC:   ticketUC,
+
+		schedulerRepo: schedulerRepo,
+		schedulerUC:   schedulerUC,
+		suppScheduler: suppScheduler,
+
+		constsRepo: constsRepo,
+		constsUC:   constsUC,
+
+		reportsRepo: reportsRepo,
+		reportsUC:   reportsUC,
 	}
 }
 
 // Run run helpdesklication
 func (a *App) Run(port string) error {
+	if _, err := os.Stat(viper.GetString("app.store.path")); os.IsNotExist(err) {
+		os.Mkdir(viper.GetString("app.store.path"), 0777)
+	}
+
 	defer a.close()
 
 	router := gin.New()
@@ -74,14 +224,31 @@ func (a *App) Run(port string) error {
 		router.Use(gin.Logger())
 	}
 	router.Use(
-		gin.RecoveryWithWriter(logger.GetOutFile()),
+		gin.Recovery(),
+		//gin.RecoveryWithWriter(logger.GetOutFile()),
 	)
 
 	apiRouter := router.Group("/helpdesk")
-	authhttp.RegisterHTTPEndpoints(apiRouter, a.authUC)
-	authMiddlware := authhttp.NewAuthMiddleware(a.authUC)
 
-	userhttp.RegisterHTTPEndpoints(apiRouter, a.userUC, authMiddlware)
+	authMiddlware := authhttp.NewAuthMiddleware(a.authUC)
+	authhttp.RegisterHTTPEndpoints(apiRouter, a.authUC)
+
+	userMiddleware := userhttp.NewPermissionMiddleware(a.permUC)
+	userhttp.RegisterHTTPEndpoints(apiRouter, a.userUC, authMiddlware, userMiddleware)
+
+	supportMiddleware := supporthttp.NewPermissionMiddleware(a.permUC)
+	supporthttp.RegisterHTTPEndpoints(apiRouter, a.suppUC, authMiddlware, supportMiddleware)
+
+	schedulerMiddleware := schedulerhttp.NewPermissionMiddleware(a.permUC)
+	schedulerhttp.RegisterHTTPEndpoints(apiRouter, a.schedulerUC, authMiddlware, schedulerMiddleware)
+
+	ticketMiddleware := tickethttp.NewPermissionMiddleware(a.permUC)
+	tickethttp.RegisterHTTPEndpoints(apiRouter, a.ticketUC, authMiddlware, ticketMiddleware)
+
+	constsMiddleware := constshttp.NewPermissionMiddleware(a.permUC)
+	constshttp.RegisterHTTPEndpoints(apiRouter, a.constsUC, authMiddlware, constsMiddleware)
+
+	reportshttp.RegisterHTTPEndpoints(apiRouter, a.reportsUC, authMiddlware)
 
 	a.httpServer = &http.Server{
 		Addr:           ":" + port,
@@ -113,6 +280,12 @@ func (a *App) Run(port string) error {
 			log.Fatalf("Failed to listen and serve: %+v", err)
 		}
 	}(l)
+
+	go moveFileFromDBtoFolder()
+
+	ctx1, shutdown1 := context.WithCancel(context.Background())
+	defer shutdown1()
+	go a.ticketUC.DistributeTicket(ctx1)
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, os.Interrupt)
@@ -188,4 +361,109 @@ func runGormMigrations(db *gorm.DB) {
 func (a *App) close() {
 	a.userRepo.Close()
 	a.groupRepo.Close()
+	a.suppRepo.Close()
+	a.catSecRepo.Close()
+	a.regFilRepo.Close()
+	a.fileRepo.Close()
+	a.commentRepo.Close()
+	a.ticketRepo.Close()
+	a.schedulerRepo.Close()
+
+	a.dbConnect.Close()
+}
+
+func moveFileFromDBtoFolder() {
+	type dbFile struct {
+		FileID        uint64         `db:"file_id"`
+		FileName      string         `db:"file_name"`
+		FileExtension string         `db:"file_extension"`
+		TicketId      uint64         `db:"ticket_id"`
+		FileData      sql.NullString `db:"file_data"`
+		FileDate      time.Time      `db:"file_date"`
+		Path          sql.NullString `db:"path"`
+	}
+
+	db := initDB()
+	defer db.Close()
+	dbx := sqlx.NewDb(db, "mysql")
+	defaultPath := viper.GetString("app.store.path")
+
+	for {
+		var (
+			files []dbFile
+			query string
+		)
+
+		query = `SELECT * FROM files 
+				WHERE path IS NULL
+				LIMIT 10`
+		dbx.Select(&files, query)
+		if len(files) == 0 {
+			return
+		}
+
+		for _, f := range files {
+			year, month, day := f.FileDate.Date()
+			pathToFolder := buildPathToFolder(defaultPath, year, int(month), day)
+
+			if f.FileName == "." {
+				f.FileName = "wrong name"
+			}
+
+			f.Path.String = fmt.Sprintf("%s/%s", pathToFolder, f.FileName)
+			f.Path.Valid = true
+
+			newFile, err := os.Create(f.Path.String)
+			if err != nil {
+				logger.LogError(
+					"Failed create file",
+					"server/app",
+					fmt.Sprintf("file id: %d; file name: %s;", f.FileID, f.FileName),
+					err,
+				)
+				continue
+			}
+			split := strings.Split(f.FileData.String, ",")
+			data, err := base64.StdEncoding.DecodeString(split[1])
+
+			newFile.Write(data)
+
+			f.FileData.String = split[0]
+
+			query = `UPDATE files SET 
+					file_data = :file_data,
+					path = :path
+					WHERE file_id = :file_id`
+			_, err = dbx.NamedExec(query, f)
+			if err != nil {
+				logger.LogError("Failed update file", "server/app", f.FileName, err)
+				continue
+			}
+
+			newFile.Close()
+		}
+
+		time.Sleep(1 * time.Second)
+	}
+}
+
+func buildPathToFolder(defaultPath string, year, month, day int) string {
+	pathToDay := fmt.Sprintf("%s/%d/%d/%d", defaultPath, year, month, day)
+	if _, err := os.Stat(pathToDay); os.IsNotExist(err) {
+		pathToMonth := fmt.Sprintf("%s/%d/%d", defaultPath, year, month)
+		if _, err := os.Stat(pathToMonth); os.IsExist(err) {
+			os.Mkdir(pathToDay, 0777)
+		} else {
+			pathToYear := fmt.Sprintf("%s/%d", defaultPath, year)
+			if _, err := os.Stat(pathToYear); os.IsExist(err) {
+				os.Mkdir(pathToMonth, 0777)
+				os.Mkdir(pathToDay, 0777)
+			} else {
+				os.Mkdir(pathToYear, 0777)
+				os.Mkdir(pathToMonth, 0777)
+				os.Mkdir(pathToDay, 0777)
+			}
+		}
+	}
+	return pathToDay
 }

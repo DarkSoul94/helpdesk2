@@ -1,10 +1,10 @@
 package mysql
 
-import "github.com/DarkSoul94/helpdesk2/pkg_user/group_manager"
+import "github.com/DarkSoul94/helpdesk2/models"
 
 // toModelsGroup
-func (r *GroupRepo) toModelsGroup(group *dbGroup) *group_manager.Group {
-	return &group_manager.Group{
+func (r *GroupRepo) toModelsGroup(group *dbGroup) *models.Group {
+	return &models.Group{
 		ID:                group.ID,
 		Name:              group.Name,
 		CreateTicket:      group.CreateTicket,
@@ -19,7 +19,7 @@ func (r *GroupRepo) toModelsGroup(group *dbGroup) *group_manager.Group {
 }
 
 //toDbGroup ...
-func (r *GroupRepo) toDbGroup(group *group_manager.Group) *dbGroup {
+func (r *GroupRepo) toDbGroup(group *models.Group) *dbGroup {
 	return &dbGroup{
 		ID:                group.ID,
 		Name:              group.Name,

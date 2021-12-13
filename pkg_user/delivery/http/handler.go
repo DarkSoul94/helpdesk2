@@ -11,11 +11,11 @@ import (
 )
 
 type Handler struct {
-	ucUserManager pkg_user.UserManagerUC
+	ucUserManager pkg_user.IUserUsecase
 }
 
 // NewHandler ...
-func NewHandler(uc pkg_user.UserManagerUC) *Handler {
+func NewHandler(uc pkg_user.IUserUsecase) *Handler {
 	return &Handler{
 		ucUserManager: uc,
 	}
@@ -35,7 +35,7 @@ func (h *Handler) UpdateUser(ctx *gin.Context) {
 		return
 	}
 
-	err := h.ucUserManager.UserUpdate(user.(*pkg_user.User), newUser.UserID, newUser.GroupID)
+	err := h.ucUserManager.UserUpdate(user.(*models.User), newUser.UserID, newUser.GroupID)
 	if err != nil {
 		ctx.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
 		return
@@ -45,13 +45,13 @@ func (h *Handler) UpdateUser(ctx *gin.Context) {
 
 func (h *Handler) GetUsersList(ctx *gin.Context) {
 	var (
-		userList []*pkg_user.User
+		userList []*models.User
 		err      models.Err
 	)
 
 	user, _ := ctx.Get(global_const.CtxUserKey)
 
-	if userList, err = h.ucUserManager.GetUsersList(user.(*pkg_user.User)); err != nil {
+	if userList, err = h.ucUserManager.GetUsersList(user.(*models.User)); err != nil {
 		ctx.JSON(http.StatusBadRequest, map[string]interface{}{"status": "error", "error": err.Error()})
 		return
 	}
@@ -68,8 +68,7 @@ func (h *Handler) CreateGroup(ctx *gin.Context) {
 	}
 
 	user, _ := ctx.Get(global_const.CtxUserKey)
-
-	id, err := h.ucUserManager.CreateGroup(user.(*pkg_user.User), dto.ToModelGroup(group))
+	id, err := h.ucUserManager.CreateGroup(user.(*models.User), dto.ToModelGroup(group))
 	if err != nil {
 		ctx.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
 		return
@@ -78,19 +77,52 @@ func (h *Handler) CreateGroup(ctx *gin.Context) {
 }
 
 func (h *Handler) UpdateGroup(ctx *gin.Context) {
+	var group dto.OutGroup
 
+	if err := ctx.BindJSON(&group); err != nil {
+		ctx.JSON(http.StatusBadRequest, map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+	user, _ := ctx.Get(global_const.CtxUserKey)
+	err := h.ucUserManager.GroupUpdate(user.(*models.User), dto.ToModelGroup(group))
+	if err != nil {
+		ctx.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, map[string]interface{}{"status": "ok"})
 }
 
 func (h *Handler) GetGroupsList(ctx *gin.Context) {
 	user, _ := ctx.Get(global_const.CtxUserKey)
 
-	groups, err := h.ucUserManager.GetGroupList(user.(*pkg_user.User))
+	groups, err := h.ucUserManager.GetGroupList(user.(*models.User))
 	if err != nil {
 		ctx.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
 		return
 	}
 
 	ctx.JSON(http.StatusOK, dto.ToOutGroupList(groups))
+}
+
+func (h *Handler) GetDepartmentsList(ctx *gin.Context) {
+	departments, err := h.ucUserManager.GetDepartmentsList()
+	if err != nil {
+		ctx.JSON(err.Code(), map[string]string{"status": "error", "error": err.Error()})
+	}
+
+	ctx.JSON(http.StatusOK, map[string]interface{}{"status": "ok", "departments": departments})
+}
+
+func (h *Handler) GetGroupsListForResolve(ctx *gin.Context) {
+	outGroups := make([]dto.OutGroupShort, 0)
+	groups, err := h.ucUserManager.GetGroupListForResolve()
+	if err != nil {
+		ctx.JSON(err.Code(), map[string]string{"status": "error", "error": err.Error()})
+	}
+	for _, group := range groups {
+		outGroups = append(outGroups, dto.ToOutShortGroup(group))
+	}
+	ctx.JSON(http.StatusOK, map[string]interface{}{"status": "ok", "groups": outGroups})
 }
 
 /*

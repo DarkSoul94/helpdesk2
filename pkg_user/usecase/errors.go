@@ -1,11 +1,14 @@
 package usecase
 
-import "errors"
+import (
+	"github.com/DarkSoul94/helpdesk2/models"
+)
 
 var (
-	ErrUnauthorized = errors.New("You are not authorized to perform this action")
+	errPermissions_UserUpdate  = models.Forbidden("Недостаточно прав для обновления пользователя")
+	errPermissions_GetUserList = models.Forbidden("Недостаточно прав для получения списка групп")
 
-	ErrFailedGetUsersList = errors.New("Failed get users list")
-
-	ErrFailedGetGroupList = errors.New("Failed get groups list")
+	errPermissions_CreateGroup  = models.Forbidden("Недостаточно прав для создания группы")
+	errPermissions_UpdateGroup  = models.Forbidden("Недостаточно прав для обновления группы")
+	errPermissions_GetGroupList = models.Forbidden("Недостаточно прав для получения списка групп")
 )

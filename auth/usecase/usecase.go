@@ -14,7 +14,7 @@ import (
 
 // Usecase ...
 type Usecase struct {
-	userManager    pkg_user.UserManagerUC
+	userManager    pkg_user.IUserUsecase
 	secret         string
 	signingKey     []byte
 	expireDuration time.Duration
@@ -22,12 +22,12 @@ type Usecase struct {
 
 type AuthClaims struct {
 	jwt.StandardClaims
-	User *pkg_user.User `json:"user"`
+	User *models.User `json:"user"`
 }
 
 // NewUsecase ...
 func NewUsecase(
-	userManager pkg_user.UserManagerUC,
+	userManager pkg_user.IUserUsecase,
 	secret string,
 	signingKey []byte,
 	tokenTTL time.Duration) *Usecase {
@@ -39,9 +39,9 @@ func NewUsecase(
 	}
 }
 
-func (u *Usecase) LDAPSignIn(email, password string) (*pkg_user.User, string, models.Err) {
+func (u *Usecase) LDAPSignIn(email, password string) (*models.User, string, models.Err) {
 	var (
-		user  *pkg_user.User
+		user  *models.User
 		token string
 	)
 
@@ -52,7 +52,7 @@ func (u *Usecase) LDAPSignIn(email, password string) (*pkg_user.User, string, mo
 
 	user, err := u.userManager.GetUserByEmail(email)
 	if err != nil {
-		user = &pkg_user.User{
+		user = &models.User{
 			Email:      email,
 			Name:       lUser.Name,
 			Department: lUser.Department,
@@ -80,7 +80,7 @@ func (u *Usecase) LDAPSignIn(email, password string) (*pkg_user.User, string, mo
 	return user, token, nil
 }
 
-func (u *Usecase) GenerateToken(user *pkg_user.User) (string, models.Err) {
+func (u *Usecase) GenerateToken(user *models.User) (string, models.Err) {
 	var (
 		token    *jwt.Token
 		strToken string
@@ -103,7 +103,7 @@ func (u *Usecase) GenerateToken(user *pkg_user.User) (string, models.Err) {
 	return strToken, nil
 }
 
-func (u *Usecase) ParseToken(ctx context.Context, accessToken string) (*pkg_user.User, models.Err) {
+func (u *Usecase) ParseToken(ctx context.Context, accessToken string) (*models.User, models.Err) {
 	token, err := jwt.ParseWithClaims(accessToken, &AuthClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])

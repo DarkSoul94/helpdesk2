@@ -1,2 +1,0 @@
-{"action":"Failed read user from db","data":"tabakov.e.n@limefin.com","file":"user_manager/repo/mysql","level":"error","msg":"sql: no rows in result set","time":"2021-11-09T15:20:12+02:00"}
-{"action":"Failed create group","data":"","file":"pkg_user/group_manager/standart/repo/mysql","level":"error","msg":"Error 1062: Duplicate entry 'Пользователь' for key 'user_groups.group_name'","time":"2021-11-09T16:54:33+02:00"}

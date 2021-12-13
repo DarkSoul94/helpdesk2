@@ -1,6 +1,9 @@
 package dto
 
-import "github.com/DarkSoul94/helpdesk2/pkg_user"
+import (
+	"github.com/DarkSoul94/helpdesk2/models"
+	"github.com/DarkSoul94/helpdesk2/pkg_ticket/internal_models"
+)
 
 type OutUser struct {
 	ID         uint64   `json:"user_id"`
@@ -10,7 +13,20 @@ type OutUser struct {
 	Group      OutGroup `json:"group"`
 }
 
-func ToOutUser(user *pkg_user.User) OutUser {
+type OutUserWithOutGroup struct {
+	ID         uint64 `json:"user_id"`
+	Name       string `json:"user_name"`
+	Email      string `json:"email"`
+	Department string `json:"department,omitempty"`
+	GroupID    uint64 `json:"group_id"`
+}
+
+type inpUserForGenerate struct {
+	UserID uint64 `json:"user_id"`
+	Count  int    `json:"count"`
+}
+
+func ToOutUser(user *models.User) OutUser {
 	return OutUser{
 		ID:         user.ID,
 		Name:       user.Name,
@@ -20,7 +36,7 @@ func ToOutUser(user *pkg_user.User) OutUser {
 	}
 }
 
-func ToOutLoginUser(user *pkg_user.User, token string) OutUser {
+func ToOutLoginUser(user *models.User) OutUser {
 	return OutUser{
 		ID:    user.ID,
 		Name:  user.Name,
@@ -29,7 +45,7 @@ func ToOutLoginUser(user *pkg_user.User, token string) OutUser {
 	}
 }
 
-func ToOutUserList(users []*pkg_user.User) []OutUser {
+func ToOutUserList(users []*models.User) []OutUser {
 	var outUsers []OutUser = make([]OutUser, 0)
 
 	for _, user := range users {
@@ -37,4 +53,30 @@ func ToOutUserList(users []*pkg_user.User) []OutUser {
 	}
 
 	return outUsers
+}
+
+func ToModelUser(user OutUser) *models.User {
+	return &models.User{
+		ID:         user.ID,
+		Email:      user.Email,
+		Name:       user.Name,
+		Department: user.Department,
+		Group:      ToModelGroup(user.Group),
+	}
+}
+
+func ToOutUserWithOutGroup(user *models.User) OutUserWithOutGroup {
+	return OutUserWithOutGroup{
+		ID:         user.ID,
+		Name:       user.Name,
+		Email:      user.Email,
+		Department: user.Department,
+	}
+}
+
+func ToModelUserForGenerate(user inpUserForGenerate) internal_models.UserForGenerate {
+	return internal_models.UserForGenerate{
+		UserID: user.UserID,
+		Count:  user.Count,
+	}
 }

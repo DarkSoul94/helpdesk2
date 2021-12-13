@@ -40,5 +40,5 @@ func (h *Handler) SignIn(ctx *gin.Context) {
 		ctx.JSON(err.Code(), map[string]interface{}{"status": "error", "error": err.Error()})
 		return
 	}
-	ctx.JSON(http.StatusOK, map[string]interface{}{"token": token, "user": dto.ToOutLoginUser(mUser, token)})
+	ctx.JSON(http.StatusOK, map[string]interface{}{"token": token, "user": dto.ToOutLoginUser(mUser)})
 }

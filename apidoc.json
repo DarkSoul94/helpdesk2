@@ -1,0 +1,9 @@
+{
+
+    "name": "helpdesk",
+    "version": "2.0.0",
+    "description": "Helpdesk api documentation",
+    "title":"Helpdesk api",
+    "sampleUrl": "http://localhost:8888/"
+
+}

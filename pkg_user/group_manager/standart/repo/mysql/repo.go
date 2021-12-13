@@ -2,12 +2,12 @@ package mysql
 
 import (
 	"database/sql"
+	"fmt"
 	"strconv"
 	"strings"
 
 	"github.com/DarkSoul94/helpdesk2/models"
 	"github.com/DarkSoul94/helpdesk2/pkg/logger"
-	"github.com/DarkSoul94/helpdesk2/pkg_user/group_manager"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -19,11 +19,11 @@ func NewGroupRepo(db *sql.DB) *GroupRepo {
 
 /*CreateGroup - принимает данные новой группы, если такая есть в базе выдает ошибку.
 Если нет записывает в базу.*/
-func (r *GroupRepo) CreateGroup(group *group_manager.Group) (uint64, models.Err) {
+func (r *GroupRepo) CreateGroup(group *models.Group) (uint64, models.Err) {
 	var err error
 
 	dbGroup := r.toDbGroup(group)
-
+	fmt.Println(group)
 	query := `INSERT INTO user_groups SET
 							group_name = :group_name,
 							create_ticket = :create_ticket,
@@ -48,7 +48,7 @@ func (r *GroupRepo) CreateGroup(group *group_manager.Group) (uint64, models.Err)
 	return uint64(lastID), nil
 }
 
-func (r *GroupRepo) GetGroupByID(groupID uint64) (*group_manager.Group, models.Err) {
+func (r *GroupRepo) GetGroupByID(groupID uint64) (*models.Group, models.Err) {
 	var (
 		dbGroup dbGroup
 		err     error
@@ -63,7 +63,7 @@ func (r *GroupRepo) GetGroupByID(groupID uint64) (*group_manager.Group, models.E
 	return r.toModelsGroup(&dbGroup), nil
 }
 
-func (r *GroupRepo) GetGroupList() ([]*group_manager.Group, models.Err) {
+func (r *GroupRepo) GetGroupList() ([]*models.Group, models.Err) {
 	var dbGroups []dbGroup
 
 	if err := r.db.Select(&dbGroups, `SELECT * FROM user_groups`); err != nil {
@@ -71,12 +71,45 @@ func (r *GroupRepo) GetGroupList() ([]*group_manager.Group, models.Err) {
 		return nil, GroupErr_NotFound
 	}
 
-	modelGroups := make([]*group_manager.Group, 0)
+	modelGroups := make([]*models.Group, 0)
 	for _, group := range dbGroups {
 		modelGroups = append(modelGroups, r.toModelsGroup(&group))
 	}
 
 	return modelGroups, nil
+}
+
+func (r *GroupRepo) GroupUpdate(group *models.Group) models.Err {
+	dbGrp := r.toDbGroup(group)
+	query := `UPDATE user_groups SET
+							group_name = :group_name,
+							create_ticket = :create_ticket,
+							get_all_tickets = :get_all_tickets,
+							see_additional_info = :see_additional_info,
+							can_resolve_ticket = :can_resolve_ticket,
+							work_on_tickets = :work_on_tickets,
+							change_settings = :change_settings,
+							can_reports = :can_reports,
+							full_search = :full_search
+						WHERE group_id = :group_id`
+	if _, err := r.db.NamedExec(query, dbGrp); err != nil {
+		logger.LogError("Failed update group", "pkg_user/group_manager/standart/repo/mysql", "", err)
+		return GroupErr_Update
+	}
+	return nil
+}
+
+func (r *GroupRepo) GetUsersByGroup(groupID uint64) ([]uint64, models.Err) {
+	users := make([]uint64, 0)
+	query := `
+		SELECT user_id FROM users
+		WHERE group_id = ?`
+
+	if err := r.db.Select(&users, query, groupID); err != nil {
+		logger.LogError("Group not found", "pkg_user/group_manager/standart/repo/mysql", strconv.FormatUint(groupID, 10), err)
+		return nil, GroupErr_NotFound
+	}
+	return users, nil
 }
 
 func (r *GroupRepo) Close() {
